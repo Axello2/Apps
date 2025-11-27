@@ -11,7 +11,7 @@
     }
 
     html, body {
-      height: 100%;              /* Wichtiger Fix für iOS im iframe */
+      height: 100%;              /* Fix für iOS im iframe */
       margin: 0;
     }
 
@@ -48,6 +48,25 @@
       margin-top: 18px;
       font-size: 0.95rem;
       color: #888;
+    }
+
+    /* ~20 % kleinere Schrift auf kleinen Smartphones (z.B. iPhone im Hochformat) */
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+
+      h1 {
+        font-size: 1.8rem;   /* vorher 2.2rem */
+      }
+
+      p {
+        font-size: 0.9rem;   /* vorher 1.1rem */
+      }
+
+      .hint {
+        font-size: 0.8rem;   /* vorher 0.95rem */
+      }
     }
   </style>
 </head>
