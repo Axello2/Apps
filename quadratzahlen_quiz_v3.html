@@ -216,7 +216,7 @@
        <span id="endTotal" class="highlight">0</span></p>
     <p>Fehler: <span id="endFalsch" class="highlight">0</span></p>
     <p>Zeit: <span id="endZeit" class="highlight">0</span>s</p>
-    <p id="bewertung" style="font-size:1.7rem; color:#00ccff;"></p>
+    <p id="bewertung" style="font-size:1.7rem; color: #00ccff;"></p>
     <button class="big" onclick="location.reload()">Nochmal spielen</button>
   </div>
 
@@ -224,7 +224,7 @@
 
 <script>
 /* ------------------------------------------------------------
-   SKALIERUNG: Pixel messen, visualViewport nutzen, Mobil-Puffer
+   SKALIERUNG: Pixel messen, visualViewport, Portrait/Landscape
 ------------------------------------------------------------ */
 function scaleGame() {
     const c = document.getElementById("gameContainer");
@@ -253,13 +253,19 @@ function scaleGame() {
     // 3. Skalierungsfaktor
     let scale = Math.min(viewportW / naturalWidth, viewportH / naturalHeight);
 
-    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isMobile    = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isLandscape = viewportW > viewportH;
 
     if (isMobile) {
-      // Mobil leicht verkleinern, damit nichts abgeschnitten wird
-      scale *= 0.95;
+      if (isLandscape) {
+        // Handy quer: noch mehr Luft, damit nichts abgeschnitten ist
+        scale *= 0.85;   // ggf. auf 0.80 verringern, falls knapp
+      } else {
+        // Hochformat: fast voll ausnutzen
+        scale *= 0.95;
+      }
     } else {
-      // Desktop: nicht größer machen als 1 (natürliche Größe)
+      // Desktop: nicht größer als natürliche Größe
       if (scale > 1) scale = 1;
     }
 
@@ -267,10 +273,10 @@ function scaleGame() {
     if (scale <= 0)  scale = 1;
     if (scale > 2.2) scale = 2.2;
 
-    // 5. Skalierung anwenden
+    // 4. Skalierung anwenden
     c.style.transform = "scale(" + scale + ")";
 
-    // 6. Zentrierung
+    // 5. Zentrierung
     const usedW = naturalWidth  * scale;
     const usedH = naturalHeight * scale;
 
