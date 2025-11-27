@@ -1,194 +1,165 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title>Apps</title>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
-    <style>
-        :root {
-            --bg: #000;
-            --sidebar-bg: rgba(20, 20, 20, 0.7);
-            --text: #fff;
-            --accent: #00ccff;
-            --glow: rgba(0, 200, 255, 0.7);
-        }
+<title>Apps</title>
 
-        /* ----- LIGHT MODE VARIABLEN ----- */
-        .light {
-            --bg: #f0f0f0;
-            --text: #222;
-            --sidebar-bg: rgba(255, 255, 255, 0.85);
-            --accent: #007acc;
-            --glow: rgba(0, 120, 220, 0.4);
-        }
+<style>
+    :root {
+        --bg: #000;
+        --text: #fff;
+        --sidebar-bg: rgba(30,30,30,0.8);
+        --accent: #00ccff;
+        --glow: rgba(0,200,255,0.6);
+    }
+
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, Arial, sans-serif;
+        height: 100vh;
+        display: flex;
+        overflow: hidden; /* keine Scrollbars */
+    }
+
+    /* ---------------- SIDEBAR ---------------- */
+    .sidebar {
+        width: 260px;
+        background: var(--sidebar-bg);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        height: 100%;
+        box-sizing: border-box;
+        border-right: 1px solid rgba(255,255,255,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar h2 {
+        margin-top: 0;
+        font-size: 26px;
+        text-shadow: 0 0 15px var(--glow);
+    }
+
+    .sidebar a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+        color: var(--accent);
+        text-decoration: none;
+        margin: 12px 0;
+        cursor: pointer;
+    }
+
+    .sidebar a:hover {
+        color: var(--glow);
+        transform: translateX(5px);
+    }
+
+    .icon {
+        width: 22px;
+        height: 22px;
+        opacity: 0.85;
+    }
+
+    /* ---------------- CONTENT ---------------- */
+    .content {
+        flex: 1;
+        height: 100%;
+        position: relative;
+    }
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: black;
+    }
+
+
+    /* ---------------- BURGER (mobile) ---------------- */
+    .burger {
+        display: none;
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: var(--sidebar-bg);
+        color: var(--text);
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 22px;
+        z-index: 20;
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+    }
+
+    /* ---------------- MOBILE MODE ---------------- */
+    @media (max-width: 900px) {
 
         body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            background: var(--bg);
-            color: var(--text);
-            transition: background 0.3s ease, color 0.3s ease;
+            flex-direction: column;
         }
 
-        /* ----- SIDEBAR ----- */
-        .sidebar {
-            width: 240px;
-            background: var(--sidebar-bg);
-            backdrop-filter: blur(12px);
-            color: var(--text);
-            height: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-            transition: transform 0.3s ease;
-            border-right: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .sidebar h2 {
-            margin-top: 0;
-            font-size: 24px;
-            text-shadow: 0 0 10px var(--glow);
-        }
-
-        .sidebar a {
-            color: var(--accent);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 14px 0;
-            font-size: 18px;
-            padding: 6px 2px;
-            cursor: pointer;
-            transition: color 0.2s ease, transform 0.15s ease;
-        }
-
-        .sidebar a:hover {
-            color: var(--glow);
-            transform: translateX(4px);
-        }
-
-        /* ----- ICONS ----- */
-        .icon {
-            width: 20px;
-            height: 20px;
-            opacity: 0.8;
-        }
-
-        /* ----- CONTENT ----- */
-        .content {
-            flex: 1;
-            height: 100%;
-            position: relative;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: var(--bg);
-            transition: background 0.3s ease;
-        }
-
-        /* ----- BURGER MENU (nur mobil) ----- */
         .burger {
-            display: none;
+            display: block;
+        }
+
+        .sidebar {
             position: absolute;
-            top: 12px;
-            left: 12px;
-            z-index: 10;
-            background: var(--sidebar-bg);
-            color: var(--text);
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 22px;
-            cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.12);
-            backdrop-filter: blur(10px);
+            top: 0;
+            left: 0;
+            height: 100%;
+            transform: translateX(-100%);
+            z-index: 30;
         }
 
-        /* ----- DARK/LIGHT MODE BUTTON ----- */
-        .modeToggle {
-            margin-top: 20px;
-            padding: 8px 12px;
-            background: var(--accent);
-            border: none;
-            border-radius: 6px;
-            color: black;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
+        .sidebar.open {
+            transform: translateX(0);
         }
+    }
+</style>
 
-        /* ----- MOBILE ----- */
-        @media (max-width: 900px) {
-            body { flex-direction: column; }
-
-            .burger { display: block; }
-
-            .sidebar {
-                position: absolute;
-                top: 0;
-                left: 0;
-                height: 100%;
-                transform: translateX(-100%);
-                z-index: 30;
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-        }
-    </style>
 </head>
 <body>
 
-    <!-- BURGER -->
-    <div class="burger" onclick="toggleSidebar()">☰ Menü</div>
+<!-- BURGER BUTTON -->
+<div class="burger" onclick="toggleSidebar()">☰ Menü</div>
 
-    <!-- SIDEBAR -->
-    <div class="sidebar" id="sidebar">
-        <h2>Apps</h2>
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <h2>Apps</h2>
 
-        <a onclick="openHome()">
-            <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3l10 9h-3v9h-6v-6H11v6H5v-9H2z"/></svg>
-            Home
-        </a>
+    <a onclick="openHome()">
+        <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor"
+                  d="M12 3l10 9h-3v9h-6v-6H11v6H5v-9H2z"/>
+        </svg>
+        Home
+    </a>
 
-        <a onclick="openPage('quadratzahlen_quiz_v3.html')">
-            <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2m7 7h5v2h-5m0 4h5v2h-5M7 7h10v2H7m0 4h4v2H7m0 4h4v2H7z"/></svg>
-            Quadratzahlen-Quiz v3
-        </a>
+    <a onclick="openPage('quadratzahlen_quiz_v3.html')">
+        <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor"
+                  d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2m7 7h5v2h-5m0 4h5v2h-5M7 7h10v2H7m0 4h4v2H7m0 4h4v2H7z"/>
+        </svg>
+        Quadratzahlen-Quiz v3
+    </a>
 
-        <!-- <a onclick="openPage('quadratzahlen_quiz_v4.html')"> ... </a> -->
+    <!-- <a onclick="openPage('quadratzahlen_quiz_v4.html')"> ... </a> -->
+</div>
 
-        <button class="modeToggle" onclick="toggleMode()">Dark / Light</button>
+<!-- CONTENT / IFRAME -->
+<div class="content">
+    <iframe id="contentFrame" src="home.html"></iframe>
+</div>
 
-    </div>
-
-    <!-- CONTENT -->
-    <div class="content">
-        <iframe id="contentFrame" src="home.html"></iframe>
-    </div>
 
 <script>
-    // ----- Seiten öffnen -----
-    function openPage(page) {
-        document.getElementById('contentFrame').src = page;
-        localStorage.setItem("lastPage", page);
-        closeSidebar();
-    }
-
-    function openHome() {
-        document.getElementById('contentFrame').src = "home.html";
-        localStorage.setItem("lastPage", "home.html");
-        closeSidebar();
-    }
-
-    // ----- Sidebar Toggle -----
+    /* ------------- Sidebar open/close ------------- */
     function toggleSidebar() {
         document.getElementById("sidebar").classList.toggle("open");
     }
@@ -196,20 +167,17 @@
         document.getElementById("sidebar").classList.remove("open");
     }
 
-    // ----- Last Page Restore -----
-    let last = localStorage.getItem("lastPage");
-    if (last) document.getElementById('contentFrame').src = last;
-
-    // ----- Light / Dark Mode -----
-    function toggleMode() {
-        document.body.classList.toggle("light");
-        localStorage.setItem("mode", document.body.classList.contains("light") ? "light" : "dark");
+    /* ------------- Navigation ------------- */
+    function openHome() {
+        document.getElementById("contentFrame").src = "home.html";
+        closeSidebar();
     }
 
-    // Mode beim Start wiederherstellen
-    if (localStorage.getItem("mode") === "light") {
-        document.body.classList.add("light");
+    function openPage(page) {
+        document.getElementById("contentFrame").src = page;
+        closeSidebar();
     }
+
 </script>
 
 </body>
