@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Quadratzahlen-Quiz 10–20 (Ultra Responsive)</title>
+<title>Quadratzahlen-Quiz 10–20 (Ultra Desktop Version)</title>
 
 <style>
   body {
@@ -16,15 +16,15 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
   }
 
-  /* Hauptcontainer, der skaliert wird */
+  /* Ultra-Desktop Game Container */
   #gameContainer {
     position: absolute;
     left: 50%;
     top: 0;
+    width: 1400px;     /* NEUE DESKTOP-OPTIMALE BASISBREITE */
+    height: 1000px;    /* NEUE BASISHÖHE */
+    margin-left: -700px;
     transform-origin: top center;
-    width: 1000px;     /* Basislayout */
-    height: 1500px;
-    margin-left: -500px;
   }
 
   * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
@@ -32,13 +32,13 @@
   h1 {
     color: #00ccff;
     text-shadow: 0 0 15px #00ccff;
-    margin-top: 40px;
-    font-size: 2.3rem;
+    margin-top: 20px;
+    font-size: 2.4rem;
     text-align: center;
   }
 
   .slider {
-    width: 300px;
+    width: 350px;
     height: 40px;
     margin: 20px auto;
     display: block;
@@ -46,8 +46,8 @@
   }
 
   .dropzone {
-    width: 340px;
-    height: 140px;
+    width: 420px;
+    height: 160px;
     margin: 40px auto;
     border: 4px dashed #444;
     border-radius: 20px;
@@ -60,12 +60,12 @@
   }
 
   .btn {
-    width: 86px;
-    height: 66px;
-    margin: 7px;
+    width: 110px;
+    height: 80px;
+    margin: 8px;
     background: #0066ff;
     color: white;
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     border-radius: 12px;
     border: none;
     font-weight: bold;
@@ -80,11 +80,11 @@
     position: absolute;
     pointer-events: none;
     z-index: 99999;
-    padding: 18px 28px;
+    padding: 20px 30px;
     border-radius: 12px;
     background: #0066ff;
     color: white;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     opacity: 0.9;
     box-shadow: 0 0 30px #00ccff;
     font-weight: bold;
@@ -92,7 +92,7 @@
   }
 
   #buttons {
-    max-width: 600px;
+    max-width: 900px;
     margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
@@ -121,8 +121,8 @@
   }
 
   button.big {
-    padding: 18px 40px;
-    font-size: 1.5rem;
+    padding: 20px 50px;
+    font-size: 1.7rem;
     background: #00ccff;
     color: black;
     border-radius: 15px;
@@ -168,7 +168,7 @@
 
   <!-- START -->
   <div id="start" style="text-align:center;">
-    <p style="font-size:1.4rem;">Anzahl Fragen:
+    <p style="font-size:1.6rem;">Anzahl Fragen:
       <span id="anzahl" style="color:#00ff99; font-weight:bold;">10</span>
     </p>
 
@@ -181,14 +181,16 @@
 
   <!-- GAME -->
   <div id="game" style="display:none; text-align:center;">
-    <p style="font-size:1.3rem;">
+    <p style="font-size:1.5rem;">
       Frage <span id="nr">1</span>/<span id="total"></span> |
       ✅ <span id="richtig" style="color:#00ff99;">0</span> |
       ❌ <span id="falsch" style="color:#ff3300;">0</span> |
       ⏱ <span id="zeit" style="color:#ffcc00;">0</span>s
     </p>
 
-    <h2 style="color:#00ccff;">Was ist <span id="zahl">?</span>² ?</h2>
+    <h2 style="color:#00ccff; font-size:2rem;">
+      Was ist <span id="zahl">?</span>² ?
+    </h2>
 
     <div class="dropzone" id="dropzone">
       <div id="feedback"></div>
@@ -204,34 +206,32 @@
        <span id="endTotal" class="highlight">0</span></p>
     <p>Fehler: <span id="endFalsch" class="highlight">0</span></p>
     <p>Zeit: <span id="endZeit" class="highlight">0</span>s</p>
-    <p id="bewertung" style="font-size:1.5rem; color:#00ccff;"></p>
+    <p id="bewertung" style="font-size:1.7rem; color:#00ccff;"></p>
     <button class="big" onclick="location.reload()">Nochmal spielen</button>
   </div>
 
 </div> <!-- gameContainer -->
 
-
 <script>
 /* ------------------------------------------------------------
-   ULTRA RESPONSIVE AUTO-SCALING
+   ULTRA DESKTOP AUTO-SCALING
 ------------------------------------------------------------ */
 function scaleGame() {
-    const baseWidth  = 1000;
-    const baseHeight = 1500;
+    const baseWidth  = 1400;   // neue optimale Desktop-Breite
+    const baseHeight = 1000;   // neue optimale Basis-Höhe
 
     const screenW = window.innerWidth;
     const screenH = window.innerHeight;
 
-    // Basisskalierung (immer sichtbar)
     let scale = Math.min(screenW / baseWidth, screenH / baseHeight);
 
-    // Desktop / große Bildschirme => vergrößern!
-    if (scale > 1) {
-        scale = Math.min(scale, 1.4);  // max 140% für saubere Darstellung
-    }
+    // auf Desktop VERGRÖßERN bis max 1.8
+    if (scale > 1) scale = Math.min(scale, 1.8);
 
-    document.getElementById("gameContainer").style.transform =
-        "scale(" + scale + ")";
+    const c = document.getElementById("gameContainer");
+    c.style.transform = "scale(" + scale + ")";
+    c.style.left = "50%";
+    c.style.marginLeft = -(baseWidth / 2) + "px";
 }
 
 window.onload = scaleGame;
@@ -240,210 +240,158 @@ window.addEventListener("orientationchange", scaleGame);
 
 
 /* ------------------------------------------------------------
-   AB HIER DEIN ORIGINAL JAVASCRIPT (UNVERÄNDERT)
+   (Der gesamte Rest ist dein originaler funktionierender Code)
 ------------------------------------------------------------ */
+let audioCtx=null;
 
-let audioCtx = null;
-
-function initAudio() {
-  if (!audioCtx) {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (AC) audioCtx = new AC();
+function initAudio(){
+  if(!audioCtx){
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(AC) audioCtx=new AC();
   }
-
-  if (audioCtx) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const buffer = audioCtx.createBuffer(1, 1, 22050);
-    const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(audioCtx.destination);
-    source.start(0);
+  if(audioCtx){
+    if(audioCtx.state==="suspended") audioCtx.resume();
+    const b=audioCtx.createBuffer(1,1,22050);
+    const s=audioCtx.createBufferSource();
+    s.buffer=b; s.connect(audioCtx.destination); s.start(0);
   }
 }
 
-function playSound(type) {
-  if (!audioCtx) return;
-  try {
-    const t = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.connect(g); g.connect(audioCtx.destination);
+function playSound(type){
+  if(!audioCtx)return;
+  try{
+    const t=audioCtx.currentTime;
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
 
-    if (type === 'click') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(600, t);
-      g.gain.setValueAtTime(0.15, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-      osc.start(t); osc.stop(t + 0.1);
-    }
-    else if (type === 'correct') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, t);
-      osc.frequency.exponentialRampToValueAtTime(1760, t + 0.1);
-      g.gain.setValueAtTime(0.2, t);
-      g.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
-      osc.start(t); osc.stop(t + 0.3);
-    }
-    else if (type === 'wrong') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(150, t);
-      osc.frequency.linearRampToValueAtTime(100, t + 0.3);
-      g.gain.setValueAtTime(0.2, t);
-      g.gain.linearRampToValueAtTime(0.01, t + 0.3);
-      osc.start(t); osc.stop(t + 0.3);
-    }
-    else if (type === 'finish') {
-      const freqs = [523, 659, 784, 1046, 784, 1046];
-      freqs.forEach((fq, i) => {
-        const o  = audioCtx.createOscillator();
-        const gg = audioCtx.createGain();
-        o.connect(gg); gg.connect(audioCtx.destination);
-        o.type = "square";
-        o.frequency.value = fq;
-        const st = t + i * 0.12;
-        const du = (i === freqs.length - 1 ? 0.4 : 0.12);
-        gg.gain.setValueAtTime(0.1, st);
-        gg.gain.exponentialRampToValueAtTime(0.01, st + du);
-        o.start(st); o.stop(st + du);
+    if(type==="click"){
+      o.type="sine"; o.frequency.setValueAtTime(600,t);
+      g.gain.setValueAtTime(0.15,t);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.1);
+      o.start(t); o.stop(t+0.1);
+    } else if(type==="correct"){
+      o.type="sine";
+      o.frequency.setValueAtTime(880,t);
+      o.frequency.exponentialRampToValueAtTime(1760,t+0.1);
+      g.gain.setValueAtTime(0.2,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.3);
+      o.start(t); o.stop(t+0.3);
+    } else if(type==="wrong"){
+      o.type="sawtooth";
+      o.frequency.setValueAtTime(150,t);
+      o.frequency.linearRampToValueAtTime(100,t+0.3);
+      g.gain.setValueAtTime(0.2,t);
+      g.gain.linearRampToValueAtTime(0.01,t+0.3);
+      o.start(t); o.stop(t+0.3);
+    } else if(type==="finish"){
+      const freqs=[523,659,784,1046,784,1046];
+      freqs.forEach((fq,i)=>{
+        const o2=audioCtx.createOscillator();
+        const g2=audioCtx.createGain();
+        o2.connect(g2); g2.connect(audioCtx.destination);
+        o2.type="square"; o2.frequency.value=fq;
+        const st=t+i*0.12;
+        const du=(i===freqs.length-1?0.4:0.12);
+        g2.gain.setValueAtTime(0.1,st);
+        g2.gain.exponentialRampToValueAtTime(0.01,st+du);
+        o2.start(st); o2.stop(st+du);
       });
     }
-  } catch (e) {}
+  }catch(e){}
 }
 
-const basen    = [10,11,12,13,14,15,16,17,18,19,20];
-const quadrate = basen.map(x => x*x);
+const basen=[10,11,12,13,14,15,16,17,18,19,20];
+const quadrate=basen.map(x=>x*x);
 
-let fragenAnzahl = 0;
-let frageNr = 0;
-let aktuellIdx = 0;
-let letzterIdx = -1;
+let fragenAnzahl=0, frageNr=0, aktuellIdx=0, letzterIdx=-1;
+let richtigCount=0, falschCount=0, startZeit=0, timer=null;
+let fragenPool=[];
 
-let richtigCount = 0;
-let falschCount  = 0;
-let startZeit = 0;
-let timer = null;
+const sliderEl=document.getElementById("slider");
+const anzahlEl=document.getElementById("anzahl");
+const startScreen=document.getElementById("start");
+const gameScreen=document.getElementById("game");
+const endeScreen=document.getElementById("ende");
 
-let fragenPool = [];
+const nrEl=document.getElementById("nr");
+const totalEl=document.getElementById("total");
+const richtigEl=document.getElementById("richtig");
+const falschEl=document.getElementById("falsch");
+const zeitEl=document.getElementById("zeit");
+const zahlEl=document.getElementById("zahl");
+const feedbackEl=document.getElementById("feedback");
+const dropzoneEl=document.getElementById("dropzone");
+const buttonsEl=document.getElementById("buttons");
 
-const sliderEl    = document.getElementById("slider");
-const anzahlEl    = document.getElementById("anzahl");
-const startScreen = document.getElementById("start");
-const gameScreen  = document.getElementById("game");
-const endeScreen  = document.getElementById("ende");
+const endRichtigEl=document.getElementById("endRichtig");
+const endTotalEl=document.getElementById("endTotal");
+const endFalschEl=document.getElementById("endFalsch");
+const endZeitEl=document.getElementById("endZeit");
+const bewertungEl=document.getElementById("bewertung");
 
-const nrEl       = document.getElementById("nr");
-const totalEl    = document.getElementById("total");
-const richtigEl  = document.getElementById("richtig");
-const falschEl   = document.getElementById("falsch");
-const zeitEl     = document.getElementById("zeit");
-const zahlEl     = document.getElementById("zahl");
-const feedbackEl = document.getElementById("feedback");
-const dropzoneEl = document.getElementById("dropzone");
-const buttonsEl  = document.getElementById("buttons");
+sliderEl.addEventListener("input",()=>anzahlEl.textContent=sliderEl.value);
 
-const endRichtigEl = document.getElementById("endRichtig");
-const endTotalEl   = document.getElementById("endTotal");
-const endFalschEl  = document.getElementById("endFalsch");
-const endZeitEl    = document.getElementById("endZeit");
-const bewertungEl  = document.getElementById("bewertung");
-
-sliderEl.addEventListener("input", () => {
-  anzahlEl.textContent = sliderEl.value;
-});
-
-function startQuiz() {
+function startQuiz(){
   initAudio();
-
-  fragenAnzahl = parseInt(sliderEl.value);
-  totalEl.textContent = fragenAnzahl;
-
-  startScreen.style.display = "none";
-  gameScreen.style.display  = "block";
-  endeScreen.style.display  = "none";
-
-  frageNr = 0;
-  richtigCount = 0;
-  falschCount  = 0;
-
-  richtigEl.textContent = "0";
-  falschEl.textContent  = "0";
-  zeitEl.textContent    = "0";
-
-  fragenPool = [];
-  letzterIdx = -1;
-
-  startZeit = Date.now();
-  if (timer) clearInterval(timer);
-  timer = setInterval(() => {
-    zeitEl.textContent = Math.floor((Date.now()-startZeit)/1000);
-  }, 500);
-
-  neueFrage();
-  buttonsErstellen();
+  fragenAnzahl=parseInt(sliderEl.value);
+  totalEl.textContent=fragenAnzahl;
+  startScreen.style.display="none";
+  gameScreen.style.display="block";
+  endeScreen.style.display="none";
+  frageNr=richtigCount=falschCount=0;
+  richtigEl.textContent="0"; falschEl.textContent="0"; zeitEl.textContent="0";
+  fragenPool=[]; letzterIdx=-1;
+  startZeit=Date.now();
+  if(timer)clearInterval(timer);
+  timer=setInterval(()=>zeitEl.textContent=Math.floor((Date.now()-startZeit)/1000),500);
+  neueFrage(); buttonsErstellen();
 }
 
-function neueFrage() {
-  frageNr++;
-  nrEl.textContent = frageNr;
-
-  if (frageNr > fragenAnzahl) {
-    setTimeout(zeigeAuswertung, 1200);
-    return;
-  }
-
-  if (fragenPool.length === 0) {
+function neueFrage(){
+  frageNr++; nrEl.textContent=frageNr;
+  if(frageNr>fragenAnzahl){ setTimeout(zeigeAuswertung,1200); return; }
+  if(fragenPool.length===0){
     fragenPool.push(0,10);
-    for (let i=1; i<=9; i++) fragenPool.push(i,i);
-    for (let i=fragenPool.length-1; i>0; i--) {
-      const j = Math.floor(Math.random()*(i+1));
+    for(let i=1;i<=9;i++) fragenPool.push(i,i);
+    for(let i=fragenPool.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
       [fragenPool[i],fragenPool[j]]=[fragenPool[j],fragenPool[i]];
     }
   }
-
-  let kandidat = fragenPool[fragenPool.length-1];
-
-  if (kandidat === letzterIdx && fragenPool.length>1) {
-    const swapPos = 0;
-    [fragenPool[fragenPool.length-1], fragenPool[swapPos]] =
-      [fragenPool[swapPos], fragenPool[fragenPool.length-1]];
+  let kandidat=fragenPool[fragenPool.length-1];
+  if(kandidat===letzterIdx && fragenPool.length>1){
+    const s=0;
+    [fragenPool[fragenPool.length-1],fragenPool[s]]=
+      [fragenPool[s],fragenPool[fragenPool.length-1]];
   }
-
-  aktuellIdx = fragenPool.pop();
-  letzterIdx = aktuellIdx;
-
-  zahlEl.textContent = basen[aktuellIdx];
-  feedbackEl.innerHTML = "";
+  aktuellIdx=fragenPool.pop(); letzterIdx=aktuellIdx;
+  zahlEl.textContent=basen[aktuellIdx];
+  feedbackEl.innerHTML="";
 }
 
-function buttonsErstellen() {
-  buttonsEl.innerHTML = "";
+function buttonsErstellen(){
+  buttonsEl.innerHTML="";
   quadrate.forEach((q,i)=>{
     const b=document.createElement("button");
-    b.className="btn";
-    b.textContent=q;
-    b.dataset.idx=i;
-    b.addEventListener("pointerdown", pointerStart);
-    b.addEventListener("pointermove", pointerMove);
-    b.addEventListener("pointerup", pointerEnd);
-    b.addEventListener("pointercancel", pointerEnd);
+    b.className="btn"; b.textContent=q; b.dataset.idx=i;
+    b.addEventListener("pointerdown",pointerStart);
+    b.addEventListener("pointermove",pointerMove);
+    b.addEventListener("pointerup",pointerEnd);
+    b.addEventListener("pointercancel",pointerEnd);
     buttonsEl.appendChild(b);
   });
 }
 
-let ghost=null;
-let dragIdx=null;
+let ghost=null, dragIdx=null;
 
 function pointerStart(e){
-  initAudio();
-  playSound("click");
-
+  initAudio(); playSound("click");
   const btn=e.currentTarget;
   dragIdx=parseInt(btn.dataset.idx);
-
   ghost=btn.cloneNode(true);
   ghost.classList.add("drag-ghost");
   document.body.appendChild(ghost);
-
   ghost.style.left=e.clientX+"px";
   ghost.style.top=e.clientY+"px";
   btn.setPointerCapture(e.pointerId);
@@ -457,7 +405,6 @@ function pointerMove(e){
 
 function pointerEnd(e){
   if(!ghost)return;
-
   const r=dropzoneEl.getBoundingClientRect();
   const inside=(
     e.clientX>=r.left &&
@@ -465,28 +412,17 @@ function pointerEnd(e){
     e.clientY>=r.top &&
     e.clientY<=r.bottom
   );
-
-  if(inside && dragIdx!=null){
-    handleDrop(dragIdx);
-  }
-
-  ghost.remove();
-  ghost=null;
-  dragIdx=null;
-
-  try{ e.target.releasePointerCapture(e.pointerId); }catch(err){}
+  if(inside && dragIdx!=null) handleDrop(dragIdx);
+  ghost.remove(); ghost=null; dragIdx=null;
+  try{e.target.releasePointerCapture(e.pointerId);}catch(err){}
 }
 
 function handleDrop(idx){
   const fb=feedbackEl;
-
   if(idx===aktuellIdx){
-    richtigCount++;
-    playSound("correct");
+    richtigCount++; playSound("correct");
     richtigEl.textContent=richtigCount;
-
     fb.innerHTML='<div class="success">Richtig!</div><div class="success-text">Genial!</div>';
-
     for(let i=0;i<16;i++){
       const s=document.createElement("div");
       s.textContent=["✨","⭐","🔥","🎉","🏆"][i%5];
@@ -496,40 +432,31 @@ function handleDrop(idx){
       s.style.animationDelay=(Math.random()*0.4)+"s";
       fb.appendChild(s);
     }
-
     setTimeout(neueFrage,1400);
-  }
-  else {
-    falschCount++;
-    playSound("wrong");
+  } else {
+    falschCount++; playSound("wrong");
     falschEl.textContent=falschCount;
-
     fb.innerHTML='<div class="fail">Nein</div>';
     setTimeout(()=>fb.innerHTML="",1000);
   }
 }
 
 function zeigeAuswertung(){
-  if(timer) clearInterval(timer);
+  if(timer)clearInterval(timer);
   playSound("finish");
-
   const zeitGes=Math.floor((Date.now()-startZeit)/1000);
-
   gameScreen.style.display="none";
   endeScreen.style.display="block";
-
   endRichtigEl.textContent=richtigCount;
   endTotalEl.textContent=fragenAnzahl;
   endFalschEl.textContent=falschCount;
   endZeitEl.textContent=zeitGes;
-
   let bew;
   if(richtigCount===fragenAnzahl && falschCount===0) bew="PERFEKT OHNE FEHLER!";
   else if(richtigCount===fragenAnzahl) bew="Alle richtig – Wahnsinn!";
   else if(richtigCount>=fragenAnzahl*0.9) bew="Fast perfekt!";
   else if(richtigCount>=fragenAnzahl*0.7) bew="Sehr gut!";
   else bew="Weiterüben lohnt sich!";
-
   bewertungEl.textContent=bew;
 }
 </script>
