@@ -41,6 +41,7 @@
             width: 100%;
             height: 100%;
             border: none;
+            background: #000; /* dunkler Hintergrund wie deine Apps */
         }
     </style>
 </head>
@@ -49,7 +50,7 @@
     <div class="sidebar">
         <h2>Apps</h2>
 
-        <a onclick="openPage('quadratzahlen_quiz_v3.html')">index</a>
+        <a onclick="openHome()">Home</a>
 
         <a onclick="openPage('quadratzahlen_quiz_v3.html')">Quadratzahlen-Quiz v3</a>
 
@@ -58,12 +59,15 @@
     </div>
 
     <div class="content">
-        <iframe id="contentFrame" src=""></iframe>
+        <iframe id="contentFrame" src="home.html"></iframe>
     </div>
 
     <script>
         function openPage(page) {
             document.getElementById('contentFrame').src = page;
+        }
+        function openHome() {
+            document.getElementById('contentFrame').src = "home.html";
         }
     </script>
 
