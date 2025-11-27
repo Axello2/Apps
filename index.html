@@ -26,17 +26,22 @@
         --glow: rgba(0,140,255,0.4);
     }
 
-    body {
+    /* Grundlayout + Safari-Height-Fix */
+    html, body {
+        height: 100%;
         margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family: -apple-system, Arial, sans-serif;
-        height: 100vh;
-        display: flex;
+        padding: 0;
         overflow: hidden;
     }
 
-    /* SIDEBAR */
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, Arial, sans-serif;
+        display: flex;
+    }
+
+    /* SIDEBAR (Desktop + Tablet) */
     .sidebar {
         width: 260px;
         background: var(--sidebar-bg);
@@ -77,7 +82,6 @@
         height: 22px;
     }
 
-    /* LIGHT/DARK TOGGLE */
     .mode-toggle {
         margin-top: 40px;
         padding: 10px 14px;
@@ -92,11 +96,12 @@
         transition: 0.2s;
     }
 
-    /* CONTENT */
+    /* CONTENT-BEREICH (rechts) */
     .content {
         flex: 1;
-        height: 100vh;
         position: relative;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
     }
 
@@ -105,12 +110,13 @@
         height: 100%;
         border: none;
         background: #000;
+        display: block;
     }
 
-    /* MOBILE BURGER */
+    /* BURGER-BUTTON (nur Mobile) */
     .burger {
         display: none;
-        position: absolute;
+        position: fixed;
         top: 15px;
         left: 15px;
         background: var(--sidebar-bg);
@@ -124,11 +130,25 @@
         cursor: pointer;
     }
 
+    /* iOS-Safari: korrekte Höhe */
+    @supports (-webkit-touch-callout: none) {
+        body {
+            height: -webkit-fill-available;
+        }
+        .content {
+            height: -webkit-fill-available;
+        }
+    }
+
+    /* ---------- MOBILE LAYOUT & VOLLSCREEN-IFRAME ---------- */
     @media (max-width: 900px) {
 
-        /* Sidebar ausblenden */
+        body {
+            flex-direction: column;
+        }
+
         .sidebar {
-            position: absolute;
+            position: fixed;
             left: 0;
             top: 0;
             height: 100%;
@@ -142,6 +162,22 @@
         .burger {
             display: block;
         }
+
+        .content {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* iFrame wirklich fullscreen machen, inkl. Notch-Safe-Area */
+        .content iframe {
+            position: fixed;
+            top: env(safe-area-inset-top);
+            left: env(safe-area-inset-left);
+            right: env(safe-area-inset-right);
+            bottom: env(safe-area-inset-bottom);
+            width: calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right));
+            height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        }
     }
 
 </style>
@@ -149,14 +185,13 @@
 </head>
 <body>
 
-<!-- MOBILE BURGER MENU -->
+<!-- BURGER (nur Mobile sichtbar) -->
 <div class="burger" onclick="toggleSidebar()">☰</div>
 
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
     <h2>Apps</h2>
 
-    <!-- Home-Link -->
     <a onclick="openHome()">
         <svg class="icon" viewBox="0 0 24 24">
             <path fill="currentColor"
@@ -165,7 +200,6 @@
         Home
     </a>
 
-    <!-- Ultra Desktop Quiz -->
     <a onclick="openPage('quadratzahlen_quiz_v3.html')">
         <svg class="icon" viewBox="0 0 24 24">
             <path fill="currentColor"
@@ -174,20 +208,17 @@
         Quadratzahlen-Quiz v3
     </a>
 
-    <!-- Dark/Light -->
     <button class="mode-toggle" onclick="toggleMode()">
-        🌙 / ☀️  Modus wechseln
+        🌙 / ☀️ Modus wechseln
     </button>
 </div>
 
-<!-- CONTENT AREA -->
+<!-- CONTENT / IFRAME -->
 <div class="content">
-    <!-- Standard Startseite -->
     <iframe id="contentFrame" src="home.html"></iframe>
 </div>
 
 <script>
-/* SIDEBAR MOBILE */
 function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("open");
 }
@@ -195,17 +226,16 @@ function closeSidebar() {
     document.getElementById("sidebar").classList.remove("open");
 }
 
-/* NAVIGATION */
 function openHome() {
     document.getElementById("contentFrame").src = "home.html";
     closeSidebar();
 }
+
 function openPage(page) {
     document.getElementById("contentFrame").src = page;
     closeSidebar();
 }
 
-/* LIGHT / DARK MODE */
 function toggleMode() {
     document.body.classList.toggle("light");
 }
