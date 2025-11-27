@@ -20,7 +20,7 @@
      Höhe automatisch nach Inhalt */
   #gameContainer {
     position: absolute;
-    width: 600px;      /* vorher 900px → erlaubt größere Skalierung am iPhone */
+    width: 600px;      /* erlaubt große Skalierung am iPhone */
     height: auto;
     transform-origin: top left;
   }
@@ -242,7 +242,7 @@ function scaleGame() {
 
     let scale = Math.min(screenW / naturalWidth, screenH / naturalHeight);
 
-    // Leicht begrenzen nach oben (kannst du anpassen oder entfernen)
+    // Leicht begrenzen nach oben (optional)
     if (scale > 2.2) scale = 2.2;
 
     c.style.transform = "scale(" + scale + ")";
@@ -257,9 +257,39 @@ function scaleGame() {
     c.style.top  = offsetY + "px";
 }
 
-window.onload = scaleGame;
-window.onresize = scaleGame;
-window.addEventListener("orientationchange", scaleGame);
+/* Automatische Skalierung: beim Laden + bei jeder echten Größenänderung */
+function initAutoScale() {
+  // einmal direkt
+  scaleGame();
+
+  // Standard-Events
+  window.addEventListener("resize", scaleGame);
+  window.addEventListener("orientationchange", scaleGame);
+
+  // Wenn verfügbar: ResizeObserver für Layoutänderungen
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => {
+      scaleGame();
+    });
+    ro.observe(document.documentElement);
+  } else {
+    // Fallback: alle 250 ms prüfen, ob sich die Fenstergröße ändert
+    let lastW = window.innerWidth;
+    let lastH = window.innerHeight;
+
+    setInterval(() => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      if (w !== lastW || h !== lastH) {
+        lastW = w;
+        lastH = h;
+        scaleGame();
+      }
+    }, 250);
+  }
+}
+
+window.addEventListener("load", initAutoScale);
 
 
 /* ------------------------------------------------------------
