@@ -167,6 +167,18 @@
 
   .highlight { color: #ffcc00; font-weight: bold; }
 
+  /* Optionale leichte Anpassung bei sehr flachen (Landscape)-Displays */
+  @media (max-height: 500px) and (min-width: 600px) {
+    .dropzone {
+      margin: 20px auto;
+      height: 140px;
+    }
+    .btn {
+      height: 64px;
+      margin: 4px;
+      font-size: 1.1rem;
+    }
+  }
 </style>
 </head>
 
@@ -224,6 +236,25 @@
 
 <script>
 /* ------------------------------------------------------------
+   Hilfsfunktionen
+------------------------------------------------------------ */
+function isMobileDevice() {
+  return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+function getViewportSize() {
+  if (window.visualViewport) {
+    return {
+      w: window.visualViewport.width,
+      h: window.visualViewport.height,
+      left: window.visualViewport.offsetLeft,
+      top: window.visualViewport.offsetTop
+    };
+  }
+  return { w: window.innerWidth, h: window.innerHeight, left: 0, top: 0 };
+}
+
+/* ------------------------------------------------------------
    SKALIERUNG: Pixel messen, visualViewport, Portrait/Landscape
 ------------------------------------------------------------ */
 function scaleGame() {
@@ -237,29 +268,23 @@ function scaleGame() {
     const naturalWidth  = c.scrollWidth;
     const naturalHeight = c.scrollHeight;
 
-    // 2. Viewport-Maße – bevorzugt visualViewport (iOS-Safari-freundlich)
-    let viewportW = window.innerWidth;
-    let viewportH = window.innerHeight;
-    let offsetLeft = 0;
-    let offsetTop  = 0;
-
-    if (window.visualViewport) {
-      viewportW  = window.visualViewport.width;
-      viewportH  = window.visualViewport.height;
-      offsetLeft = window.visualViewport.offsetLeft;
-      offsetTop  = window.visualViewport.offsetTop;
-    }
+    // 2. Viewport-Maße
+    const vp = getViewportSize();
+    const viewportW = vp.w;
+    const viewportH = vp.h;
+    const offsetLeft = vp.left;
+    const offsetTop  = vp.top;
 
     // 3. Skalierungsfaktor
     let scale = Math.min(viewportW / naturalWidth, viewportH / naturalHeight);
 
-    const isMobile    = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isMobile    = isMobileDevice();
     const isLandscape = viewportW > viewportH;
 
     if (isMobile) {
       if (isLandscape) {
-        // Handy quer: noch mehr Luft, damit nichts abgeschnitten ist
-        scale *= 0.85;   // ggf. auf 0.80 verringern, falls knapp
+        // Handy quer: etwas mehr Luft, da der Screen flacher ist
+        scale *= 0.85;   // ggf. weiter senken auf 0.8
       } else {
         // Hochformat: fast voll ausnutzen
         scale *= 0.95;
@@ -300,6 +325,8 @@ function initAutoScale() {
   window.addEventListener("resize", scaleGame);
   window.addEventListener("orientationchange", () => {
     setTimeout(scaleGame, 150);
+    // Bei Orientation-Wechsel Buttons-Layout neu aufbauen
+    buttonsErstellen();
   });
 
   // Wenn verfügbar: visualViewport-Events
@@ -479,25 +506,43 @@ function neueFrage(){
   dropzoneEl.classList.add("empty-text");
 }
 
-/* Buttons in 3 Reihen: 4–4–3 */
+/* Buttons: Portrait/ Desktop = 4–4–3, Mobile-Landscape = 6–5 */
 function buttonsErstellen(){
   buttonsEl.innerHTML="";
 
-  const row1 = quadrate.slice(0, 4);
-  const row2 = quadrate.slice(4, 8);
-  const row3 = quadrate.slice(8,11);
+  const vp = getViewportSize();
+  const isMobile    = isMobileDevice();
+  const isLandscape = vp.w > vp.h;
 
-  [row1,row2,row3].forEach(row=>{
-    const rowDiv=document.createElement("div");
-    rowDiv.style.display="flex";
-    rowDiv.style.justifyContent="center";
-    rowDiv.style.margin="6px 0";
+  let rowsIndices = [];
 
-    row.forEach(q=>{
-      const b=document.createElement("button");
-      b.className="btn";
-      b.textContent=q.toString();
-      b.dataset.idx=quadrate.indexOf(q).toString();
+  if (isMobile && isLandscape) {
+    // Mobile Landscape: 2 Reihen (6 + 5)
+    rowsIndices = [
+      [0,1,2,3,4,5],      // 10²–15²
+      [6,7,8,9,10]        // 16²–20²
+    ];
+  } else {
+    // Standard: 3 Reihen (4–4–3)
+    rowsIndices = [
+      [0,1,2,3],          // 10²–13²
+      [4,5,6,7],          // 14²–17²
+      [8,9,10]            // 18²–20²
+    ];
+  }
+
+  rowsIndices.forEach(row => {
+    const rowDiv = document.createElement("div");
+    rowDiv.style.display = "flex";
+    rowDiv.style.justifyContent = "center";
+    rowDiv.style.flexWrap = "nowrap";
+    rowDiv.style.margin = "6px 0";
+
+    row.forEach(idx => {
+      const b = document.createElement("button");
+      b.className = "btn";
+      b.textContent = quadrate[idx].toString();
+      b.dataset.idx = idx.toString();
 
       b.addEventListener("pointerdown",pointerStart);
       b.addEventListener("pointermove",pointerMove);
