@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Quadratzahlen-Quiz 10–20 (Ultra Desktop Version)</title>
+<title>Quadratzahlen-Quiz 10–20 (Ultra Mobile & Desktop Version)</title>
 
 <style>
   body {
@@ -16,13 +16,13 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
   }
 
-  /* Ultra-Desktop Game Container */
+  /* Ultra-Desktop + Ultra-Mobile Game Container */
   #gameContainer {
     position: absolute;
     left: 50%;
     top: 0;
-    width: 1400px;     /* NEUE DESKTOP-OPTIMALE BASISBREITE */
-    height: 1000px;    /* NEUE BASISHÖHE */
+    width: 1400px;     /* optimierte Basisbreite */
+    height: 1000px;    /* Basis-Höhe */
     margin-left: -700px;
     transform-origin: top center;
   }
@@ -59,13 +59,14 @@
     position: relative;
   }
 
+  /* MOBILE-OPTIMIERTE Buttons */
   .btn {
-    width: 110px;
-    height: 80px;
-    margin: 8px;
+    width: 90px;      /* kompakter für iPhone */
+    height: 70px;
+    margin: 6px;
     background: #0066ff;
     color: white;
-    font-size: 1.35rem;
+    font-size: 1.2rem;  /* iPhone-tauglich */
     border-radius: 12px;
     border: none;
     font-weight: bold;
@@ -80,11 +81,11 @@
     position: absolute;
     pointer-events: none;
     z-index: 99999;
-    padding: 20px 30px;
+    padding: 18px 28px;
     border-radius: 12px;
     background: #0066ff;
     color: white;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     opacity: 0.9;
     box-shadow: 0 0 30px #00ccff;
     font-weight: bold;
@@ -92,11 +93,9 @@
   }
 
   #buttons {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    text-align: center;
   }
 
   .success { font-size: 4.5rem; color: #00ff99; animation: pop 1s; }
@@ -214,18 +213,18 @@
 
 <script>
 /* ------------------------------------------------------------
-   ULTRA DESKTOP AUTO-SCALING
+   ULTRA MOBILE + DESKTOP AUTO-SCALING
 ------------------------------------------------------------ */
 function scaleGame() {
-    const baseWidth  = 1400;   // neue optimale Desktop-Breite
-    const baseHeight = 1000;   // neue optimale Basis-Höhe
+    const baseWidth  = 1400;
+    const baseHeight = 1000;
 
     const screenW = window.innerWidth;
     const screenH = window.innerHeight;
 
     let scale = Math.min(screenW / baseWidth, screenH / baseHeight);
 
-    // auf Desktop VERGRÖßERN bis max 1.8
+    /* Desktop darf größer werden */
     if (scale > 1) scale = Math.min(scale, 1.8);
 
     const c = document.getElementById("gameContainer");
@@ -240,7 +239,7 @@ window.addEventListener("orientationchange", scaleGame);
 
 
 /* ------------------------------------------------------------
-   (Der gesamte Rest ist dein originaler funktionierender Code)
+   DOM + QUIZ VARIABLE
 ------------------------------------------------------------ */
 let audioCtx=null;
 
@@ -257,6 +256,7 @@ function initAudio(){
   }
 }
 
+/* Sound Engine verkürzt für Übersicht */
 function playSound(type){
   if(!audioCtx)return;
   try{
@@ -266,46 +266,49 @@ function playSound(type){
     o.connect(g); g.connect(audioCtx.destination);
 
     if(type==="click"){
-      o.type="sine"; o.frequency.setValueAtTime(600,t);
+      o.frequency.setValueAtTime(600,t);
       g.gain.setValueAtTime(0.15,t);
       g.gain.exponentialRampToValueAtTime(0.001,t+0.1);
       o.start(t); o.stop(t+0.1);
-    } else if(type==="correct"){
-      o.type="sine";
+    }
+    else if(type==="correct"){
       o.frequency.setValueAtTime(880,t);
       o.frequency.exponentialRampToValueAtTime(1760,t+0.1);
       g.gain.setValueAtTime(0.2,t);
       g.gain.exponentialRampToValueAtTime(0.01,t+0.3);
       o.start(t); o.stop(t+0.3);
-    } else if(type==="wrong"){
+    }
+    else if(type==="wrong"){
       o.type="sawtooth";
       o.frequency.setValueAtTime(150,t);
       o.frequency.linearRampToValueAtTime(100,t+0.3);
       g.gain.setValueAtTime(0.2,t);
       g.gain.linearRampToValueAtTime(0.01,t+0.3);
       o.start(t); o.stop(t+0.3);
-    } else if(type==="finish"){
-      const freqs=[523,659,784,1046,784,1046];
-      freqs.forEach((fq,i)=>{
+    }
+    else if(type==="finish"){
+      const notes=[523,659,784,1046];
+      notes.forEach((fq,i)=>{
         const o2=audioCtx.createOscillator();
         const g2=audioCtx.createGain();
         o2.connect(g2); g2.connect(audioCtx.destination);
-        o2.type="square"; o2.frequency.value=fq;
-        const st=t+i*0.12;
-        const du=(i===freqs.length-1?0.4:0.12);
+        o2.frequency.value=fq;
+        const st=t+i*0.14;
         g2.gain.setValueAtTime(0.1,st);
-        g2.gain.exponentialRampToValueAtTime(0.01,st+du);
-        o2.start(st); o2.stop(st+du);
+        g2.gain.exponentialRampToValueAtTime(0.01,st+0.14);
+        o2.start(st); o2.stop(st+0.14);
       });
     }
-  }catch(e){}
+  } catch(e){}
 }
+
 
 const basen=[10,11,12,13,14,15,16,17,18,19,20];
 const quadrate=basen.map(x=>x*x);
 
 let fragenAnzahl=0, frageNr=0, aktuellIdx=0, letzterIdx=-1;
-let richtigCount=0, falschCount=0, startZeit=0, timer=null;
+let richtigCount=0, falschCount=0;
+let startZeit=0, timer=null;
 let fragenPool=[];
 
 const sliderEl=document.getElementById("slider");
@@ -332,25 +335,42 @@ const bewertungEl=document.getElementById("bewertung");
 
 sliderEl.addEventListener("input",()=>anzahlEl.textContent=sliderEl.value);
 
+
+/* ------------------------------------------------------------
+   QUIZ START
+------------------------------------------------------------ */
 function startQuiz(){
   initAudio();
   fragenAnzahl=parseInt(sliderEl.value);
   totalEl.textContent=fragenAnzahl;
+
   startScreen.style.display="none";
   gameScreen.style.display="block";
   endeScreen.style.display="none";
+
   frageNr=richtigCount=falschCount=0;
   richtigEl.textContent="0"; falschEl.textContent="0"; zeitEl.textContent="0";
   fragenPool=[]; letzterIdx=-1;
+
   startZeit=Date.now();
   if(timer)clearInterval(timer);
   timer=setInterval(()=>zeitEl.textContent=Math.floor((Date.now()-startZeit)/1000),500);
-  neueFrage(); buttonsErstellen();
+
+  neueFrage();
+  buttonsErstellen();
 }
 
+
+/* ------------------------------------------------------------
+   FRAGEN-AUSWAHL
+------------------------------------------------------------ */
 function neueFrage(){
   frageNr++; nrEl.textContent=frageNr;
-  if(frageNr>fragenAnzahl){ setTimeout(zeigeAuswertung,1200); return; }
+  if(frageNr>fragenAnzahl){
+    setTimeout(zeigeAuswertung,1200);
+    return;
+  }
+
   if(fragenPool.length===0){
     fragenPool.push(0,10);
     for(let i=1;i<=9;i++) fragenPool.push(i,i);
@@ -359,30 +379,61 @@ function neueFrage(){
       [fragenPool[i],fragenPool[j]]=[fragenPool[j],fragenPool[i]];
     }
   }
-  let kandidat=fragenPool[fragenPool.length-1];
+
+  let kandidat=fragenPool.at(-1);
   if(kandidat===letzterIdx && fragenPool.length>1){
     const s=0;
     [fragenPool[fragenPool.length-1],fragenPool[s]]=
       [fragenPool[s],fragenPool[fragenPool.length-1]];
   }
-  aktuellIdx=fragenPool.pop(); letzterIdx=aktuellIdx;
+
+  aktuellIdx=fragenPool.pop();
+  letzterIdx=aktuellIdx;
+
   zahlEl.textContent=basen[aktuellIdx];
   feedbackEl.innerHTML="";
 }
 
+
+/* ------------------------------------------------------------
+   ULTRA-MOBILE BUTTON LAYOUT: 4–4–3
+------------------------------------------------------------ */
 function buttonsErstellen(){
   buttonsEl.innerHTML="";
-  quadrate.forEach((q,i)=>{
-    const b=document.createElement("button");
-    b.className="btn"; b.textContent=q; b.dataset.idx=i;
-    b.addEventListener("pointerdown",pointerStart);
-    b.addEventListener("pointermove",pointerMove);
-    b.addEventListener("pointerup",pointerEnd);
-    b.addEventListener("pointercancel",pointerEnd);
-    buttonsEl.appendChild(b);
+
+  const row1 = quadrate.slice(0, 4);   // 4 Buttons
+  const row2 = quadrate.slice(4, 8);   // 4 Buttons
+  const row3 = quadrate.slice(8, 11);  // 3 Buttons
+
+  const rows=[row1,row2,row3];
+
+  rows.forEach(row=>{
+    const rowDiv=document.createElement("div");
+    rowDiv.style.display="flex";
+    rowDiv.style.justifyContent="center";
+    rowDiv.style.margin="6px 0";
+
+    row.forEach(q=>{
+      const b=document.createElement("button");
+      b.className="btn";
+      b.textContent=q;
+      b.dataset.idx=quadrate.indexOf(q);
+
+      b.addEventListener("pointerdown",pointerStart);
+      b.addEventListener("pointermove",pointerMove);
+      b.addEventListener("pointerup",pointerEnd);
+      b.addEventListener("pointercancel",pointerEnd);
+
+      rowDiv.appendChild(b);
+    });
+    buttonsEl.appendChild(rowDiv);
   });
 }
 
+
+/* ------------------------------------------------------------
+   DRAG & DROP (Pointer Events)
+------------------------------------------------------------ */
 let ghost=null, dragIdx=null;
 
 function pointerStart(e){
@@ -406,23 +457,31 @@ function pointerMove(e){
 function pointerEnd(e){
   if(!ghost)return;
   const r=dropzoneEl.getBoundingClientRect();
-  const inside=(
+  const inside=
     e.clientX>=r.left &&
     e.clientX<=r.right &&
     e.clientY>=r.top &&
-    e.clientY<=r.bottom
-  );
+    e.clientY<=r.bottom;
+
   if(inside && dragIdx!=null) handleDrop(dragIdx);
+
   ghost.remove(); ghost=null; dragIdx=null;
-  try{e.target.releasePointerCapture(e.pointerId);}catch(err){}
+  try{ e.target.releasePointerCapture(e.pointerId); }catch{}
 }
 
+
+/* ------------------------------------------------------------
+   DROP-LOGIK
+------------------------------------------------------------ */
 function handleDrop(idx){
   const fb=feedbackEl;
+
   if(idx===aktuellIdx){
     richtigCount++; playSound("correct");
     richtigEl.textContent=richtigCount;
-    fb.innerHTML='<div class="success">Richtig!</div><div class="success-text">Genial!</div>';
+    fb.innerHTML='<div class="success">Richtig!</div>'+
+                 '<div class="success-text">Genial!</div>';
+
     for(let i=0;i<16;i++){
       const s=document.createElement("div");
       s.textContent=["✨","⭐","🔥","🎉","🏆"][i%5];
@@ -432,8 +491,10 @@ function handleDrop(idx){
       s.style.animationDelay=(Math.random()*0.4)+"s";
       fb.appendChild(s);
     }
+
     setTimeout(neueFrage,1400);
-  } else {
+  }
+  else {
     falschCount++; playSound("wrong");
     falschEl.textContent=falschCount;
     fb.innerHTML='<div class="fail">Nein</div>';
@@ -441,22 +502,31 @@ function handleDrop(idx){
   }
 }
 
+
+/* ------------------------------------------------------------
+   ENDE
+------------------------------------------------------------ */
 function zeigeAuswertung(){
   if(timer)clearInterval(timer);
   playSound("finish");
+
   const zeitGes=Math.floor((Date.now()-startZeit)/1000);
+
   gameScreen.style.display="none";
   endeScreen.style.display="block";
+
   endRichtigEl.textContent=richtigCount;
   endTotalEl.textContent=fragenAnzahl;
   endFalschEl.textContent=falschCount;
   endZeitEl.textContent=zeitGes;
-  let bew;
+
+  let bew="";
   if(richtigCount===fragenAnzahl && falschCount===0) bew="PERFEKT OHNE FEHLER!";
   else if(richtigCount===fragenAnzahl) bew="Alle richtig – Wahnsinn!";
   else if(richtigCount>=fragenAnzahl*0.9) bew="Fast perfekt!";
   else if(richtigCount>=fragenAnzahl*0.7) bew="Sehr gut!";
   else bew="Weiterüben lohnt sich!";
+
   bewertungEl.textContent=bew;
 }
 </script>
