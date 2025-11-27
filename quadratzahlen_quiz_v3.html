@@ -224,68 +224,80 @@
 
 <script>
 /* ------------------------------------------------------------
-   SKALIERUNG: Pixel messen statt feste Basis
+   SKALIERUNG: Pixel messen, visualViewport nutzen, Mobil-Puffer
 ------------------------------------------------------------ */
 function scaleGame() {
     const c = document.getElementById("gameContainer");
 
     // 1. Skalierung zurücksetzen, natürliche Größe messen
     c.style.transform = "scale(1)";
-    c.style.left = "0";
-    c.style.top  = "0";
+    c.style.left = "0px";
+    c.style.top  = "0px";
 
     const naturalWidth  = c.scrollWidth;
     const naturalHeight = c.scrollHeight;
 
-    const screenW = window.innerWidth;
-    const screenH = window.innerHeight;
+    // 2. Viewport-Maße – bevorzugt visualViewport (iOS-Safari-freundlich)
+    let viewportW = window.innerWidth;
+    let viewportH = window.innerHeight;
+    let offsetLeft = 0;
+    let offsetTop  = 0;
 
-    let scale = Math.min(screenW / naturalWidth, screenH / naturalHeight);
+    if (window.visualViewport) {
+      viewportW  = window.visualViewport.width;
+      viewportH  = window.visualViewport.height;
+      offsetLeft = window.visualViewport.offsetLeft;
+      offsetTop  = window.visualViewport.offsetTop;
+    }
 
-    // Leicht begrenzen nach oben (optional)
+    // 3. Skalierungsfaktor
+    let scale = Math.min(viewportW / naturalWidth, viewportH / naturalHeight);
+
+    // 4. Auf Mobilgeräten etwas Sicherheitsabstand, damit nichts abgeschnitten wird
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+      scale *= 0.95;   // etwas kleiner, dafür sicher vollständig sichtbar
+    }
+
+    // Optional: nach oben begrenzen
     if (scale > 2.2) scale = 2.2;
+    if (scale <= 0)  scale = 1;  // Fallback
 
+    // 5. Skalierung anwenden
     c.style.transform = "scale(" + scale + ")";
 
+    // 6. Zentrierung
     const usedW = naturalWidth  * scale;
     const usedH = naturalHeight * scale;
 
-    const offsetX = (screenW - usedW) / 2;
-    const offsetY = (screenH - usedH) / 2;
+    const offsetX = offsetLeft + (viewportW - usedW) / 2;
+    const offsetY = offsetTop  + (viewportH - usedH) / 2;
 
     c.style.left = offsetX + "px";
     c.style.top  = offsetY + "px";
 }
 
-/* Automatische Skalierung: beim Laden + bei Größenänderungen */
+/* Automatische Skalierung: beim Laden + nach Stabilisierung + bei Änderungen */
 function initAutoScale() {
-  // einmal direkt
+  // Direkt einmal
   scaleGame();
+  // Noch ein paar mal nach kurzer Zeit, weil iOS den Viewport „nachzieht“
+  setTimeout(scaleGame, 50);
+  setTimeout(scaleGame, 250);
+  setTimeout(scaleGame, 600);
 
   // Standard-Events
   window.addEventListener("resize", scaleGame);
-  window.addEventListener("orientationchange", scaleGame);
+  window.addEventListener("orientationchange", () => {
+    // kleine Verzögerung, bis Safari den neuen Viewport gesetzt hat
+    setTimeout(scaleGame, 150);
+  });
 
-  // Wenn verfügbar: ResizeObserver für Layoutänderungen
-  if ('ResizeObserver' in window) {
-    const ro = new ResizeObserver(() => {
-      scaleGame();
+  // Wenn verfügbar: visualViewport-Events
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", () => {
+      setTimeout(scaleGame, 50);
     });
-    ro.observe(document.documentElement);
-  } else {
-    // Fallback: alle 250 ms prüfen, ob sich die Fenstergröße ändert
-    let lastW = window.innerWidth;
-    let lastH = window.innerHeight;
-
-    setInterval(() => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      if (w !== lastW || h !== lastH) {
-        lastW = w;
-        lastH = h;
-        scaleGame();
-      }
-    }, 250);
   }
 }
 
