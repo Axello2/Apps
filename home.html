@@ -50,22 +50,23 @@
       color: #888;
     }
 
-    /* ~20 % kleinere Schrift auf kleinen Smartphones (z.B. iPhone im Hochformat) */
-    @media (max-width: 480px) {
+    /* Deutlich kleinere Schrift auf Smartphones (iPhone) */
+    @media (max-width: 600px) {
       body {
-        padding: 12px;
+        padding: 10px;
       }
 
       h1 {
-        font-size: 1.8rem;   /* vorher 2.2rem */
+        font-size: 1.4rem;      /* deutlich kleiner */
+        text-shadow: 0 0 8px #00ccff;
       }
 
       p {
-        font-size: 0.9rem;   /* vorher 1.1rem */
+        font-size: 0.8rem;      /* deutlich kleiner */
       }
 
       .hint {
-        font-size: 0.8rem;   /* vorher 0.95rem */
+        font-size: 0.7rem;
       }
     }
   </style>
