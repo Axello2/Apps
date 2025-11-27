@@ -3,9 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hallo</title>
+    <title>Apps</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+        }
+        .sidebar {
+            width: 220px;
+            background: #222;
+            color: #fff;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .sidebar h2 {
+            margin-top: 0;
+        }
+        .sidebar a {
+            color: #00ccff;
+            text-decoration: none;
+            display: block;
+            margin: 10px 0;
+        }
+        .content {
+            flex: 1;
+            padding: 30px;
+        }
+    </style>
 </head>
 <body>
-    Hallo
+    <div class="sidebar">
+        <h2>Apps</h2>
+        <a href="quadratzahlen.html">Quadratzahlen-Quiz</a>
+    </div>
+
+    <div class="content">
+        <h1>Willkommen</h1>
+        <p>Dies ist deine Startseite.</p>
+        <p>Wähle links eine App aus.</p>
+    </div>
 </body>
 </html>
