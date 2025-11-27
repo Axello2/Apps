@@ -253,15 +253,19 @@ function scaleGame() {
     // 3. Skalierungsfaktor
     let scale = Math.min(viewportW / naturalWidth, viewportH / naturalHeight);
 
-    // 4. Auf Mobilgeräten etwas Sicherheitsabstand, damit nichts abgeschnitten wird
     const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
     if (isMobile) {
-      scale *= 0.95;   // etwas kleiner, dafür sicher vollständig sichtbar
+      // Mobil leicht verkleinern, damit nichts abgeschnitten wird
+      scale *= 0.95;
+    } else {
+      // Desktop: nicht größer machen als 1 (natürliche Größe)
+      if (scale > 1) scale = 1;
     }
 
-    // Optional: nach oben begrenzen
+    // Sicherheits-Fallbacks
+    if (scale <= 0)  scale = 1;
     if (scale > 2.2) scale = 2.2;
-    if (scale <= 0)  scale = 1;  // Fallback
 
     // 5. Skalierung anwenden
     c.style.transform = "scale(" + scale + ")";
@@ -289,7 +293,6 @@ function initAutoScale() {
   // Standard-Events
   window.addEventListener("resize", scaleGame);
   window.addEventListener("orientationchange", () => {
-    // kleine Verzögerung, bis Safari den neuen Viewport gesetzt hat
     setTimeout(scaleGame, 150);
   });
 
