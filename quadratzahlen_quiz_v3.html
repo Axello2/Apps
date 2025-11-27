@@ -4,32 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Quadratzahlen-Quiz 10–20 (Responsive)</title>
+<title>Quadratzahlen-Quiz 10–20 (Ultra Responsive)</title>
 
 <style>
-  /* ------------------------------------------------------------
-     AUTO-SCALE SPIELCONTAINER
-  ------------------------------------------------------------ */
   body {
     margin: 0;
     background: #000;
     color: #eee;
-    overflow: hidden;       /* KEIN SCROLLEN */
-    touch-action: none;     /* verhindert Scroll-Zoom auf iPhone */
+    overflow: hidden;
+    touch-action: none;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
   }
 
+  /* Hauptcontainer, der skaliert wird */
   #gameContainer {
     position: absolute;
     left: 50%;
     top: 0;
     transform-origin: top center;
-    width: 1000px;      /* Basisbreite (Layout-Referenz) */
-    height: 1500px;     /* Basishöhe */
-    margin-left: -500px; /* Zentriert */
+    width: 1000px;     /* Basislayout */
+    height: 1500px;
+    margin-left: -500px;
   }
 
-  /* restliches Spiel-CSS wie vorher */
   * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
   h1 {
@@ -216,36 +213,36 @@
 
 <script>
 /* ------------------------------------------------------------
-   AUTO-SCALING FUNCTION – DAS ENTSCHEIDET ALLES
+   ULTRA RESPONSIVE AUTO-SCALING
 ------------------------------------------------------------ */
 function scaleGame() {
-    const baseWidth = 1000;
+    const baseWidth  = 1000;
     const baseHeight = 1500;
 
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
 
-    const scale = Math.min(w / baseWidth, h / baseHeight);
+    // Basisskalierung (immer sichtbar)
+    let scale = Math.min(screenW / baseWidth, screenH / baseHeight);
+
+    // Desktop / große Bildschirme => vergrößern!
+    if (scale > 1) {
+        scale = Math.min(scale, 1.4);  // max 140% für saubere Darstellung
+    }
 
     document.getElementById("gameContainer").style.transform =
         "scale(" + scale + ")";
 }
 
-window.onresize = scaleGame;
 window.onload = scaleGame;
+window.onresize = scaleGame;
 window.addEventListener("orientationchange", scaleGame);
 
 
 /* ------------------------------------------------------------
-   AB HIER KOMMT DEIN ORIGINAL JAVASCRIPT (UNVERÄNDERT)
+   AB HIER DEIN ORIGINAL JAVASCRIPT (UNVERÄNDERT)
 ------------------------------------------------------------ */
 
-
-/* (Ich setze jetzt deinen kompletten JS-Block unverändert ein) */
-
-/* ------------------------------------------------------------
-   AUDIO ENGINE
------------------------------------------------------------- */
 let audioCtx = null;
 
 function initAudio() {
@@ -313,9 +310,6 @@ function playSound(type) {
   } catch (e) {}
 }
 
-/* ------------------------------------------------------------
-   QUIZ LOGIK
------------------------------------------------------------- */
 const basen    = [10,11,12,13,14,15,16,17,18,19,20];
 const quadrate = basen.map(x => x*x);
 
@@ -331,8 +325,8 @@ let timer = null;
 
 let fragenPool = [];
 
-const sliderEl = document.getElementById("slider");
-const anzahlEl = document.getElementById("anzahl");
+const sliderEl    = document.getElementById("slider");
+const anzahlEl    = document.getElementById("anzahl");
 const startScreen = document.getElementById("start");
 const gameScreen  = document.getElementById("game");
 const endeScreen  = document.getElementById("ende");
@@ -346,6 +340,7 @@ const zahlEl     = document.getElementById("zahl");
 const feedbackEl = document.getElementById("feedback");
 const dropzoneEl = document.getElementById("dropzone");
 const buttonsEl  = document.getElementById("buttons");
+
 const endRichtigEl = document.getElementById("endRichtig");
 const endTotalEl   = document.getElementById("endTotal");
 const endFalschEl  = document.getElementById("endFalsch");
@@ -420,7 +415,6 @@ function neueFrage() {
   feedbackEl.innerHTML = "";
 }
 
-/* BUTTONS */
 function buttonsErstellen() {
   buttonsEl.innerHTML = "";
   quadrate.forEach((q,i)=>{
@@ -436,7 +430,6 @@ function buttonsErstellen() {
   });
 }
 
-/* DRAG */
 let ghost=null;
 let dragIdx=null;
 
@@ -484,7 +477,6 @@ function pointerEnd(e){
   try{ e.target.releasePointerCapture(e.pointerId); }catch(err){}
 }
 
-/* DROP */
 function handleDrop(idx){
   const fb=feedbackEl;
 
@@ -517,7 +509,6 @@ function handleDrop(idx){
   }
 }
 
-/* AUSWERTUNG */
 function zeigeAuswertung(){
   if(timer) clearInterval(timer);
   playSound("finish");
