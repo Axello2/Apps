@@ -257,7 +257,7 @@ function scaleGame() {
     c.style.top  = offsetY + "px";
 }
 
-/* Automatische Skalierung: beim Laden + bei jeder echten Größenänderung */
+/* Automatische Skalierung: beim Laden + bei Größenänderungen */
 function initAutoScale() {
   // einmal direkt
   scaleGame();
@@ -419,6 +419,9 @@ function startQuiz(){
 
   neueFrage();
   buttonsErstellen();
+
+  // Nach Umschalten auf Spielansicht neu skalieren
+  setTimeout(scaleGame, 0);
 }
 
 /* Fragen-Auswahl mit weighted Pool */
@@ -584,6 +587,9 @@ function zeigeAuswertung(){
   else                                                    bew="Weiterüben lohnt sich!";
 
   bewertungEl.textContent=bew;
+
+  // Auswertungsbildschirm neu einpassen
+  setTimeout(scaleGame, 0);
 }
 </script>
 
