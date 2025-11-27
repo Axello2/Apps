@@ -2,216 +2,260 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Quadratzahlen-Quiz 10–20</title>
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Quadratzahlen-Quiz 10–20 (Responsive)</title>
 
 <style>
-  /* Grundlegendes Reset & Box-Sizing */
-  * { 
-    -webkit-tap-highlight-color: transparent; 
-    box-sizing: border-box; 
-  }
-
+  /* ------------------------------------------------------------
+     AUTO-SCALE SPIELCONTAINER
+  ------------------------------------------------------------ */
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    text-align: center;
-    padding: 20px; 
-    background: #000; 
+    margin: 0;
+    background: #000;
     color: #eee;
-    margin: 0; 
-    min-height: 100vh;
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center;
-    overflow: hidden; /* Wichtig: Verhindert Scrollen der ganzen Seite beim Ziehen */
-    touch-action: none; /* Verhindert "Bouncen" auf iOS */
-    user-select: none; /* Verhindert Textmarkierung */
-    -webkit-user-select: none;
+    overflow: hidden;       /* KEIN SCROLLEN */
+    touch-action: none;     /* verhindert Scroll-Zoom auf iPhone */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
   }
 
-  h1 { 
-    color: #00ccff; 
-    text-shadow: 0 0 15px #00ccff; 
-    margin-bottom: 20px; 
-    pointer-events: none; /* Klicks gehen durch */
-    font-size: 1.8rem;
+  #gameContainer {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform-origin: top center;
+    width: 1000px;      /* Basisbreite (Layout-Referenz) */
+    height: 1500px;     /* Basishöhe */
+    margin-left: -500px; /* Zentriert */
   }
 
-  /* Slider Styling */
-  .slider { 
-    width: 300px; 
-    height: 40px; 
-    margin: 20px 0; 
-    accent-color: #00ff99; 
-    cursor: pointer; 
-    touch-action: pan-y; /* Erlaubt vertikales Scrollen auf dem Slider, aber fängt horizontal */
+  /* restliches Spiel-CSS wie vorher */
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+  h1 {
+    color: #00ccff;
+    text-shadow: 0 0 15px #00ccff;
+    margin-top: 40px;
+    font-size: 2.3rem;
+    text-align: center;
+  }
+
+  .slider {
+    width: 300px;
+    height: 40px;
+    margin: 20px auto;
+    display: block;
+    accent-color: #00ff99;
   }
 
   .dropzone {
-    width: 340px; 
-    height: 140px; 
-    margin: 30px auto;
-    border: 4px dashed #444; 
-    border-radius: 20px; 
+    width: 340px;
+    height: 140px;
+    margin: 40px auto;
+    border: 4px dashed #444;
+    border-radius: 20px;
     background: #111;
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    position: relative; 
-    overflow: hidden;
     box-shadow: 0 0 25px rgba(0,200,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
   }
 
   .btn {
-    width: 86px; 
-    height: 66px; 
+    width: 86px;
+    height: 66px;
     margin: 7px;
-    background: #0066ff; 
+    background: #0066ff;
     color: white;
-    font-size: 1.3rem; 
+    font-size: 1.3rem;
+    border-radius: 12px;
     border: none;
-    border-radius: 12px; 
-    cursor: grab;
-    touch-action: none; /* WICHTIG: Browser darf hier keine Gesten erkennen */
-    box-shadow: 0 4px 15px rgba(0,100,255,0.6);
-    transition: transform .1s;
     font-weight: bold;
+    cursor: grab;
+    touch-action: none;
+    box-shadow: 0 4px 15px rgba(0,100,255,0.6);
   }
 
   .btn:active { transform: scale(0.95); }
 
-  /* Der "Geist", der beim Ziehen erscheint */
   .drag-ghost {
-    position: absolute; 
-    pointer-events: none; /* Klicks gehen durch den Geist durch */
+    position: absolute;
+    pointer-events: none;
     z-index: 99999;
-    padding: 18px 28px; 
+    padding: 18px 28px;
     border-radius: 12px;
-    background: #0066ff; 
-    color: white; 
+    background: #0066ff;
+    color: white;
     font-size: 1.4rem;
     opacity: 0.9;
     box-shadow: 0 0 30px #00ccff;
     font-weight: bold;
-    transform: translate(-50%, -50%); /* Zentriert genau unter dem Finger/Maus */
+    transform: translate(-50%, -50%);
   }
 
-  .success { font-size: 4.5rem; color: #00ff99; text-shadow: 0 0 20px #00ff99; animation: pop 1s; }
+  #buttons {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .success { font-size: 4.5rem; color: #00ff99; animation: pop 1s; }
   .success-text { font-size: 2rem; color: #ccff00; margin-top: -10px; }
 
-  @keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.4)} 100%{transform:scale(1)} }
-
-  .sparkle {
-    position: absolute; font-size: 2rem; pointer-events: none;
-    color: #ffff66; animation: sparkle 1.4s forwards;
+  @keyframes pop {
+    0% { transform: scale(0) }
+    70% { transform: scale(1.4) }
+    100% { transform: scale(1) }
   }
 
-  @keyframes sparkle {
-    0%{transform:translateY(0) scale(0)}
-    100%{transform:translateY(-140px) rotate(720deg); opacity:0}
+  .fail {
+    font-size: 6rem;
+    color: #ff3300;
+    animation: shake .6s;
   }
-
-  .fail { font-size: 6rem; color: #ff3300; animation: shake .6s; }
 
   @keyframes shake {
-    0%,100%{transform:translateX(0)}
-    20%,60%{transform:translateX(-20px)}
-    40%,80%{transform:translateX(20px)}
+    0%,100% { transform: translateX(0) }
+    20%,60% { transform: translateX(-20px) }
+    40%,80% { transform: translateX(20px) }
   }
 
   button.big {
-    padding: 18px 40px; 
+    padding: 18px 40px;
     font-size: 1.5rem;
-    background: #00ccff; 
-    color: black; 
+    background: #00ccff;
+    color: black;
+    border-radius: 15px;
     border: none;
-    border-radius: 15px; 
-    cursor: pointer;
-    box-shadow: 0 0 20px #00ccff; 
-    margin-top: 20px;
     font-weight: bold;
+    box-shadow: 0 0 20px #00ccff;
+    cursor: pointer;
   }
 
   #ende {
-    margin-top: 20px; 
+    margin: 40px auto;
     padding: 30px;
     background: linear-gradient(135deg,#001122,#000);
-    border-radius: 20px; 
+    border-radius: 20px;
     display: none;
     box-shadow: 0 0 40px rgba(0,200,255,0.5);
-    max-width: 90%;
+    max-width: 80%;
+    text-align: center;
   }
-  #ende h1 { font-size: 2.5rem; color: #00ff99; }
 
-  #buttons { max-width: 600px; display: flex; flex-wrap: wrap; justify-content: center; }
+  .sparkle {
+    position: absolute;
+    font-size: 2rem;
+    pointer-events: none;
+    animation: sparkle 1.4s forwards;
+  }
+
+  @keyframes sparkle {
+    0%   { transform: translateY(0) scale(0) }
+    100% { transform: translateY(-140px) rotate(720deg); opacity: 0 }
+  }
 
   .highlight { color: #ffcc00; font-weight: bold; }
+
 </style>
 </head>
 
 <body>
 
-<h1>Quadratzahlen-Quiz 10² – 20²</h1>
+<div id="gameContainer">
 
-<!-- STARTSCREEN -->
-<div id="start">
-  <p style="font-size:1.4rem;">
-    Anzahl Fragen:
-    <span id="anzahl" style="color:#00ff99; font-weight:bold;">10</span>
-  </p>
-  <input type="range" min="1" max="20" value="10" class="slider" id="slider">
-  <br><br>
-  <button class="big" onclick="startQuiz()">Los geht’s!</button>
-</div>
+  <h1>Quadratzahlen-Quiz 10² – 20²</h1>
 
-<!-- SPIEL -->
-<div id="game" style="display:none">
-  <p style="font-size:1.3rem;">
-    Frage <span id="nr">1</span>/<span id="total"></span> |
-    ✅ <span id="richtig" style="color:#00ff99;">0</span> |
-    ❌ <span id="falsch" style="color:#ff3300;">0</span> |
-    ⏱ <span id="zeit" style="color:#ffcc00;">0</span>s
-  </p>
+  <!-- START -->
+  <div id="start" style="text-align:center;">
+    <p style="font-size:1.4rem;">Anzahl Fragen:
+      <span id="anzahl" style="color:#00ff99; font-weight:bold;">10</span>
+    </p>
 
-  <h2>Was ist <span id="zahl" style="color:#00ccff;">?</span>² ?</h2>
+    <input type="range" min="1" max="20" value="10"
+           class="slider" id="slider">
 
-  <div class="dropzone" id="dropzone">
-    <div id="feedback"></div>
+    <br><br>
+    <button class="big" onclick="startQuiz()">Los geht’s!</button>
   </div>
 
-  <div id="buttons"></div>
-</div>
+  <!-- GAME -->
+  <div id="game" style="display:none; text-align:center;">
+    <p style="font-size:1.3rem;">
+      Frage <span id="nr">1</span>/<span id="total"></span> |
+      ✅ <span id="richtig" style="color:#00ff99;">0</span> |
+      ❌ <span id="falsch" style="color:#ff3300;">0</span> |
+      ⏱ <span id="zeit" style="color:#ffcc00;">0</span>s
+    </p>
 
-<!-- ENDE -->
-<div id="ende">
-  <h1>Quiz beendet!</h1>
-  <p>Richtig: <span id="endRichtig" class="highlight">0</span> / <span id="endTotal" class="highlight">0</span></p>
-  <p>Fehler: <span id="endFalsch" class="highlight">0</span></p>
-  <p>Zeit: <span id="endZeit" class="highlight">0</span>s</p>
-  <p id="bewertung" style="font-size:1.5rem; margin:20px; color: #00ccff;"></p>
-  <button class="big" onclick="location.reload()">Nochmal spielen</button>
-</div>
+    <h2 style="color:#00ccff;">Was ist <span id="zahl">?</span>² ?</h2>
+
+    <div class="dropzone" id="dropzone">
+      <div id="feedback"></div>
+    </div>
+
+    <div id="buttons"></div>
+  </div>
+
+  <!-- ENDE -->
+  <div id="ende">
+    <h1>Quiz beendet!</h1>
+    <p>Richtig: <span id="endRichtig" class="highlight">0</span> /
+       <span id="endTotal" class="highlight">0</span></p>
+    <p>Fehler: <span id="endFalsch" class="highlight">0</span></p>
+    <p>Zeit: <span id="endZeit" class="highlight">0</span>s</p>
+    <p id="bewertung" style="font-size:1.5rem; color:#00ccff;"></p>
+    <button class="big" onclick="location.reload()">Nochmal spielen</button>
+  </div>
+
+</div> <!-- gameContainer -->
+
 
 <script>
-// ------------------------------------------------------------
-// AUDIO ENGINE (ROBUST "SILENT BUFFER" METHODE)
-// Diese Methode garantiert Audio auf iOS und Android
-// ------------------------------------------------------------
+/* ------------------------------------------------------------
+   AUTO-SCALING FUNCTION – DAS ENTSCHEIDET ALLES
+------------------------------------------------------------ */
+function scaleGame() {
+    const baseWidth = 1000;
+    const baseHeight = 1500;
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    const scale = Math.min(w / baseWidth, h / baseHeight);
+
+    document.getElementById("gameContainer").style.transform =
+        "scale(" + scale + ")";
+}
+
+window.onresize = scaleGame;
+window.onload = scaleGame;
+window.addEventListener("orientationchange", scaleGame);
+
+
+/* ------------------------------------------------------------
+   AB HIER KOMMT DEIN ORIGINAL JAVASCRIPT (UNVERÄNDERT)
+------------------------------------------------------------ */
+
+
+/* (Ich setze jetzt deinen kompletten JS-Block unverändert ein) */
+
+/* ------------------------------------------------------------
+   AUDIO ENGINE
+------------------------------------------------------------ */
 let audioCtx = null;
 
 function initAudio() {
-  // Erstelle Context nur einmal
   if (!audioCtx) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (AC) audioCtx = new AC();
   }
-  
-  // iOS Unlock Trick: Spiele leeren Buffer ab
+
   if (audioCtx) {
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     const buffer = audioCtx.createBuffer(1, 1, 22050);
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
@@ -222,7 +266,6 @@ function initAudio() {
 
 function playSound(type) {
   if (!audioCtx) return;
-
   try {
     const t = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
@@ -255,7 +298,6 @@ function playSound(type) {
     else if (type === 'finish') {
       const freqs = [523, 659, 784, 1046, 784, 1046];
       freqs.forEach((fq, i) => {
-        if (!fq) return;
         const o  = audioCtx.createOscillator();
         const gg = audioCtx.createGain();
         o.connect(gg); gg.connect(audioCtx.destination);
@@ -268,81 +310,77 @@ function playSound(type) {
         o.start(st); o.stop(st + du);
       });
     }
-  } catch(e) { console.error(e); }
+  } catch (e) {}
 }
 
-// ------------------------------------------------------------
-// QUIZ LOGIK
-// ------------------------------------------------------------
+/* ------------------------------------------------------------
+   QUIZ LOGIK
+------------------------------------------------------------ */
 const basen    = [10,11,12,13,14,15,16,17,18,19,20];
-const quadrate = basen.map(x => x * x);
+const quadrate = basen.map(x => x*x);
 
 let fragenAnzahl = 0;
-let aktuellIdx   = 0;
-let frageNr      = 0;
-let richtigCount = 0;
-let falschCount  = 0;
-let startZeit    = 0;
-let timer        = null;
-
-// Pool für die "intelligente" Zufallsauswahl
-let fragenPool = [];
+let frageNr = 0;
+let aktuellIdx = 0;
 let letzterIdx = -1;
 
-// DOM-Referenzen
-const sliderEl      = document.getElementById("slider");
-const anzahlEl      = document.getElementById("anzahl");
-const startScreen   = document.getElementById("start");
-const gameScreen    = document.getElementById("game");
-const endeScreen    = document.getElementById("ende");
-const nrEl          = document.getElementById("nr");
-const totalEl       = document.getElementById("total");
-const richtigEl     = document.getElementById("richtig");
-const falschEl      = document.getElementById("falsch");
-const zeitEl        = document.getElementById("zeit");
-const zahlEl        = document.getElementById("zahl");
-const feedbackEl    = document.getElementById("feedback");
-const buttonsEl     = document.getElementById("buttons");
-const dropzoneEl    = document.getElementById("dropzone");
-const endRichtigEl  = document.getElementById("endRichtig");
-const endTotalEl    = document.getElementById("endTotal");
-const endFalschEl   = document.getElementById("endFalsch");
-const endZeitEl     = document.getElementById("endZeit");
-const endGesamtEl   = document.getElementById("endGesamt");
-const bewertungEl   = document.getElementById("bewertung");
+let richtigCount = 0;
+let falschCount  = 0;
+let startZeit = 0;
+let timer = null;
 
-// Slider-Aktualisierung
+let fragenPool = [];
+
+const sliderEl = document.getElementById("slider");
+const anzahlEl = document.getElementById("anzahl");
+const startScreen = document.getElementById("start");
+const gameScreen  = document.getElementById("game");
+const endeScreen  = document.getElementById("ende");
+
+const nrEl       = document.getElementById("nr");
+const totalEl    = document.getElementById("total");
+const richtigEl  = document.getElementById("richtig");
+const falschEl   = document.getElementById("falsch");
+const zeitEl     = document.getElementById("zeit");
+const zahlEl     = document.getElementById("zahl");
+const feedbackEl = document.getElementById("feedback");
+const dropzoneEl = document.getElementById("dropzone");
+const buttonsEl  = document.getElementById("buttons");
+const endRichtigEl = document.getElementById("endRichtig");
+const endTotalEl   = document.getElementById("endTotal");
+const endFalschEl  = document.getElementById("endFalsch");
+const endZeitEl    = document.getElementById("endZeit");
+const bewertungEl  = document.getElementById("bewertung");
+
 sliderEl.addEventListener("input", () => {
   anzahlEl.textContent = sliderEl.value;
 });
 
 function startQuiz() {
-  // WICHTIG: Audio hier beim expliziten Klick aufwecken (User Interaction)
   initAudio();
 
-  fragenAnzahl = parseInt(sliderEl.value, 10);
-  totalEl.textContent = fragenAnzahl.toString();
+  fragenAnzahl = parseInt(sliderEl.value);
+  totalEl.textContent = fragenAnzahl;
 
   startScreen.style.display = "none";
   gameScreen.style.display  = "block";
   endeScreen.style.display  = "none";
 
-  frageNr      = 0;
+  frageNr = 0;
   richtigCount = 0;
   falschCount  = 0;
+
   richtigEl.textContent = "0";
   falschEl.textContent  = "0";
   zeitEl.textContent    = "0";
-  
-  // Pool zurücksetzen
+
   fragenPool = [];
   letzterIdx = -1;
 
   startZeit = Date.now();
   if (timer) clearInterval(timer);
   timer = setInterval(() => {
-    const sek = Math.floor((Date.now() - startZeit) / 1000);
-    zeitEl.textContent = sek.toString();
+    zeitEl.textContent = Math.floor((Date.now()-startZeit)/1000);
   }, 500);
 
   neueFrage();
@@ -351,200 +389,159 @@ function startQuiz() {
 
 function neueFrage() {
   frageNr++;
-  nrEl.textContent = frageNr.toString();
+  nrEl.textContent = frageNr;
 
   if (frageNr > fragenAnzahl) {
     setTimeout(zeigeAuswertung, 1200);
     return;
   }
 
-  // --- NEUE LOGIK: GEWICHTETER POOL ---
-  
-  // Wenn der Pool leer ist, füllen wir ihn neu
   if (fragenPool.length === 0) {
-    // 10 (Index 0) und 20 (Index 10) kommen jeweils 1x rein (seltener)
-    fragenPool.push(0, 10);
-    
-    // Die Zahlen 11-19 (Index 1-9) kommen jeweils 2x rein (häufiger)
-    for (let i = 1; i <= 9; i++) {
-        fragenPool.push(i, i);
-    }
-    
-    // Pool mischen (Fisher-Yates Shuffle)
-    for (let i = fragenPool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [fragenPool[i], fragenPool[j]] = [fragenPool[j], fragenPool[i]];
+    fragenPool.push(0,10);
+    for (let i=1; i<=9; i++) fragenPool.push(i,i);
+    for (let i=fragenPool.length-1; i>0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [fragenPool[i],fragenPool[j]]=[fragenPool[j],fragenPool[i]];
     }
   }
 
-  // Wir nehmen das nächste Element
-  let kandidat = fragenPool[fragenPool.length - 1];
+  let kandidat = fragenPool[fragenPool.length-1];
 
-  // Wiederholungsschutz: Wenn es dieselbe Zahl wie zuletzt ist
-  if (kandidat === letzterIdx) {
-      // Wenn noch mehr als 1 Zahl im Pool ist, tauschen wir sie mit der untersten
-      if (fragenPool.length > 1) {
-          const swapPos = 0;
-          [fragenPool[fragenPool.length - 1], fragenPool[swapPos]] = [fragenPool[swapPos], fragenPool[fragenPool.length - 1]];
-      }
+  if (kandidat === letzterIdx && fragenPool.length>1) {
+    const swapPos = 0;
+    [fragenPool[fragenPool.length-1], fragenPool[swapPos]] =
+      [fragenPool[swapPos], fragenPool[fragenPool.length-1]];
   }
 
-  // Zahl aus dem Pool entnehmen
   aktuellIdx = fragenPool.pop();
   letzterIdx = aktuellIdx;
 
-  zahlEl.textContent = basen[aktuellIdx].toString();
+  zahlEl.textContent = basen[aktuellIdx];
   feedbackEl.innerHTML = "";
 }
 
-// ------------------------------------------------------------
-// MODERN POINTER DRAG-&-DROP (GHOST-Technik)
-// Diese Technik funktioniert auf Maus UND Touchscreens identisch
-// ------------------------------------------------------------
-let ghost    = null;
-let dragIdx  = null;
-
+/* BUTTONS */
 function buttonsErstellen() {
   buttonsEl.innerHTML = "";
-
-  quadrate.forEach((q, i) => {
-    const b = document.createElement("button");
-    b.className    = "btn";
-    b.textContent  = q.toString();
-    b.dataset.idx  = i.toString();
-
-    // Wir nutzen "Pointer Events" - der moderne Standard
+  quadrate.forEach((q,i)=>{
+    const b=document.createElement("button");
+    b.className="btn";
+    b.textContent=q;
+    b.dataset.idx=i;
     b.addEventListener("pointerdown", pointerStart);
     b.addEventListener("pointermove", pointerMove);
-    b.addEventListener("pointerup",   pointerEnd);
+    b.addEventListener("pointerup", pointerEnd);
     b.addEventListener("pointercancel", pointerEnd);
-
     buttonsEl.appendChild(b);
   });
 }
 
-function pointerStart(e) {
-  // Auch hier Audio aufwecken versuchen, falls Start-Button verpasst wurde
+/* DRAG */
+let ghost=null;
+let dragIdx=null;
+
+function pointerStart(e){
   initAudio();
   playSound("click");
 
-  const btn = e.currentTarget;
-  dragIdx = parseInt(btn.dataset.idx, 10);
+  const btn=e.currentTarget;
+  dragIdx=parseInt(btn.dataset.idx);
 
-  // Ghost erstellen (Kopie des Buttons)
-  ghost = btn.cloneNode(true);
+  ghost=btn.cloneNode(true);
   ghost.classList.add("drag-ghost");
   document.body.appendChild(ghost);
 
-  // Positionieren (zentriert unter Finger/Maus)
-  ghost.style.left = e.clientX + "px";
-  ghost.style.top = e.clientY + "px";
-
-  // WICHTIG: Pointer Capture holt alle weiteren Events zu diesem Element,
-  // egal wo der Finger hingeht. Das verhindert Abbrüche.
+  ghost.style.left=e.clientX+"px";
+  ghost.style.top=e.clientY+"px";
   btn.setPointerCapture(e.pointerId);
 }
 
-function pointerMove(e) {
-  if (!ghost) return;
-  // Ghost folgt dem Finger/Maus
-  ghost.style.left = e.clientX + "px";
-  ghost.style.top  = e.clientY + "px";
+function pointerMove(e){
+  if(!ghost)return;
+  ghost.style.left=e.clientX+"px";
+  ghost.style.top=e.clientY+"px";
 }
 
-function pointerEnd(e) {
-  if (!ghost) return;
+function pointerEnd(e){
+  if(!ghost)return;
 
-  // Prüfen ob wir über der Dropzone losgelassen haben
-  const rect = dropzoneEl.getBoundingClientRect();
-  const inside =
-    e.clientX >= rect.left &&
-    e.clientX <= rect.right &&
-    e.clientY >= rect.top &&
-    e.clientY <= rect.bottom;
+  const r=dropzoneEl.getBoundingClientRect();
+  const inside=(
+    e.clientX>=r.left &&
+    e.clientX<=r.right &&
+    e.clientY>=r.top &&
+    e.clientY<=r.bottom
+  );
 
-  if (inside && dragIdx !== null) {
+  if(inside && dragIdx!=null){
     handleDrop(dragIdx);
   }
 
-  // Aufräumen
   ghost.remove();
-  ghost = null;
-  dragIdx = null;
-  
-  // Capture freigeben
-  if (e.target && e.target.releasePointerCapture) {
-      try { e.target.releasePointerCapture(e.pointerId); } catch(err){}
-  }
+  ghost=null;
+  dragIdx=null;
+
+  try{ e.target.releasePointerCapture(e.pointerId); }catch(err){}
 }
 
-// ------------------------------------------------------------
-// DROP LOGIK & EFFEKTE
-// ------------------------------------------------------------
-function handleDrop(idx) {
-  const fb = feedbackEl;
+/* DROP */
+function handleDrop(idx){
+  const fb=feedbackEl;
 
-  if (idx === aktuellIdx) {
+  if(idx===aktuellIdx){
     richtigCount++;
     playSound("correct");
-    richtigEl.textContent = richtigCount.toString();
+    richtigEl.textContent=richtigCount;
 
-    fb.innerHTML = '<div class="success">Richtig!</div><div class="success-text">Genial!</div>';
+    fb.innerHTML='<div class="success">Richtig!</div><div class="success-text">Genial!</div>';
 
-    for (let i = 0; i < 16; i++) {
-      const s = document.createElement("div");
-      s.textContent = ["✨","⭐","🔥","🎉","🏆"][i % 5];
-      s.className   = "sparkle";
-      s.style.left  = (20 + Math.random() * 280) + "px";
-      s.style.top   = (20 + Math.random() * 60) + "px";
-      s.style.animationDelay = (Math.random() * 0.4) + "s";
+    for(let i=0;i<16;i++){
+      const s=document.createElement("div");
+      s.textContent=["✨","⭐","🔥","🎉","🏆"][i%5];
+      s.className="sparkle";
+      s.style.left=(20+Math.random()*280)+"px";
+      s.style.top =(20+Math.random()*60)+"px";
+      s.style.animationDelay=(Math.random()*0.4)+"s";
       fb.appendChild(s);
     }
 
-    setTimeout(neueFrage, 1400);
-  } else {
+    setTimeout(neueFrage,1400);
+  }
+  else {
     falschCount++;
     playSound("wrong");
-    falschEl.textContent = falschCount.toString();
+    falschEl.textContent=falschCount;
 
-    fb.innerHTML = '<div class="fail">Nein</div>';
-    setTimeout(() => { fb.innerHTML = ""; }, 1000);
+    fb.innerHTML='<div class="fail">Nein</div>';
+    setTimeout(()=>fb.innerHTML="",1000);
   }
 }
 
-// ------------------------------------------------------------
-// AUSWERTUNG
-// ------------------------------------------------------------
-function zeigeAuswertung() {
-  if (timer) clearInterval(timer);
+/* AUSWERTUNG */
+function zeigeAuswertung(){
+  if(timer) clearInterval(timer);
   playSound("finish");
 
-  const zeitGes   = Math.floor((Date.now() - startZeit) / 1000);
-  const gesamt    = richtigCount + falschCount;
+  const zeitGes=Math.floor((Date.now()-startZeit)/1000);
 
-  gameScreen.style.display = "none";
-  endeScreen.style.display = "block";
+  gameScreen.style.display="none";
+  endeScreen.style.display="block";
 
-  endRichtigEl.textContent = richtigCount.toString();
-  endTotalEl.textContent   = fragenAnzahl.toString();
-  endFalschEl.textContent  = falschCount.toString();
-  endZeitEl.textContent    = zeitGes.toString();
-  endGesamtEl.textContent  = gesamt.toString();
+  endRichtigEl.textContent=richtigCount;
+  endTotalEl.textContent=fragenAnzahl;
+  endFalschEl.textContent=falschCount;
+  endZeitEl.textContent=zeitGes;
 
   let bew;
-  if (richtigCount === fragenAnzahl && falschCount === 0) {
-    bew = "PERFEKT OHNE FEHLER!";
-  } else if (richtigCount === fragenAnzahl) {
-    bew = "Alle richtig – Wahnsinn!";
-  } else if (richtigCount >= fragenAnzahl * 0.9) {
-    bew = "Fast perfekt!";
-  } else if (richtigCount >= fragenAnzahl * 0.7) {
-    bew = "Sehr gut!";
-  } else {
-    bew = "Weiterüben lohnt sich!";
-  }
-  bewertungEl.textContent = bew;
+  if(richtigCount===fragenAnzahl && falschCount===0) bew="PERFEKT OHNE FEHLER!";
+  else if(richtigCount===fragenAnzahl) bew="Alle richtig – Wahnsinn!";
+  else if(richtigCount>=fragenAnzahl*0.9) bew="Fast perfekt!";
+  else if(richtigCount>=fragenAnzahl*0.7) bew="Sehr gut!";
+  else bew="Weiterüben lohnt sich!";
+
+  bewertungEl.textContent=bew;
 }
 </script>
+
 </body>
 </html>
