@@ -37,8 +37,16 @@
       z-index: 900;
     }
 
-    .sidebar h2 {
-      margin: 0 8px 4px 8px;
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 0 4px;
+    }
+
+    .sidebar-header h2 {
+      margin: 0;
       font-size: 1.2rem;
       color: #00ccff;
     }
@@ -144,15 +152,30 @@
       display: block;
     }
 
+    /* Theme-Toggle in der Sidebar */
+    .theme-toggle-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid #333;
+      background: #050815;
+      color: #ffd86b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.6);
+    }
+
     /* Burger-Button */
     .burger {
-      display: none; /* nur auf Mobile sichtbar */
+      display: none;
       width: 32px;
       height: 32px;
       border-radius: 6px;
       border: 1px solid #333;
       background: #0b0d16;
-      display: none;
       align-items: center;
       justify-content: center;
       cursor: pointer;
@@ -175,17 +198,9 @@
       transition: transform 0.2s, opacity 0.2s, top 0.2s, bottom 0.2s;
     }
 
-    .burger-lines span:nth-child(1) {
-      top: 0;
-    }
-
-    .burger-lines span:nth-child(2) {
-      top: 6px;
-    }
-
-    .burger-lines span:nth-child(3) {
-      bottom: 0;
-    }
+    .burger-lines span:nth-child(1) { top: 0; }
+    .burger-lines span:nth-child(2) { top: 6px; }
+    .burger-lines span:nth-child(3) { bottom: 0; }
 
     .burger.open .burger-lines span:nth-child(1) {
       top: 6px;
@@ -201,6 +216,67 @@
       transform: rotate(-45deg);
     }
 
+    /* Light Theme für Index */
+    body.light-theme {
+      background: #f4f6fb;
+      color: #111;
+    }
+
+    body.light-theme .sidebar {
+      background: #ffffff;
+      border-right-color: #d0d5e3;
+    }
+
+    body.light-theme .sidebar-header h2 {
+      color: #0059aa;
+    }
+
+    body.light-theme .nav-group-title {
+      color: #777;
+    }
+
+    body.light-theme .nav-link {
+      color: #222;
+    }
+
+    body.light-theme .nav-link:hover {
+      background: #e8edf9;
+    }
+
+    body.light-theme .nav-link.active {
+      background: linear-gradient(135deg, #1976d2, #42a5f5);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(25,118,210,0.6);
+    }
+
+    body.light-theme .topbar {
+      background: linear-gradient(90deg, #e3f2fd, #c5cae9);
+      border-bottom-color: #d0d5e3;
+    }
+
+    body.light-theme .topbar-title {
+      color: #333;
+    }
+
+    body.light-theme .topbar-title strong {
+      color: #1976d2;
+    }
+
+    body.light-theme .topbar-right {
+      color: #555;
+    }
+
+    body.light-theme .frame-wrap {
+      background: #dde3f5;
+    }
+
+    body.light-theme .theme-toggle-btn {
+      background: #ffffff;
+      border-color: #d0d5e3;
+      color: #ff9800;
+      box-shadow: 0 0 6px rgba(0,0,0,0.2);
+    }
+
     /* Mobile Layout: Sidebar als einfahrendes Menü */
     @media (max-width: 768px) {
       .app {
@@ -209,15 +285,18 @@
 
       .sidebar {
         position: absolute;
-        top: 48px;                  /* unter der Topbar */
+        top: 48px;
         left: 0;
         width: 220px;
         height: calc(100% - 48px);
         border-right: 1px solid #222;
-        border-bottom: none;
         background: rgba(11,13,22,0.98);
         transform: translateX(-100%);
         transition: transform 0.2s ease-out;
+      }
+
+      body.light-theme .sidebar {
+        background: rgba(255,255,255,0.98);
       }
 
       .sidebar.open {
@@ -233,7 +312,10 @@
 <body>
   <div class="app">
     <aside class="sidebar" id="sidebar">
-      <h2>Apps</h2>
+      <div class="sidebar-header">
+        <h2>Apps</h2>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Day/Night umschalten">☀️</button>
+      </div>
 
       <div class="nav-group-title">Menü</div>
       <ul class="nav-list">
@@ -269,7 +351,7 @@
             </div>
           </button>
           <div class="topbar-title">
-            <strong>Apps</strong> – Quadratzahlen & Co.
+            <strong>Apps</strong> – Quadratzahlen &amp; Co.
           </div>
         </div>
         <div class="topbar-right">
@@ -287,6 +369,21 @@
     const links   = Array.from(document.querySelectorAll('.nav-link'));
     const sidebar = document.getElementById('sidebar');
     const burger  = document.getElementById('burger');
+
+    const indexThemeBtn = document.getElementById('theme-toggle');
+    let indexLightOn = false; // false = dunkel, true = hell
+
+    function applyIndexTheme() {
+      document.body.classList.toggle('light-theme', indexLightOn);
+      indexThemeBtn.textContent = indexLightOn ? '🌙' : '☀️';
+    }
+
+    indexThemeBtn.addEventListener('click', () => {
+      indexLightOn = !indexLightOn;
+      applyIndexTheme();
+    });
+
+    applyIndexTheme();
 
     function closeSidebarOnMobile() {
       if (window.innerWidth <= 768) {
@@ -316,7 +413,6 @@
       });
     }
 
-    // Wenn Fensterbreite wechselt (z.B. drehen), Sidebar zurücksetzen
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768) {
         sidebar.classList.remove('open');
