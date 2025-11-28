@@ -7,20 +7,65 @@
 <title>Quadratzahlen-Quiz 10–20 (Pixel-Responsive)</title>
 
 <style>
+  :root {
+    --bg-main: #000;
+    --text-main: #eee;
+    --accent: #00ccff;
+    --accent-soft: #00ff99;
+    --panel: #222;
+    --button-bg: #0066ff;
+    --button-text: #fff;
+  }
+
+  body.light-theme {
+    --bg-main: #f4f6fb;
+    --text-main: #111;
+    --accent: #0059aa;
+    --accent-soft: #00aa66;
+    --panel: #ffffff;
+    --button-bg: #1976d2;
+    --button-text: #ffffff;
+  }
+
   body {
     margin: 0;
-    background: #000;
-    color: #eee;
+    background: var(--bg-main);
+    color: var(--text-main);
     overflow: hidden;
     touch-action: none;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
   }
 
-  /* Game-Container – etwas schmaler, damit mobil größer skaliert,
-     Höhe automatisch nach Inhalt */
+  /* Theme-Toggle-Button */
+  #theme-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1200;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(10,10,20,0.8);
+    color: #ffd86b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0,0,0,0.6);
+    font-size: 1.4rem;
+  }
+
+  body.light-theme #theme-toggle {
+    background: rgba(255,255,255,0.9);
+    border-color: rgba(0,0,0,0.15);
+    color: #ff9800;
+  }
+
+  /* Game-Container */
   #gameContainer {
     position: absolute;
-    width: 600px;      /* erlaubt große Skalierung am iPhone */
+    width: 600px;
     height: auto;
     transform-origin: top left;
   }
@@ -31,11 +76,15 @@
   }
 
   h1 {
-    color: #00ccff;
-    text-shadow: 0 0 15px #00ccff;
+    color: var(--accent);
+    text-shadow: 0 0 15px rgba(0,200,255,0.6);
     margin-top: 20px;
     font-size: 2.4rem;
     text-align: center;
+  }
+
+  body.light-theme h1 {
+    text-shadow: none;
   }
 
   /* Slider – deutlich dicker */
@@ -43,7 +92,7 @@
     width: 280px;
     margin: 20px auto;
     display: block;
-    accent-color: #00ff99;
+    accent-color: var(--accent-soft);
     -webkit-appearance: none;
     appearance: none;
     height: 18px;
@@ -52,10 +101,13 @@
     outline: none;
   }
 
+  body.light-theme .slider {
+    background: #cfd8e6;
+  }
+
   .slider::-webkit-slider-runnable-track {
     height: 10px;
-    background: #222;
-    border-radius: 999px;
+    background: transparent;
   }
 
   .slider::-webkit-slider-thumb {
@@ -64,35 +116,34 @@
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: #00ff99;
-    box-shadow: 0 0 10px #00ff99;
+    background: var(--accent-soft);
+    box-shadow: 0 0 10px var(--accent-soft);
     border: none;
-    margin-top: -8px; /* vertikal zentrieren */
+    margin-top: -8px;
   }
 
   .slider::-moz-range-track {
     height: 10px;
-    background: #222;
-    border-radius: 999px;
+    background: transparent;
   }
 
   .slider::-moz-range-thumb {
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: #00ff99;
-    box-shadow: 0 0 10px #00ff99;
+    background: var(--accent-soft);
+    box-shadow: 0 0 10px var(--accent-soft);
     border: none;
   }
 
-  /* HELLERE Dropzone, klar als Ziel markiert */
+  /* Dropzone */
   .dropzone {
     width: 420px;
     height: 160px;
     margin: 40px auto;
-    border: 3px dashed #00ccff;
+    border: 3px dashed var(--accent);
     border-radius: 20px;
-    background: #222;  /* deutlich heller als Hintergrund */
+    background: var(--panel);
     box-shadow:
       0 0 25px rgba(0,200,255,0.6),
       0 0 0 4px rgba(0,0,0,0.7) inset;
@@ -104,18 +155,25 @@
     font-size: 1.2rem;
   }
 
+  body.light-theme .dropzone {
+    box-shadow:
+      0 0 18px rgba(0,0,0,0.15),
+      0 0 0 1px rgba(0,0,0,0.06) inset;
+    color: #333;
+  }
+
   .dropzone.empty-text::before {
     content: "Ziehe die richtige Antwort hierher";
     opacity: 0.9;
   }
 
-  /* Mobile-optimierte Buttons (für iPhone) */
+  /* Antwortbuttons */
   .btn {
     width: 90px;
     height: 70px;
     margin: 6px;
-    background: #0066ff;
-    color: white;
+    background: var(--button-bg);
+    color: var(--button-text);
     font-size: 1.2rem;
     border-radius: 12px;
     border: none;
@@ -123,6 +181,10 @@
     cursor: grab;
     touch-action: none;
     box-shadow: 0 4px 15px rgba(0,100,255,0.6);
+  }
+
+  body.light-theme .btn {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
   }
 
   .btn:active { transform: scale(0.95); }
@@ -133,11 +195,11 @@
     z-index: 99999;
     padding: 18px 28px;
     border-radius: 12px;
-    background: #0066ff;
-    color: white;
+    background: var(--button-bg);
+    color: var(--button-text);
     font-size: 1.4rem;
     opacity: 0.9;
-    box-shadow: 0 0 30px #00ccff;
+    box-shadow: 0 0 30px var(--accent);
     font-weight: bold;
     transform: translate(-50%, -50%);
   }
@@ -150,6 +212,10 @@
 
   .success { font-size: 4.5rem; color: #00ff99; animation: pop 1s; }
   .success-text { font-size: 2rem; color: #ccff00; margin-top: -10px; }
+
+  body.light-theme .success {
+    color: #00b359;
+  }
 
   @keyframes pop {
     0% { transform: scale(0) }
@@ -172,13 +238,17 @@
   button.big {
     padding: 20px 50px;
     font-size: 1.7rem;
-    background: #00ccff;
-    color: black;
+    background: var(--accent);
+    color: #000;
     border-radius: 15px;
     border: none;
     font-weight: bold;
-    box-shadow: 0 0 20px #00ccff;
+    box-shadow: 0 0 20px rgba(0,150,255,0.7);
     cursor: pointer;
+  }
+
+  body.light-theme button.big {
+    color: #fff;
   }
 
   #ende {
@@ -190,6 +260,11 @@
     box-shadow: 0 0 40px rgba(0,200,255,0.5);
     max-width: 80%;
     text-align: center;
+  }
+
+  body.light-theme #ende {
+    background: #ffffff;
+    box-shadow: 0 0 25px rgba(0,0,0,0.1);
   }
 
   .sparkle {
@@ -210,6 +285,8 @@
 
 <body>
 
+<button id="theme-toggle" aria-label="Day/Night umschalten">🌙</button>
+
 <div id="gameContainer">
 
   <h1>Quadratzahlen-Quiz 10² – 20²</h1>
@@ -218,7 +295,7 @@
   <div id="start" style="text-align:center;">
     <p style="font-size:1.6rem; font-weight:bold;">
       Anzahl Fragen:
-      <span id="anzahl" style="color:#00ff99;">10</span>
+      <span id="anzahl" style="color:var(--accent-soft);">10</span>
     </p>
 
     <input type="range" min="1" max="20" value="10"
@@ -237,7 +314,7 @@
       ⏱ <span id="zeit" style="color:#ffcc00;">0</span>s
     </p>
 
-    <h2 style="color:#00ccff; font-size:2rem;">
+    <h2 style="color:var(--accent); font-size:2rem;">
       Was ist <span id="zahl">?</span>² ?
     </h2>
 
@@ -255,16 +332,25 @@
        <span id="endTotal" class="highlight">0</span></p>
     <p>Fehler: <span id="endFalsch" class="highlight">0</span></p>
     <p>Zeit: <span id="endZeit" class="highlight">0</span>s</p>
-    <p id="bewertung" style="font-size:1.7rem; color: #00ccff;"></p>
+    <p id="bewertung" style="font-size:1.7rem; color: var(--accent);"></p>
     <button class="big" onclick="location.reload()">Nochmal spielen</button>
   </div>
 
 </div> <!-- gameContainer -->
 
 <script>
-/* ------------------------------------------------------------
-   Hilfsfunktionen
------------------------------------------------------------- */
+/* Theme-Toggle -------------------------------------------------- */
+const themeBtn = document.getElementById("theme-toggle");
+let lightOn = false;
+
+themeBtn.addEventListener("click", () => {
+  lightOn = !lightOn;
+  document.body.classList.toggle("light-theme", lightOn);
+  themeBtn.textContent = lightOn ? "☀️" : "🌙";
+  setTimeout(scaleGame, 0); // Größen neu einpassen
+});
+
+/* Hilfsfunktionen ---------------------------------------------- */
 function getViewportSize() {
   if (window.visualViewport) {
     return {
@@ -277,13 +363,10 @@ function getViewportSize() {
   return { w: window.innerWidth, h: window.innerHeight, left: 0, top: 0 };
 }
 
-/* ------------------------------------------------------------
-   SKALIERUNG: Pixel messen, visualViewport, Portrait/Landscape
------------------------------------------------------------- */
+/* SKALIERUNG ---------------------------------------------------- */
 function scaleGame() {
     const c = document.getElementById("gameContainer");
 
-    // 1. Skalierung zurücksetzen, natürliche Größe messen
     c.style.transform = "scale(1)";
     c.style.left = "0px";
     c.style.top  = "0px";
@@ -291,14 +374,12 @@ function scaleGame() {
     const naturalWidth  = c.scrollWidth;
     const naturalHeight = c.scrollHeight;
 
-    // 2. Viewport-Maße
     const vp = getViewportSize();
     const viewportW = vp.w;
     const viewportH = vp.h;
     const offsetLeft = vp.left;
     const offsetTop  = vp.top;
 
-    // 3. Skalierungsfaktor
     let scale = Math.min(viewportW / naturalWidth, viewportH / naturalHeight);
 
     const isMobile    = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -306,12 +387,12 @@ function scaleGame() {
 
     if (isMobile) {
       if (isLandscape) {
-        scale *= 0.85;   // Querformat etwas kleiner
+        scale *= 0.85;
       } else {
-        scale *= 0.95;   // Hochformat fast voll
+        scale *= 0.95;
       }
     } else {
-      if (scale > 1) scale = 1;   // Desktop nicht größer als 1
+      if (scale > 1) scale = 1;
     }
 
     if (scale <= 0)  scale = 1;
@@ -329,7 +410,6 @@ function scaleGame() {
     c.style.top  = offsetY + "px";
 }
 
-/* Auto-Scale: beim Laden + nach Stabilisierung + bei Änderungen */
 function initAutoScale() {
   scaleGame();
   setTimeout(scaleGame, 50);
@@ -339,7 +419,7 @@ function initAutoScale() {
   window.addEventListener("resize", scaleGame);
   window.addEventListener("orientationchange", () => {
     setTimeout(scaleGame, 150);
-    buttonsErstellen();   // Layout ggf. neu berechnen (hier identisch, aber sicher)
+    buttonsErstellen();
   });
 
   if (window.visualViewport) {
@@ -351,10 +431,7 @@ function initAutoScale() {
 
 window.addEventListener("load", initAutoScale);
 
-
-/* ------------------------------------------------------------
-   AUDIO
------------------------------------------------------------- */
+/* AUDIO --------------------------------------------------------- */
 let audioCtx = null;
 
 function initAudio(){
@@ -419,9 +496,7 @@ function playSound(type){
   } catch(e){}
 }
 
-/* ------------------------------------------------------------
-   QUIZ-LOGIK
------------------------------------------------------------- */
+/* QUIZ-LOGIK ---------------------------------------------------- */
 const basen    = [10,11,12,13,14,15,16,17,18,19,20];
 const quadrate = basen.map(x => x*x);
 
