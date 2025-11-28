@@ -1,245 +1,220 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1">
-
-<title>Apps</title>
-
-<style>
-    :root {
-        --bg: #000;
-        --text: #fff;
-        --sidebar-bg: rgba(30,30,30,0.85);
-        --accent: #00ccff;
-        --accent2: #00ff99;
-        --glow: rgba(0,200,255,0.6);
-    }
-
-    body.light {
-        --bg: #fafafa;
-        --text: #000;
-        --sidebar-bg: rgba(255,255,255,0.75);
-        --accent: #0088ff;
-        --accent2: #00aa55;
-        --glow: rgba(0,140,255,0.4);
-    }
-
-    /* Grundlayout + Safari-Height-Fix */
-    html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apps – Menü</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: -apple-system, Arial, sans-serif;
-        display: flex;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #05060a;
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
     }
 
-    /* SIDEBAR (Desktop + Tablet) */
+    .app {
+      display: flex;
+      flex: 1;
+      min-height: 100vh;
+    }
+
     .sidebar {
-        width: 260px;
-        background: var(--sidebar-bg);
-        backdrop-filter: blur(12px);
-        padding: 20px;
-        height: 100%;
-        box-sizing: border-box;
-        border-right: 1px solid rgba(255,255,255,0.15);
-        transition: transform 0.3s ease, background 0.3s ease;
-        z-index: 100;
+      width: 240px;
+      background: #0b0d16;
+      border-right: 1px solid #222;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
     .sidebar h2 {
-        margin-top: 0;
-        font-size: 28px;
-        text-shadow: 0 0 15px var(--glow);
+      margin: 0 8px 4px 8px;
+      font-size: 1.2rem;
+      color: #00ccff;
     }
 
-    .sidebar a {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 19px;
-        color: var(--accent);
-        text-decoration: none;
-        margin: 14px 0;
-        cursor: pointer;
-        transition: 0.25s;
+    .nav-group-title {
+      margin: 8px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #888;
     }
 
-    .sidebar a:hover {
-        transform: translateX(6px);
-        color: var(--accent2);
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
 
-    .icon {
-        width: 22px;
-        height: 22px;
+    .nav-link {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: #ddd;
+      cursor: pointer;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s, color 0.15s, transform 0.1s;
     }
 
-    .mode-toggle {
-        margin-top: 40px;
-        padding: 10px 14px;
-        background: var(--accent);
-        color: #000;
-        border-radius: 10px;
-        border: none;
+    .nav-link span.icon {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .nav-link:hover {
+      background: #151827;
+      transform: translateY(-1px);
+    }
+
+    .nav-link.active {
+      background: linear-gradient(135deg, #00ccff, #0066ff);
+      color: #000;
+      font-weight: 600;
+      box-shadow: 0 0 16px rgba(0, 150, 255, 0.6);
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      height: 48px;
+      padding: 8px 16px;
+      border-bottom: 1px solid #222;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(circle at top left, #1b2840, #05060a);
+    }
+
+    .topbar-title {
+      font-size: 1rem;
+      color: #cfd3ff;
+    }
+
+    .topbar-title strong {
+      color: #00ccff;
+    }
+
+    .topbar-right {
+      font-size: 0.8rem;
+      color: #777;
+    }
+
+    .frame-wrap {
+      flex: 1;
+      min-height: 0;
+      background: radial-gradient(circle at top, #111827, #020308);
+    }
+
+    #content-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Mobile Layout: Sidebar oben, darunter iframe */
+    @media (max-width: 768px) {
+      .app {
+        flex-direction: column;
+      }
+
+      .sidebar {
         width: 100%;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 0 14px var(--glow);
-        transition: 0.2s;
-    }
+        border-right: none;
+        border-bottom: 1px solid #222;
+        flex-direction: column;
+      }
 
-    /* CONTENT-BEREICH (rechts) */
-    .content {
-        flex: 1;
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-    }
-
-    iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-        background: #000;
-        display: block;
-    }
-
-    /* BURGER-BUTTON (nur Mobile) */
-    .burger {
+      .topbar {
         display: none;
-        position: fixed;
-        top: 15px;
-        left: 15px;
-        background: var(--sidebar-bg);
-        padding: 12px 15px;
-        font-size: 24px;
-        border-radius: 8px;
-        z-index: 200;
-        color: var(--text);
-        border: 1px solid rgba(255,255,255,0.2);
-        backdrop-filter: blur(12px);
-        cursor: pointer;
+      }
     }
-
-    /* iOS-Safari: korrekte Höhe */
-    @supports (-webkit-touch-callout: none) {
-        body {
-            height: -webkit-fill-available;
-        }
-        .content {
-            height: -webkit-fill-available;
-        }
-    }
-
-    /* ---------- MOBILE LAYOUT & VOLLSCREEN-IFRAME ---------- */
-    @media (max-width: 900px) {
-
-        body {
-            flex-direction: column;
-        }
-
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100%;
-            transform: translateX(-100%);
-        }
-
-        .sidebar.open {
-            transform: translateX(0);
-        }
-
-        .burger {
-            display: block;
-        }
-
-        .content {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* iFrame wirklich fullscreen machen, inkl. Notch-Safe-Area */
-        .content iframe {
-            position: fixed;
-            top: env(safe-area-inset-top);
-            left: env(safe-area-inset-left);
-            right: env(safe-area-inset-right);
-            bottom: env(safe-area-inset-bottom);
-            width: calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right));
-            height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-        }
-    }
-
-</style>
-
+  </style>
 </head>
 <body>
+  <div class="app">
+    <aside class="sidebar">
+      <h2>Apps</h2>
 
-<!-- BURGER (nur Mobile sichtbar) -->
-<div class="burger" onclick="toggleSidebar()">☰</div>
+      <div class="nav-group-title">Menü</div>
+      <ul class="nav-list">
+        <li>
+          <button class="nav-link active" data-target="home.html">
+            <span class="icon">🏠</span>
+            <span>Home</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-link" data-target="quadratzahlen_quiz_v3.html">
+            <span class="icon">🧮</span>
+            <span>Quadratzahlen-Quiz</span>
+          </button>
+        </li>
+        <!--
+        <li>
+          <button class="nav-link" data-target="quadratzahlen_quiz_v4.html">
+            <span class="icon">🧪</span>
+            <span>Quadratzahlen-Quiz v4</span>
+          </button>
+        </li>
+        -->
+      </ul>
+    </aside>
 
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
-    <h2>Apps</h2>
+    <main class="main">
+      <div class="topbar">
+        <div class="topbar-title">
+          <strong>Apps</strong> – Quadratzahlen & Co.
+        </div>
+        <div class="topbar-right">
+          GitHub Pages · Demo
+        </div>
+      </div>
+      <div class="frame-wrap">
+        <iframe id="content-frame" src="home.html"></iframe>
+      </div>
+    </main>
+  </div>
 
-    <a onclick="openHome()">
-        <svg class="icon" viewBox="0 0 24 24">
-            <path fill="currentColor"
-                  d="M12 3l10 9h-3v9h-6v-6H11v6H5v-9H2z"/>
-        </svg>
-        Home
-    </a>
+  <script>
+    const frame = document.getElementById('content-frame');
+    const links = Array.from(document.querySelectorAll('.nav-link'));
 
-    <a onclick="openPage('quadratzahlen_quiz_v3.html')">
-        <svg class="icon" viewBox="0 0 24 24">
-            <path fill="currentColor"
-                d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2m7 7h5v2h-5m0 4h5v2h-5M7 7h10v2H7m0 4h4v2H7m0 4h4v2H7z"/>
-        </svg>
-        Quadratzahlen-Quiz v3
-    </a>
+    function setActive(link) {
+      links.forEach(el => el.classList.remove('active'));
+      link.classList.add('active');
+      const target = link.getAttribute('data-target');
+      if (target) {
+        frame.src = target;
+      }
+    }
 
-    <button class="mode-toggle" onclick="toggleMode()">
-        🌙 / ☀️ Modus wechseln
-    </button>
-</div>
-
-<!-- CONTENT / IFRAME -->
-<div class="content">
-    <iframe id="contentFrame" src="home.html"></iframe>
-</div>
-
-<script>
-function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("open");
-}
-function closeSidebar() {
-    document.getElementById("sidebar").classList.remove("open");
-}
-
-function openHome() {
-    document.getElementById("contentFrame").src = "home.html";
-    closeSidebar();
-}
-
-function openPage(page) {
-    document.getElementById("contentFrame").src = page;
-    closeSidebar();
-}
-
-function toggleMode() {
-    document.body.classList.toggle("light");
-}
-</script>
-
+    links.forEach(link => {
+      link.addEventListener('click', () => setActive(link));
+    });
+  </script>
 </body>
 </html>
