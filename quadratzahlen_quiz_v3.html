@@ -38,12 +38,51 @@
     text-align: center;
   }
 
+  /* Slider – deutlich dicker */
   .slider {
     width: 280px;
-    height: 40px;
     margin: 20px auto;
     display: block;
     accent-color: #00ff99;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 18px;
+    border-radius: 999px;
+    background: #222;
+    outline: none;
+  }
+
+  .slider::-webkit-slider-runnable-track {
+    height: 10px;
+    background: #222;
+    border-radius: 999px;
+  }
+
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #00ff99;
+    box-shadow: 0 0 10px #00ff99;
+    border: none;
+    margin-top: -8px; /* vertikal zentrieren */
+  }
+
+  .slider::-moz-range-track {
+    height: 10px;
+    background: #222;
+    border-radius: 999px;
+  }
+
+  .slider::-moz-range-thumb {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #00ff99;
+    box-shadow: 0 0 10px #00ff99;
+    border: none;
   }
 
   /* HELLERE Dropzone, klar als Ziel markiert */
@@ -166,19 +205,6 @@
   }
 
   .highlight { color: #ffcc00; font-weight: bold; }
-
-  /* Optionale leichte Anpassung bei sehr flachen (Landscape)-Displays */
-  @media (max-height: 500px) and (min-width: 600px) {
-    .dropzone {
-      margin: 20px auto;
-      height: 140px;
-    }
-    .btn {
-      height: 64px;
-      margin: 4px;
-      font-size: 1.1rem;
-    }
-  }
 </style>
 </head>
 
@@ -190,8 +216,9 @@
 
   <!-- START -->
   <div id="start" style="text-align:center;">
-    <p style="font-size:1.6rem;">Anzahl Fragen:
-      <span id="anzahl" style="color:#00ff99; font-weight:bold;">10</span>
+    <p style="font-size:1.6rem; font-weight:bold;">
+      Anzahl Fragen:
+      <span id="anzahl" style="color:#00ff99;">10</span>
     </p>
 
     <input type="range" min="1" max="20" value="10"
@@ -238,10 +265,6 @@
 /* ------------------------------------------------------------
    Hilfsfunktionen
 ------------------------------------------------------------ */
-function isMobileDevice() {
-  return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
 function getViewportSize() {
   if (window.visualViewport) {
     return {
@@ -278,30 +301,24 @@ function scaleGame() {
     // 3. Skalierungsfaktor
     let scale = Math.min(viewportW / naturalWidth, viewportH / naturalHeight);
 
-    const isMobile    = isMobileDevice();
+    const isMobile    = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     const isLandscape = viewportW > viewportH;
 
     if (isMobile) {
       if (isLandscape) {
-        // Handy quer: etwas mehr Luft, da der Screen flacher ist
-        scale *= 0.85;   // ggf. weiter senken auf 0.8
+        scale *= 0.85;   // Querformat etwas kleiner
       } else {
-        // Hochformat: fast voll ausnutzen
-        scale *= 0.95;
+        scale *= 0.95;   // Hochformat fast voll
       }
     } else {
-      // Desktop: nicht größer als natürliche Größe
-      if (scale > 1) scale = 1;
+      if (scale > 1) scale = 1;   // Desktop nicht größer als 1
     }
 
-    // Sicherheits-Fallbacks
     if (scale <= 0)  scale = 1;
     if (scale > 2.2) scale = 2.2;
 
-    // 4. Skalierung anwenden
     c.style.transform = "scale(" + scale + ")";
 
-    // 5. Zentrierung
     const usedW = naturalWidth  * scale;
     const usedH = naturalHeight * scale;
 
@@ -312,24 +329,19 @@ function scaleGame() {
     c.style.top  = offsetY + "px";
 }
 
-/* Automatische Skalierung: beim Laden + nach Stabilisierung + bei Änderungen */
+/* Auto-Scale: beim Laden + nach Stabilisierung + bei Änderungen */
 function initAutoScale() {
-  // Direkt einmal
   scaleGame();
-  // Noch ein paar mal nach kurzer Zeit, weil iOS den Viewport „nachzieht“
   setTimeout(scaleGame, 50);
   setTimeout(scaleGame, 250);
   setTimeout(scaleGame, 600);
 
-  // Standard-Events
   window.addEventListener("resize", scaleGame);
   window.addEventListener("orientationchange", () => {
     setTimeout(scaleGame, 150);
-    // Bei Orientation-Wechsel Buttons-Layout neu aufbauen
-    buttonsErstellen();
+    buttonsErstellen();   // Layout ggf. neu berechnen (hier identisch, aber sicher)
   });
 
-  // Wenn verfügbar: visualViewport-Events
   if (window.visualViewport) {
     window.visualViewport.addEventListener("resize", () => {
       setTimeout(scaleGame, 50);
@@ -468,7 +480,6 @@ function startQuiz(){
   neueFrage();
   buttonsErstellen();
 
-  // Nach Umschalten auf Spielansicht neu skalieren
   setTimeout(scaleGame, 0);
 }
 
@@ -506,30 +517,14 @@ function neueFrage(){
   dropzoneEl.classList.add("empty-text");
 }
 
-/* Buttons: Portrait/ Desktop = 4–4–3, Mobile-Landscape = 6–5 */
+/* Buttons immer 2 Reihen: 6 + 5 */
 function buttonsErstellen(){
   buttonsEl.innerHTML="";
 
-  const vp = getViewportSize();
-  const isMobile    = isMobileDevice();
-  const isLandscape = vp.w > vp.h;
-
-  let rowsIndices = [];
-
-  if (isMobile && isLandscape) {
-    // Mobile Landscape: 2 Reihen (6 + 5)
-    rowsIndices = [
-      [0,1,2,3,4,5],      // 10²–15²
-      [6,7,8,9,10]        // 16²–20²
-    ];
-  } else {
-    // Standard: 3 Reihen (4–4–3)
-    rowsIndices = [
-      [0,1,2,3],          // 10²–13²
-      [4,5,6,7],          // 14²–17²
-      [8,9,10]            // 18²–20²
-    ];
-  }
+  const rowsIndices = [
+    [0,1,2,3,4,5],   // 10²–15²
+    [6,7,8,9,10]     // 16²–20²
+  ];
 
   rowsIndices.forEach(row => {
     const rowDiv = document.createElement("div");
@@ -654,7 +649,6 @@ function zeigeAuswertung(){
 
   bewertungEl.textContent=bew;
 
-  // Auswertungsbildschirm neu einpassen
   setTimeout(scaleGame, 0);
 }
 </script>
