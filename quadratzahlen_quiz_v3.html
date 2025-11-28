@@ -285,7 +285,7 @@
 
 <body>
 
-<button id="theme-toggle" aria-label="Day/Night umschalten">🌙</button>
+<button id="theme-toggle" aria-label="Day/Night umschalten">☀️</button>
 
 <div id="gameContainer">
 
@@ -340,15 +340,22 @@
 
 <script>
 /* Theme-Toggle -------------------------------------------------- */
-const themeBtn = document.getElementById("theme-toggle");
-let lightOn = false;
+const quizThemeBtn = document.getElementById("theme-toggle");
+let quizLightOn = false; // false = dunkel, true = hell
 
-themeBtn.addEventListener("click", () => {
-  lightOn = !lightOn;
-  document.body.classList.toggle("light-theme", lightOn);
-  themeBtn.textContent = lightOn ? "☀️" : "🌙";
-  setTimeout(scaleGame, 0); // Größen neu einpassen
+function applyQuizTheme() {
+  document.body.classList.toggle("light-theme", quizLightOn);
+  // Symbol zeigt das ZIEL: dunkel → ☀️ (zu hell), hell → 🌙 (zu dunkel)
+  quizThemeBtn.textContent = quizLightOn ? "🌙" : "☀️";
+  setTimeout(scaleGame, 0);
+}
+
+quizThemeBtn.addEventListener("click", () => {
+  quizLightOn = !quizLightOn;
+  applyQuizTheme();
 });
+
+applyQuizTheme();
 
 /* Hilfsfunktionen ---------------------------------------------- */
 function getViewportSize() {
@@ -626,7 +633,7 @@ function buttonsErstellen(){
   });
 }
 
-/* Drag & Drop */
+/* Drag & Drop --------------------------------------------------- */
 let ghost=null, dragIdx=null;
 
 function pointerStart(e){
