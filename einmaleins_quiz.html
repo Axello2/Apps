@@ -77,7 +77,7 @@
     color: #ff9800;
   }
 
-  /* Gesamter Spielcontainer (wird ggf. später skaliert, wenn nötig) */
+  /* Gesamter Spielcontainer */
   #gameContainer {
     position: relative;
     width: 640px;
@@ -365,6 +365,12 @@
     animation: pop 0.9s;
   }
 
+  .success-text {
+    font-size: 1.4rem;
+    color: #ccff00;
+    margin-top: -4px;
+  }
+
   .fail {
     font-size: 3.2rem;
     color: var(--bad);
@@ -382,6 +388,18 @@
     0%,100% { transform: translateX(0) }
     20%,60% { transform: translateX(-16px) }
     40%,80% { transform: translateX(16px) }
+  }
+
+  .sparkle {
+    position: absolute;
+    font-size: 2rem;
+    pointer-events: none;
+    animation: sparkle 1.4s forwards;
+  }
+
+  @keyframes sparkle {
+    0%   { transform: translateY(0) scale(0) }
+    100% { transform: translateY(-140px) rotate(720deg); opacity: 0 }
   }
 
   .finished {
@@ -506,6 +524,71 @@ themeBtn.addEventListener('click', () => {
 });
 
 applyTheme();
+
+/* AUDIO – wie beim Quadratzahlen-Quiz */
+let audioCtx = null;
+
+function initAudio(){
+  if(!audioCtx){
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(AC) audioCtx=new AC();
+  }
+  if(audioCtx){
+    if(audioCtx.state==="suspended") audioCtx.resume();
+    const b=audioCtx.createBuffer(1,1,22050);
+    const s=audioCtx.createBufferSource();
+    s.buffer=b; s.connect(audioCtx.destination); s.start(0);
+  }
+}
+
+function playSound(type){
+  if(!audioCtx)return;
+  try{
+    const t=audioCtx.currentTime;
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+
+    if(type==="click"){
+      o.type="sine";
+      o.frequency.setValueAtTime(600,t);
+      g.gain.setValueAtTime(0.15,t);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.1);
+      o.start(t); o.stop(t+0.1);
+    }
+    else if(type==="correct"){
+      o.type="sine";
+      o.frequency.setValueAtTime(880,t);
+      o.frequency.exponentialRampToValueAtTime(1760,t+0.1);
+      g.gain.setValueAtTime(0.2,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.3);
+      o.start(t); o.stop(t+0.3);
+    }
+    else if(type==="wrong"){
+      o.type="sawtooth";
+      o.frequency.setValueAtTime(150,t);
+      o.frequency.linearRampToValueAtTime(100,t+0.3);
+      g.gain.setValueAtTime(0.2,t);
+      g.gain.linearRampToValueAtTime(0.01,t+0.3);
+      o.start(t); o.stop(t+0.3);
+    }
+    else if(type==="finish"){
+      const notes=[523,659,784,1046];
+      notes.forEach((fq,i)=>{
+        const o2=audioCtx.createOscillator();
+        const g2=audioCtx.createGain();
+        o2.connect(g2); g2.connect(audioCtx.destination);
+        o2.type="square";
+        o2.frequency.value=fq;
+        const st=t+i*0.14;
+        const du=0.14;
+        g2.gain.setValueAtTime(0.1,st);
+        g2.gain.exponentialRampToValueAtTime(0.01,st+du);
+        o2.start(st); o2.stop(st+du);
+      });
+    }
+  } catch(e){}
+}
 
 /* DOM-Referenzen */
 const sliderEl      = document.getElementById('slider');
@@ -679,6 +762,7 @@ function buildAnswerButtons() {
 
 /* Quizsteuerung */
 btnStart.addEventListener('click', () => {
+  initAudio();          // Audio beim Start freischalten
   startQuiz();
 });
 
@@ -738,6 +822,8 @@ function endQuiz() {
     timerId = null;
   }
 
+  playSound("finish");
+
   questionEl.textContent = 'Fertig!';
   feedbackEl.textContent = '';
   feedbackEl.className = '';
@@ -766,6 +852,9 @@ let ghost = null;
 let dragValue = null;
 
 function pointerStart(e) {
+  initAudio();
+  playSound("click");
+
   const btn = e.currentTarget;
   dragValue = parseInt(btn.dataset.value, 10);
 
@@ -809,21 +898,37 @@ function pointerEnd(e) {
 function handleDrop(val) {
   if (!quizRunning) return;
 
+  dropzoneEl.classList.remove('empty-text');
+
   if (val === currentProduct) {
     correctCount++;
     statCorrect.textContent = correctCount.toString();
-    feedbackEl.textContent = 'Richtig!';
-    feedbackEl.className = 'success';
-    dropzoneEl.classList.remove('empty-text');
+    playSound("correct");
+
+    feedbackEl.innerHTML =
+      '<div class="success">Richtig!</div>' +
+      '<div class="success-text">Super!</div>';
+
+    // Funkel-Animation wie im Quadratzahlen-Quiz
+    for (let i = 0; i < 14; i++) {
+      const s = document.createElement("div");
+      s.textContent = ["✨","⭐","🔥","🎉","🏆"][i % 5];
+      s.className   = "sparkle";
+      s.style.left  = (20 + Math.random() * 280) + "px";
+      s.style.top   = (20 + Math.random() * 60) + "px";
+      s.style.animationDelay = (Math.random() * 0.4) + "s";
+      feedbackEl.appendChild(s);
+    }
+
+    setTimeout(nextQuestion, 1000);
   } else {
     wrongCount++;
     statWrong.textContent = wrongCount.toString();
-    feedbackEl.textContent = `Nein, richtig ist ${currentProduct}.`;
-    feedbackEl.className = 'fail';
-    dropzoneEl.classList.remove('empty-text');
-  }
+    playSound("wrong");
 
-  setTimeout(nextQuestion, 1000);
+    feedbackEl.innerHTML = '<div class="fail">Nein</div>';
+    setTimeout(nextQuestion, 1000);
+  }
 }
 
 /* Initial */
