@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Einmaleins-Quiz (1×1 bis 10×10)</title>
+<title>Einmaleins-Quiz 1×1 – 10×10</title>
 
 <style>
   :root {
@@ -12,12 +12,9 @@
     --text-main: #eee;
     --accent: #00ccff;
     --accent-soft: #00ff99;
-    --panel: #111827;
-    --panel-soft: #1b2235;
+    --panel: #222;
     --button-bg: #0066ff;
     --button-text: #fff;
-    --bad: #ff5252;
-    --good: #4caf50;
   }
 
   body.light-theme {
@@ -26,32 +23,25 @@
     --accent: #0059aa;
     --accent-soft: #00aa66;
     --panel: #ffffff;
-    --panel-soft: #e3e7f5;
     --button-bg: #1976d2;
-    --button-text: #fff;
-    --bad: #e53935;
-    --good: #2e7d32;
-  }
-
-  * {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+    --button-text: #ffffff;
   }
 
   body {
     margin: 0;
-    min-height: 100vh;
-    background: radial-gradient(circle at top, #02030a, var(--bg-main));
+    background: var(--bg-main);
     color: var(--text-main);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
     overflow: hidden;
+    touch-action: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
   }
 
-  /* Theme-Toggle */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+
+  /* Theme-Toggle-Button */
   #theme-toggle {
     position: fixed;
     top: 10px;
@@ -61,7 +51,7 @@
     height: 40px;
     border-radius: 999px;
     border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(10,10,20,0.85);
+    background: rgba(10,10,20,0.8);
     color: #ffd86b;
     display: flex;
     align-items: center;
@@ -72,16 +62,17 @@
   }
 
   body.light-theme #theme-toggle {
-    background: rgba(255,255,255,0.95);
+    background: rgba(255,255,255,0.9);
     border-color: rgba(0,0,0,0.15);
     color: #ff9800;
   }
 
-  /* Gesamter Spielcontainer */
+  /* Game-Container – wird per scaleGame() skaliert */
   #gameContainer {
-    position: relative;
-    width: 640px;
-    max-width: 100%;
+    position: absolute;
+    width: 600px;
+    height: auto;
+    transform-origin: top left;
     background: var(--panel);
     border-radius: 20px;
     padding: 18px 18px 24px;
@@ -90,98 +81,30 @@
       0 0 0 1px rgba(255,255,255,0.04);
   }
 
-  .app-title {
-    text-align: center;
-    margin-bottom: 10px;
-  }
-
-  .app-title h1 {
-    margin: 0;
-    font-size: 1.8rem;
+  h1 {
     color: var(--accent);
-    text-shadow: 0 0 12px rgba(0, 204, 255, 0.4);
-  }
-
-  .app-title p {
-    margin: 4px 0 0;
-    font-size: 0.95rem;
-    opacity: 0.8;
-  }
-
-  /* Startscreen */
-  #start {
+    text-shadow: 0 0 15px rgba(0,200,255,0.6);
+    margin-top: 10px;
+    font-size: 2.2rem;
     text-align: center;
   }
 
-  #start .controls {
-    margin-top: 12px;
-    padding: 12px;
-    border-radius: 14px;
-    background: var(--panel-soft);
+  body.light-theme h1 {
+    text-shadow: none;
   }
 
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .row-label {
+  .subtitle {
+    text-align: center;
+    margin-top: 4px;
     font-size: 0.95rem;
-    opacity: 0.9;
-    min-width: 90px;
+    opacity: 0.85;
   }
 
-  .row-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .small-btn {
-    min-width: 32px;
-    padding: 4px 6px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.18);
-    background: transparent;
-    color: var(--text-main);
-    font-size: 0.9rem;
-    cursor: pointer;
-  }
-
-  .small-btn.active {
-    background: var(--accent);
-    color: #000;
-    border-color: transparent;
-    box-shadow: 0 0 12px rgba(0, 204, 255, 0.6);
-    font-weight: 600;
-  }
-
-  .mode-btn {
-    padding: 6px 10px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.18);
-    background: transparent;
-    color: var(--text-main);
-    font-size: 0.85rem;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .mode-btn.active {
-    background: var(--accent-soft);
-    color: #000;
-    border-color: transparent;
-    box-shadow: 0 0 12px rgba(0, 255, 153, 0.6);
-    font-weight: 600;
-  }
-
+  /* Slider – ähnlich wie im Quadratzahlen-Quiz */
   .slider {
-    width: 260px;
+    width: 280px;
+    margin: 20px auto;
+    display: block;
     accent-color: var(--accent-soft);
     -webkit-appearance: none;
     appearance: none;
@@ -226,32 +149,119 @@
     border: none;
   }
 
-  .slider-info {
-    font-size: 1.1rem;
-    opacity: 0.9;
+  /* Startscreen */
+  #start {
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  #start-anzahl {
+    font-size: 1.6rem;
     font-weight: bold;
   }
 
-  .start-big {
-    margin-top: 16px;
-    padding: 18px 40px;
-    border-radius: 15px;
-    border: none;
-    background: var(--accent);
-    color: #000;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 1.4rem;
-    box-shadow: 0 0 20px rgba(0, 204, 255, 0.5);
+  #start-anzahl span {
+    color: var(--accent-soft);
   }
 
-  /* Game Screen */
+  .controls {
+    margin: 12px auto 0;
+    padding: 12px;
+    border-radius: 16px;
+    background: rgba(0,0,0,0.35);
+    max-width: 520px;
+  }
+
+  body.light-theme .controls {
+    background: rgba(255,255,255,0.75);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .row-label {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    min-width: 90px;
+  }
+
+  .row-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .small-btn {
+    min-width: 32px;
+    padding: 4px 6px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: transparent;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .small-btn.active {
+    background: var(--accent);
+    color: #000;
+    border-color: transparent;
+    box-shadow: 0 0 12px rgba(0, 204, 255, 0.6);
+    font-weight: 600;
+  }
+
+  .mode-btn {
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: transparent;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mode-btn.active {
+    background: var(--accent-soft);
+    color: #000;
+    border-color: transparent;
+    box-shadow: 0 0 12px rgba(0,255,153,0.6);
+    font-weight: 600;
+  }
+
+  button.big {
+    padding: 20px 50px;
+    font-size: 1.7rem;
+    background: var(--accent);
+    color: #000;
+    border-radius: 15px;
+    border: none;
+    font-weight: bold;
+    box-shadow: 0 0 20px rgba(0,150,255,0.7);
+    cursor: pointer;
+    margin-top: 14px;
+  }
+
+  body.light-theme button.big {
+    color: #fff;
+  }
+
+  /* Game-Screen */
   #game {
     display: none;
+    text-align: center;
+    margin-top: 8px;
   }
 
   .stats {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     margin-bottom: 10px;
   }
 
@@ -259,38 +269,38 @@
     margin-right: 8px;
   }
 
-  .stat-good { color: var(--good); }
-  .stat-bad  { color: var(--bad); }
+  .stat-good { color: #00e676; }
+  .stat-bad  { color: #ff5252; }
+  .stat-time { color: #ffeb3b; }
 
   .question {
-    text-align: center;
-    margin: 12px 0 14px;
-    font-size: 1.6rem;
+    font-size: 2.0rem;
+    margin: 14px 0 10px;
   }
 
   .question strong {
-    font-size: 1.9rem;
+    font-size: 2.2rem;
     color: var(--accent);
   }
 
+  /* Dropzone */
   .dropzone {
     width: 420px;
-    max-width: 100%;
-    height: 150px;
-    margin: 16px auto 18px;
+    height: 160px;
+    margin: 18px auto;
     border: 3px dashed var(--accent);
     border-radius: 20px;
     background: #eef3ff;
-    color: #222;
+    box-shadow:
+      0 0 25px rgba(0,200,255,0.6),
+      0 0 0 4px rgba(0,0,0,0.7) inset;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    font-size: 1.1rem;
+    color: #222;
+    font-size: 1.2rem;
     text-align: center;
-    box-shadow:
-      0 0 25px rgba(0,200,255,0.4),
-      0 0 0 3px rgba(0,0,0,0.5) inset;
   }
 
   body.light-theme .dropzone {
@@ -309,9 +319,23 @@
     z-index: 2;
   }
 
+  /* Antwortbuttons – 2 Reihen à 5 */
+  .answers-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .answers-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: nowrap;
+    margin: 6px 0;
+  }
+
   .btn-answer {
-    width: 96px;
-    height: 72px;
+    width: 90px;
+    height: 70px;
     margin: 6px;
     background: var(--button-bg);
     color: var(--button-text);
@@ -330,23 +354,10 @@
 
   .btn-answer:active { transform: scale(0.95); }
 
-  .answers-container {
-    max-width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .answers-row {
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: center;
-  }
-
   .drag-ghost {
     position: absolute;
     pointer-events: none;
-    z-index: 9999;
+    z-index: 99999;
     padding: 18px 28px;
     border-radius: 12px;
     background: var(--button-bg);
@@ -358,36 +369,37 @@
     transform: translate(-50%, -50%);
   }
 
+  /* Success / Fail wie im Quadratzahlen-Spiel, leicht variiert */
   .success {
-    font-size: 3.2rem;
-    color: var(--good);
-    text-shadow: 0 0 14px rgba(0,255,153,0.6);
+    font-size: 4.2rem;
+    color: #00ff99;
     animation: pop 0.9s;
+    text-shadow: 0 0 16px rgba(0,255,153,0.7);
   }
 
   .success-text {
-    font-size: 1.4rem;
-    color: #ccff00;
-    margin-top: -4px;
+    font-size: 1.8rem;
+    color: #ffeb3b;
+    margin-top: -6px;
   }
 
   .fail {
-    font-size: 3.2rem;
-    color: var(--bad);
-    text-shadow: 0 0 10px rgba(255,82,82,0.6);
+    font-size: 5.5rem;
+    color: #ff3300;
     animation: shake 0.6s;
+    text-shadow: 0 0 12px rgba(255,51,51,0.8);
   }
 
   @keyframes pop {
-    0% { transform: scale(0) }
-    70% { transform: scale(1.4) }
-    100% { transform: scale(1) }
+    0%   { transform: scale(0); }
+    70%  { transform: scale(1.4); }
+    100% { transform: scale(1); }
   }
 
   @keyframes shake {
-    0%,100% { transform: translateX(0) }
-    20%,60% { transform: translateX(-16px) }
-    40%,80% { transform: translateX(16px) }
+    0%,100% { transform: translateX(0); }
+    20%,60% { transform: translateX(-20px); }
+    40%,80% { transform: translateX(20px); }
   }
 
   .sparkle {
@@ -398,12 +410,12 @@
   }
 
   @keyframes sparkle {
-    0%   { transform: translateY(0) scale(0) }
-    100% { transform: translateY(-140px) rotate(720deg); opacity: 0 }
+    0%   { transform: translateY(0) scale(0); }
+    100% { transform: translateY(-140px) rotate(720deg); opacity: 0; }
   }
 
   .finished {
-    margin-top: 10px;
+    margin-top: 14px;
     text-align: center;
     font-size: 1rem;
   }
@@ -414,20 +426,20 @@
 
   @media (max-width: 600px) {
     #gameContainer {
-      padding: 14px 10px 16px;
+      padding: 14px 10px 18px;
       border-radius: 16px;
     }
 
-    .app-title h1 {
-      font-size: 1.5rem;
+    h1 {
+      font-size: 1.8rem;
     }
 
     .question {
-      font-size: 1.4rem;
+      font-size: 1.7rem;
     }
 
     .question strong {
-      font-size: 1.7rem;
+      font-size: 1.9rem;
     }
 
     .btn-answer {
@@ -438,23 +450,25 @@
   }
 </style>
 </head>
+
 <body>
 
 <button id="theme-toggle" aria-label="Day/Night umschalten">☀️</button>
 
 <div id="gameContainer">
-  <div class="app-title">
-    <h1>Einmaleins-Quiz</h1>
-    <p>Klasse 4 · 1×1 bis 10×10 · Drag &amp; Drop</p>
-  </div>
 
-  <!-- STARTSCREEN -->
+  <h1>Einmaleins-Quiz</h1>
+  <div class="subtitle">1×1 bis 10×10 · Drag &amp; Drop</div>
+
+  <!-- START -->
   <div id="start">
-    <p style="font-size:1.6rem; font-weight:bold; margin-top:4px;">
+    <p id="start-anzahl">
       Anzahl Fragen:
-      <span id="anzahl" style="color:var(--accent-soft);">10</span>
+      <span id="anzahl">10</span>
     </p>
-    <input type="range" min="1" max="20" value="10" class="slider" id="slider">
+
+    <input type="range" min="1" max="20" value="10"
+           class="slider" id="slider">
 
     <div class="controls">
       <!-- Malreihe wählen -->
@@ -480,20 +494,20 @@
       </div>
     </div>
 
-    <button class="start-big" id="btn-start">Los geht’s!</button>
+    <button class="big" id="btn-start">Los geht’s!</button>
   </div>
 
-  <!-- SPIEL -->
+  <!-- GAME -->
   <div id="game">
-    <div class="stats">
-      <span>Frage <strong id="stat-question">0</strong>/<span id="stat-total">0</span></span>
-      <span class="stat-good">✅ <span id="stat-correct">0</span></span>
-      <span class="stat-bad">❌ <span id="stat-wrong">0</span></span>
-      <span>⏱ <span id="stat-time">0</span>s</span>
-    </div>
+    <p class="stats">
+      Frage <span id="stat-question">1</span>/<span id="stat-total">0</span> |
+      ✅ <span id="stat-correct" class="stat-good">0</span> |
+      ❌ <span id="stat-wrong" class="stat-bad">0</span> |
+      ⏱ <span id="stat-time" class="stat-time">0</span>s
+    </p>
 
-    <div class="question" id="question">
-      Klicke auf „Los geht’s!“ um zu beginnen.
+    <div class="question">
+      Was ist <strong><span id="zahl-a">?</span> × <span id="zahl-b">?</span></strong>?
     </div>
 
     <div class="dropzone empty-text" id="dropzone">
@@ -501,87 +515,172 @@
     </div>
 
     <div class="answers-container" id="answers">
-      <!-- 2 Reihen à 5 Buttons -->
+      <!-- 2 Reihen à 5 Buttons werden per JS erzeugt -->
     </div>
 
     <div class="finished" id="finished" style="display:none;"></div>
   </div>
-</div>
+
+</div> <!-- gameContainer -->
 
 <script>
-/* Theme-Toggle */
-const themeBtn = document.getElementById('theme-toggle');
-let lightOn = false; // false = dunkel, true = hell
+/* THEME-TOGGLE -------------------------------------------------- */
+const quizThemeBtn = document.getElementById("theme-toggle");
+let quizLightOn = false; // false = dunkel, true = hell
 
-function applyTheme() {
-  document.body.classList.toggle('light-theme', lightOn);
-  themeBtn.textContent = lightOn ? '🌙' : '☀️';
+function applyQuizTheme() {
+  document.body.classList.toggle("light-theme", quizLightOn);
+  quizThemeBtn.textContent = quizLightOn ? "🌙" : "☀️";
+  setTimeout(scaleGame, 0);
 }
 
-themeBtn.addEventListener('click', () => {
-  lightOn = !lightOn;
-  applyTheme();
+quizThemeBtn.addEventListener("click", () => {
+  quizLightOn = !quizLightOn;
+  applyQuizTheme();
 });
 
-applyTheme();
+applyQuizTheme();
 
-/* AUDIO – wie beim Quadratzahlen-Quiz */
+/* VIEWPORT & SKALIERUNG ---------------------------------------- */
+function getViewportSize() {
+  if (window.visualViewport) {
+    return {
+      w: window.visualViewport.width,
+      h: window.visualViewport.height,
+      left: window.visualViewport.offsetLeft,
+      top: window.visualViewport.offsetTop
+    };
+  }
+  return { w: window.innerWidth, h: window.innerHeight, left: 0, top: 0 };
+}
+
+function scaleGame() {
+  const c = document.getElementById("gameContainer");
+  if (!c) return;
+
+  // Zurücksetzen
+  c.style.transform = "scale(1)";
+  c.style.left = "0px";
+  c.style.top  = "0px";
+
+  const naturalWidth  = c.scrollWidth;
+  const naturalHeight = c.scrollHeight;
+
+  const vp = getViewportSize();
+  const viewportW = vp.w;
+  const viewportH = vp.h;
+  const offsetLeft = vp.left;
+  const offsetTop  = vp.top;
+
+  let scale = Math.min(viewportW / naturalWidth, viewportH / naturalHeight);
+
+  const isMobile    = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isLandscape = viewportW > viewportH;
+
+  if (isMobile) {
+    if (isLandscape) {
+      scale *= 0.9;
+    } else {
+      scale *= 0.96;
+    }
+  } else {
+    if (scale > 1) scale = 1;
+  }
+
+  if (scale <= 0)  scale = 1;
+  if (scale > 2.2) scale = 2.2;
+
+  c.style.transform = "scale(" + scale + ")";
+
+  const usedW = naturalWidth  * scale;
+  const usedH = naturalHeight * scale;
+
+  const offsetX = offsetLeft + (viewportW - usedW) / 2;
+  const offsetY = offsetTop  + (viewportH - usedH) / 2;
+
+  c.style.left = offsetX + "px";
+  c.style.top  = offsetY + "px";
+}
+
+function initAutoScale() {
+  scaleGame();
+  setTimeout(scaleGame, 50);
+  setTimeout(scaleGame, 250);
+  setTimeout(scaleGame, 600);
+
+  window.addEventListener("resize", scaleGame);
+  window.addEventListener("orientationchange", () => {
+    setTimeout(scaleGame, 150);
+  });
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", () => {
+      setTimeout(scaleGame, 50);
+    });
+  }
+}
+
+window.addEventListener("load", initAutoScale);
+
+/* AUDIO – ähnlich wie Quadratzahlen, leicht andere Töne -------- */
 let audioCtx = null;
 
 function initAudio(){
   if(!audioCtx){
-    const AC=window.AudioContext||window.webkitAudioContext;
-    if(AC) audioCtx=new AC();
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(AC) audioCtx = new AC();
   }
   if(audioCtx){
-    if(audioCtx.state==="suspended") audioCtx.resume();
-    const b=audioCtx.createBuffer(1,1,22050);
-    const s=audioCtx.createBufferSource();
-    s.buffer=b; s.connect(audioCtx.destination); s.start(0);
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    const b = audioCtx.createBuffer(1,1,22050);
+    const s = audioCtx.createBufferSource();
+    s.buffer = b;
+    s.connect(audioCtx.destination);
+    s.start(0);
   }
 }
 
 function playSound(type){
-  if(!audioCtx)return;
+  if(!audioCtx) return;
   try{
-    const t=audioCtx.currentTime;
-    const o=audioCtx.createOscillator();
-    const g=audioCtx.createGain();
+    const t = audioCtx.currentTime;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
     o.connect(g); g.connect(audioCtx.destination);
 
-    if(type==="click"){
-      o.type="sine";
-      o.frequency.setValueAtTime(600,t);
-      g.gain.setValueAtTime(0.15,t);
-      g.gain.exponentialRampToValueAtTime(0.001,t+0.1);
-      o.start(t); o.stop(t+0.1);
+    if(type === "click"){
+      o.type = "triangle";
+      o.frequency.setValueAtTime(520,t);
+      g.gain.setValueAtTime(0.16,t);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.09);
+      o.start(t); o.stop(t+0.12);
     }
-    else if(type==="correct"){
-      o.type="sine";
-      o.frequency.setValueAtTime(880,t);
-      o.frequency.exponentialRampToValueAtTime(1760,t+0.1);
-      g.gain.setValueAtTime(0.2,t);
-      g.gain.exponentialRampToValueAtTime(0.01,t+0.3);
-      o.start(t); o.stop(t+0.3);
+    else if(type === "correct"){
+      o.type = "sine";
+      o.frequency.setValueAtTime(660,t);
+      o.frequency.exponentialRampToValueAtTime(1320,t+0.12);
+      g.gain.setValueAtTime(0.22,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+0.32);
+      o.start(t); o.stop(t+0.34);
     }
-    else if(type==="wrong"){
-      o.type="sawtooth";
-      o.frequency.setValueAtTime(150,t);
-      o.frequency.linearRampToValueAtTime(100,t+0.3);
-      g.gain.setValueAtTime(0.2,t);
+    else if(type === "wrong"){
+      o.type = "sawtooth";
+      o.frequency.setValueAtTime(200,t);
+      o.frequency.linearRampToValueAtTime(140,t+0.3);
+      g.gain.setValueAtTime(0.22,t);
       g.gain.linearRampToValueAtTime(0.01,t+0.3);
-      o.start(t); o.stop(t+0.3);
+      o.start(t); o.stop(t+0.32);
     }
-    else if(type==="finish"){
-      const notes=[523,659,784,1046];
+    else if(type === "finish"){
+      const notes = [392,523,659,784]; // kleine andere Melodie
       notes.forEach((fq,i)=>{
-        const o2=audioCtx.createOscillator();
-        const g2=audioCtx.createGain();
+        const o2 = audioCtx.createOscillator();
+        const g2 = audioCtx.createGain();
         o2.connect(g2); g2.connect(audioCtx.destination);
-        o2.type="square";
-        o2.frequency.value=fq;
-        const st=t+i*0.14;
-        const du=0.14;
+        o2.type = "square";
+        o2.frequency.value = fq;
+        const st = t + i*0.16;
+        const du = 0.16;
         g2.gain.setValueAtTime(0.1,st);
         g2.gain.exponentialRampToValueAtTime(0.01,st+du);
         o2.start(st); o2.stop(st+du);
@@ -590,64 +689,65 @@ function playSound(type){
   } catch(e){}
 }
 
-/* DOM-Referenzen */
-const sliderEl      = document.getElementById('slider');
-const anzahlEl      = document.getElementById('anzahl');
-const startScreen   = document.getElementById('start');
-const gameScreen    = document.getElementById('game');
-const rowButtonsDiv = document.getElementById('row-buttons');
+/* DOM-REFERENZEN ----------------------------------------------- */
+const sliderEl      = document.getElementById("slider");
+const anzahlEl      = document.getElementById("anzahl");
+const startScreen   = document.getElementById("start");
+const gameScreen    = document.getElementById("game");
+const rowButtonsDiv = document.getElementById("row-buttons");
 
-const btnModeRow    = document.getElementById('btn-mode-row');
-const btnModeAll    = document.getElementById('btn-mode-all');
-const btnRandomRow  = document.getElementById('btn-random-row');
-const btnStart      = document.getElementById('btn-start');
+const btnModeRow    = document.getElementById("btn-mode-row");
+const btnModeAll    = document.getElementById("btn-mode-all");
+const btnRandomRow  = document.getElementById("btn-random-row");
+const btnStart      = document.getElementById("btn-start");
 
-const statQuestion  = document.getElementById('stat-question');
-const statTotal     = document.getElementById('stat-total');
-const statCorrect   = document.getElementById('stat-correct');
-const statWrong     = document.getElementById('stat-wrong');
-const statTime      = document.getElementById('stat-time');
+const statQuestion  = document.getElementById("stat-question");
+const statTotal     = document.getElementById("stat-total");
+const statCorrect   = document.getElementById("stat-correct");
+const statWrong     = document.getElementById("stat-wrong");
+const statTime      = document.getElementById("stat-time");
 
-const questionEl    = document.getElementById('question');
-const dropzoneEl    = document.getElementById('dropzone');
-const feedbackEl    = document.getElementById('feedback');
-const answersDiv    = document.getElementById('answers');
-const finishedEl    = document.getElementById('finished');
+const zahlAEl       = document.getElementById("zahl-a");
+const zahlBEl       = document.getElementById("zahl-b");
+const dropzoneEl    = document.getElementById("dropzone");
+const feedbackEl    = document.getElementById("feedback");
+const answersDiv    = document.getElementById("answers");
+const finishedEl    = document.getElementById("finished");
 
-/* Zustand */
-let totalQuestions = 10;
+/* ZUSTAND ------------------------------------------------------- */
+let totalQuestions    = 10;
 let currentQuestionNr = 0;
-let correctCount = 0;
-let wrongCount   = 0;
+let correctCount      = 0;
+let wrongCount        = 0;
 
-let currentA = 0;
-let currentB = 0;
-let currentProduct = 0;
+let currentA          = 0;
+let currentB          = 0;
+let currentProduct    = 0;
 
 let modeAll   = false; // false = nur Malreihe
 let randomRow = false; // true = Reihenfolge durcheinander
 let currentRow = 5;    // Start: 5er Reihe
 
-let seqIndex = 0;      // für chronologische Reihe (b = 1..10)
+let seqIndex   = 0;    // für chronologische Reihe (b = 1..10)
 let quizRunning = false;
 
 let startTime = 0;
 let timerId   = null;
 
 /* Slider */
-sliderEl.addEventListener('input', () => {
+sliderEl.addEventListener("input", () => {
   anzahlEl.textContent = sliderEl.value;
 });
 
-/* Malreihen-Buttons 1..10 */
+/* Malreihen-Buttons 1..10 -------------------------------------- */
 function createRowButtons() {
   for (let i = 1; i <= 10; i++) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'small-btn' + (i === currentRow ? ' active' : '');
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "small-btn" + (i === currentRow ? " active" : "");
     btn.textContent = i.toString();
     btn.dataset.row = i.toString();
-    btn.addEventListener('click', () => {
+    btn.addEventListener("click", () => {
       currentRow = i;
       updateRowButtons();
     });
@@ -658,42 +758,42 @@ function createRowButtons() {
 function updateRowButtons() {
   Array.from(rowButtonsDiv.children).forEach(btn => {
     const n = parseInt(btn.dataset.row, 10);
-    btn.classList.toggle('active', n === currentRow);
+    btn.classList.toggle("active", n === currentRow);
   });
 }
 
 function updateModeButtons() {
-  btnModeRow.classList.toggle('active', !modeAll);
-  btnModeAll.classList.toggle('active', modeAll);
-  btnRandomRow.classList.toggle('active', randomRow && !modeAll);
+  btnModeRow.classList.toggle("active", !modeAll);
+  btnModeAll.classList.toggle("active", modeAll);
+  btnRandomRow.classList.toggle("active", randomRow && !modeAll);
 }
 
 /* Modus-Buttons */
-btnModeRow.addEventListener('click', () => {
+btnModeRow.addEventListener("click", () => {
   modeAll = false;
   updateModeButtons();
 });
 
-btnModeAll.addEventListener('click', () => {
+btnModeAll.addEventListener("click", () => {
   modeAll = true;
   updateModeButtons();
 });
 
-btnRandomRow.addEventListener('click', () => {
+btnRandomRow.addEventListener("click", () => {
   if (modeAll) return; // Zufall-Reihenfolge nur im Malreihen-Modus
   randomRow = !randomRow;
   updateModeButtons();
 });
 
-/* Helper */
+/* Hilfsfunktion ------------------------------------------------- */
 function shuffleArray(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+  for (let i = arr.length-1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
   }
 }
 
-/* Neue Frage generieren */
+/* Neue Frage generieren ---------------------------------------- */
 function generateQuestion() {
   if (modeAll) {
     // Alle 1×1 durcheinander
@@ -705,7 +805,7 @@ function generateQuestion() {
     if (randomRow) {
       currentB = 1 + Math.floor(Math.random() * 10);
     } else {
-      // chronologisch b=1..10
+      // chronologisch b = 1..10
       seqIndex = (seqIndex % 10) + 1;
       currentB = seqIndex;
     }
@@ -713,9 +813,9 @@ function generateQuestion() {
   currentProduct = currentA * currentB;
 }
 
-/* Antwort-Buttons (10 Stück, 2 Reihen à 5) bauen */
+/* Antwort-Buttons – 10 Stück, 2 Reihen à 5 --------------------- */
 function buildAnswerButtons() {
-  answersDiv.innerHTML = '';
+  answersDiv.innerHTML = "";
 
   const values = new Set();
   values.add(currentProduct);
@@ -732,22 +832,22 @@ function buildAnswerButtons() {
   const list = Array.from(values);
   shuffleArray(list);
 
-  const row1 = document.createElement('div');
-  row1.className = 'answers-row';
-  const row2 = document.createElement('div');
-  row2.className = 'answers-row';
+  const row1 = document.createElement("div");
+  row1.className = "answers-row";
+  const row2 = document.createElement("div");
+  row2.className = "answers-row";
 
   list.forEach((val, idx) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'btn-answer';
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn-answer";
     btn.textContent = val.toString();
     btn.dataset.value = val.toString();
 
-    btn.addEventListener('pointerdown', pointerStart);
-    btn.addEventListener('pointermove', pointerMove);
-    btn.addEventListener('pointerup',   pointerEnd);
-    btn.addEventListener('pointercancel', pointerEnd);
+    btn.addEventListener("pointerdown", pointerStart);
+    btn.addEventListener("pointermove", pointerMove);
+    btn.addEventListener("pointerup",   pointerEnd);
+    btn.addEventListener("pointercancel", pointerEnd);
 
     if (idx < 5) {
       row1.appendChild(btn);
@@ -760,42 +860,43 @@ function buildAnswerButtons() {
   answersDiv.appendChild(row2);
 }
 
-/* Quizsteuerung */
-btnStart.addEventListener('click', () => {
-  initAudio();          // Audio beim Start freischalten
+/* QUIZ-STEUERUNG ----------------------------------------------- */
+btnStart.addEventListener("click", () => {
+  initAudio();
   startQuiz();
 });
 
 function startQuiz() {
-  totalQuestions = parseInt(sliderEl.value, 10);
+  totalQuestions    = parseInt(sliderEl.value, 10);
   currentQuestionNr = 0;
-  correctCount = 0;
-  wrongCount   = 0;
-  seqIndex     = 0;
-  quizRunning  = true;
+  correctCount      = 0;
+  wrongCount        = 0;
+  seqIndex          = 0;
+  quizRunning       = true;
 
-  statCorrect.textContent = '0';
-  statWrong.textContent   = '0';
+  statCorrect.textContent = "0";
+  statWrong.textContent   = "0";
   statTotal.textContent   = totalQuestions.toString();
-  statQuestion.textContent = '0';
-  statTime.textContent = '0';
+  statQuestion.textContent = "0";
+  statTime.textContent = "0";
 
-  feedbackEl.textContent = '';
-  feedbackEl.className = '';
-  finishedEl.style.display = 'none';
-  finishedEl.textContent = '';
+  feedbackEl.textContent = "";
+  feedbackEl.className   = "";
+  finishedEl.style.display = "none";
+  finishedEl.textContent   = "";
 
-  startScreen.style.display = 'none';
-  gameScreen.style.display  = 'block';
+  startScreen.style.display = "none";
+  gameScreen.style.display  = "block";
 
   if (timerId) clearInterval(timerId);
   startTime = Date.now();
   timerId = setInterval(() => {
-    const s = Math.floor((Date.now() - startTime) / 1000);
+    const s = Math.floor((Date.now() - startTime)/1000);
     statTime.textContent = s.toString();
   }, 500);
 
   nextQuestion();
+  setTimeout(scaleGame, 0);
 }
 
 function nextQuestion() {
@@ -806,11 +907,14 @@ function nextQuestion() {
   }
 
   statQuestion.textContent = currentQuestionNr.toString();
+
   generateQuestion();
-  questionEl.innerHTML = `Was ist <strong>${currentA} × ${currentB}</strong> ?`;
-  feedbackEl.textContent = '';
-  feedbackEl.className = '';
-  dropzoneEl.classList.add('empty-text');
+  zahlAEl.textContent = currentA.toString();
+  zahlBEl.textContent = currentB.toString();
+
+  feedbackEl.textContent = "";
+  feedbackEl.className   = "";
+  dropzoneEl.classList.add("empty-text");
 
   buildAnswerButtons();
 }
@@ -824,58 +928,53 @@ function endQuiz() {
 
   playSound("finish");
 
-  questionEl.textContent = 'Fertig!';
-  feedbackEl.textContent = '';
-  feedbackEl.className = '';
-  dropzoneEl.classList.add('empty-text');
-
-  const total = correctCount + wrongCount;
-  const pct = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+  const total   = correctCount + wrongCount;
+  const pct     = total > 0 ? Math.round((correctCount/total)*100) : 0;
   const timeSec = parseInt(statTime.textContent, 10) || 0;
 
   let msg = `Du hast ${correctCount} von ${total} Aufgaben richtig (${pct} %).`;
-  if (timeSec > 0) {
-    msg += ` Zeit: ${timeSec} Sekunden.`;
-  }
+  if (timeSec > 0) msg += ` Zeit: ${timeSec} Sekunden.`;
 
-  if (pct === 100)      msg += ' Perfekt, alle richtig!';
-  else if (pct >= 80)   msg += ' Sehr gut!';
-  else if (pct >= 60)   msg += ' Gut – noch etwas üben.';
-  else                  msg += ' Weiter üben lohnt sich!';
+  if      (pct === 100) msg += " Perfekt – alles richtig!";
+  else if (pct >= 80)   msg += " Sehr stark!";
+  else if (pct >= 60)   msg += " Gut – noch etwas üben.";
+  else                  msg += " Weiter üben lohnt sich!";
 
-  finishedEl.style.display = 'block';
+  finishedEl.style.display = "block";
   finishedEl.innerHTML = `<strong>${msg}</strong>`;
+
+  setTimeout(scaleGame, 0);
 }
 
-/* Drag & Drop wie im Quadratzahlen-Quiz */
-let ghost = null;
-let dragValue = null;
+/* DRAG & DROP wie Quadratzahlenspiel (leicht angepasst) -------- */
+let ghost   = null;
+let dragVal = null;
 
-function pointerStart(e) {
+function pointerStart(e){
   initAudio();
   playSound("click");
 
   const btn = e.currentTarget;
-  dragValue = parseInt(btn.dataset.value, 10);
+  dragVal = parseInt(btn.dataset.value, 10);
 
   ghost = btn.cloneNode(true);
-  ghost.classList.add('drag-ghost');
+  ghost.classList.add("drag-ghost");
   document.body.appendChild(ghost);
 
-  ghost.style.left = e.clientX + 'px';
-  ghost.style.top  = e.clientY + 'px';
+  ghost.style.left = e.clientX + "px";
+  ghost.style.top  = e.clientY + "px";
 
   btn.setPointerCapture(e.pointerId);
 }
 
-function pointerMove(e) {
-  if (!ghost) return;
-  ghost.style.left = e.clientX + 'px';
-  ghost.style.top  = e.clientY + 'px';
+function pointerMove(e){
+  if(!ghost) return;
+  ghost.style.left = e.clientX + "px";
+  ghost.style.top  = e.clientY + "px";
 }
 
-function pointerEnd(e) {
-  if (!ghost) return;
+function pointerEnd(e){
+  if(!ghost) return;
 
   const r = dropzoneEl.getBoundingClientRect();
   const inside =
@@ -884,54 +983,54 @@ function pointerEnd(e) {
     e.clientY >= r.top &&
     e.clientY <= r.bottom;
 
-  if (inside && dragValue != null) {
-    handleDrop(dragValue);
+  if(inside && dragVal != null){
+    handleDrop(dragVal);
   }
 
   ghost.remove();
-  ghost = null;
-  dragValue = null;
+  ghost   = null;
+  dragVal = null;
 
   try { e.target.releasePointerCapture(e.pointerId); } catch(_){}
 }
 
-function handleDrop(val) {
-  if (!quizRunning) return;
+function handleDrop(val){
+  if(!quizRunning) return;
 
-  dropzoneEl.classList.remove('empty-text');
+  dropzoneEl.classList.remove("empty-text");
+  feedbackEl.innerHTML = "";
 
-  if (val === currentProduct) {
+  if(val === currentProduct){
     correctCount++;
     statCorrect.textContent = correctCount.toString();
     playSound("correct");
 
     feedbackEl.innerHTML =
-      '<div class="success">Richtig!</div>' +
-      '<div class="success-text">Super!</div>';
+      '<div class="success">Richtig!</div>'+
+      '<div class="success-text">Top gemacht!</div>';
 
-    // Funkel-Animation wie im Quadratzahlen-Quiz
-    for (let i = 0; i < 14; i++) {
+    for(let i=0;i<14;i++){
       const s = document.createElement("div");
-      s.textContent = ["✨","⭐","🔥","🎉","🏆"][i % 5];
+      s.textContent = ["💥","✨","⭐","🎈","🎯"][i%5];
       s.className   = "sparkle";
-      s.style.left  = (20 + Math.random() * 280) + "px";
-      s.style.top   = (20 + Math.random() * 60) + "px";
-      s.style.animationDelay = (Math.random() * 0.4) + "s";
+      s.style.left  = (20 + Math.random()*280) + "px";
+      s.style.top   = (20 + Math.random()*60)  + "px";
+      s.style.animationDelay = (Math.random()*0.4) + "s";
       feedbackEl.appendChild(s);
     }
 
-    setTimeout(nextQuestion, 1000);
+    setTimeout(nextQuestion, 1100);
   } else {
     wrongCount++;
     statWrong.textContent = wrongCount.toString();
     playSound("wrong");
 
     feedbackEl.innerHTML = '<div class="fail">Nein</div>';
-    setTimeout(nextQuestion, 1000);
+    setTimeout(nextQuestion, 900);
   }
 }
 
-/* Initial */
+/* INIT ---------------------------------------------------------- */
 createRowButtons();
 updateModeButtons();
 anzahlEl.textContent = sliderEl.value;
