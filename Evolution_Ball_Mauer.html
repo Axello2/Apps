@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evolutionärer Ballwurf – Einzeldatei-Demo</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #020617;
+    color: #e5e7eb;
+  }
+  h1, h2, h3 { margin: 0 0 0.5rem 0; }
+  .page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+  }
+  .layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  @media (min-width: 900px) {
+    .layout {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+  }
+  .left, .right {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .left { flex: 2; }
+  .right { flex: 1; }
+  .card {
+    background: #020617;
+    border-radius: 16px;
+    border: 1px solid #1f2937;
+    padding: 12px 14px;
+    box-shadow: 0 18px 40px rgba(15,23,42,0.85);
+  }
+  .canvas-wrap {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #1f2937;
+    background: radial-gradient(circle at top, #0f172a 0, #020617 60%);
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    touch-action: none;
+  }
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15,23,42,0.82);
+    backdrop-filter: blur(10px);
+    color: #e5e7eb;
+  }
+  .overlay.hidden { display: none; }
+  .overlay-inner {
+    background: #020617;
+    border-radius: 18px;
+    border: 1px solid #22c55e;
+    padding: 20px 22px;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 0 18px 40px rgba(34,197,94,0.45);
+  }
+  .overlay-inner h2 { margin-bottom: 0.25rem; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(148,163,184,0.7);
+    background: rgba(15,23,42,0.9);
+    margin-bottom: 8px;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 12px 0 16px 0;
+    text-align: left;
+    font-size: 0.8rem;
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9ca3af;
+  }
+  .stat-value {
+    font-family: "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas,
+                 "Liberation Mono", "Courier New", monospace;
+    font-size: 1.1rem;
+  }
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  button {
+    border-radius: 999px;
+    border: 1px solid transparent;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: #111827;
+    color: #e5e7eb;
+    transition: background 0.15s, border-color 0.15s, transform 0.05s;
+  }
+  button.primary {
+    background: rgba(52,211,153,0.12);
+    border-color: rgba(52,211,153,0.7);
+    color: #6ee7b7;
+  }
+  button.primary.running {
+    background: rgba(251,191,36,0.1);
+    border-color: rgba(251,191,36,0.7);
+    color: #facc15;
+  }
+  button.secondary { border-color: #374151; }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .live-box {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 5px;
+    column-gap: 12px;
+    font-size: 0.8rem;
+  }
+  .live-label {
+    color: #9ca3af;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .live-value {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.95rem;
+  }
+  .mono {
+    font-family: "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas,
+                 "Liberation Mono", "Courier New", monospace;
+  }
+  .small { font-size: 0.8rem; color: #9ca3af; }
+  .log-list {
+    font-size: 0.82rem;
+    color: #9ca3af;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .chip {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 999px;
+    border: 1px solid #1e293b;
+    background: #020617;
+  }
+  .chart-text {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-top: 4px;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  .pill {
+    display: inline-block;
+    font-size: 0.75rem;
+    border-radius: 999px;
+    padding: 2px 8px;
+    background: rgba(15,23,42,0.8);
+    border: 1px solid #1f2937;
+  }
+  .hint {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    margin-top: 6px;
+  }
+  .slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .slider-row label {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .slider-row input[type="range"] {
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div>
+    <h1>Evolutionärer Ballwurf</h1>
+    <p class="small">
+      Schritt 1: Ziehe den blauen <span class="pill">THROWER</span> im Canvas an deine Wunsch-Position
+      und stelle die Höhe der roten Mauer ein.<br>
+      Schritt 2: Wähle den <span class="pill">Vermehrungsfaktor</span> und die
+      <span class="pill">maximale Populationsgröße</span> und klicke auf
+      <span class="pill">START LEARNING</span>. Gestartet wird immer mit nur 2 Bällen.
+    </p>
+  </div>
+
+  <div class="layout">
+    <div class="left">
+      <div class="canvas-wrap card">
+        <canvas id="simCanvas" width="800" height="500"></canvas>
+
+        <div id="winnerOverlay" class="overlay hidden">
+          <div class="overlay-inner">
+            <div class="badge">
+              <span>🎯</span>
+              <span>Trajektorie gefunden</span>
+            </div>
+            <h2>Goal erreicht!</h2>
+            <p class="small" style="margin-bottom: 10px;">
+              Ein Ball hat die Mauer nach genau einem Bodenkontakt sauber übersprungen
+              und ist dahinter gelandet.
+            </p>
+
+            <div class="stats-grid">
+              <div>
+                <div class="stat-label">Generation</div>
+                <div class="stat-value" id="ovGen">–</div>
+              </div>
+              <div>
+                <div class="stat-label">Versuche (Erfolge)</div>
+                <div class="stat-value" id="ovSucc">–</div>
+              </div>
+              <div>
+                <div class="stat-label">Winkel</div>
+                <div class="stat-value" id="ovAngle">–</div>
+              </div>
+              <div>
+                <div class="stat-label">Kraft</div>
+                <div class="stat-value" id="ovForce">–</div>
+              </div>
+              <div>
+                <div class="stat-label">Individuen bis Erfolg</div>
+                <div class="stat-value" id="ovIndividuals">–</div>
+              </div>
+            </div>
+
+            <button id="btnNewExperiment" class="primary" type="button">
+              Neues Experiment starten
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="btn-row" style="margin-bottom: 8px;">
+          <button id="btnStartPause" class="primary" type="button">
+            START LEARNING
+          </button>
+          <button id="btnReset" class="secondary" type="button">
+            RESET POSITION
+          </button>
+        </div>
+        <div class="live-box">
+          <div>
+            <div class="live-label">Generation</div>
+            <div class="live-value" id="liveGen">0</div>
+          </div>
+          <div>
+            <div class="live-label">Erfolge (gesamt)</div>
+            <div class="live-value" id="liveSucc">0</div>
+          </div>
+          <div>
+            <div class="live-label">Bestes Fitness-Maß</div>
+            <div class="live-value" id="liveFit">0</div>
+          </div>
+          <div>
+            <div class="live-label">Champion-Winkel</div>
+            <div class="live-value" id="liveAngle">–</div>
+          </div>
+          <div>
+            <div class="live-label">Champion-Kraft</div>
+            <div class="live-value" id="liveForce">–</div>
+          </div>
+          <div>
+            <div class="live-label">Generationsfortschritt</div>
+            <div class="live-value" id="liveProg">0%</div>
+          </div>
+        </div>
+
+        <div class="slider-row">
+          <label for="wallHeightSlider">
+            Mauerhöhe
+            <span><span id="wallHeightValue">250</span> px</span>
+          </label>
+          <input type="range" id="wallHeightSlider" min="80" max="380" value="250">
+        </div>
+
+        <div class="slider-row">
+          <label for="growthSlider">
+            Vermehrungsfaktor pro Generation
+            <span><span id="growthValue">2</span>x</span>
+          </label>
+          <input type="range" id="growthSlider" min="1" max="5" step="1" value="2">
+        </div>
+
+        <div class="slider-row">
+          <label for="maxPopSlider">
+            Maximale Populationsgröße
+            <span><span id="maxPopValue">500</span> Bälle</span>
+          </label>
+          <input type="range" id="maxPopSlider" min="10" max="1000" step="10" value="500">
+        </div>
+
+        <p class="hint">
+          Gestartet wird immer mit 2 Bällen. In jeder Generation wächst die
+          Populationsgröße ungefähr um den eingestellten Faktor (z. B. 2 → 4 → 8 → 16 …),
+          wird aber durch die maximale Populationsgröße begrenzt.
+        </p>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card">
+        <h2>Was passiert hier?</h2>
+        <div class="log-list">
+          <p>
+            • Start immer mit <strong>2</strong> Bällen aus der THROWER-Position
+              mit zufälligem Winkel <span class="mono">(ca. 60–80°)</span> und Kraft.
+          </p>
+          <p>
+            • In jeder neuen Generation wird die Populationsgröße mit dem gewählten
+              Vermehrungsfaktor multipliziert, aber durch die maximale Populationsgröße begrenzt.
+          </p>
+          <p>
+            • Goal: Genau <strong>ein</strong> Bodenkontakt vor der Mauer, danach muss der Ball die
+              rote Mauer überspringen und dahinter wieder landen.
+          </p>
+          <p>
+            • Fitness: Je näher der höchste Punkt nach dem ersten Bounce an der Mauer liegt
+              (bei ausreichender Höhe über der Mauer), desto besser. Wird der Abstand größer,
+              sinkt die Fitness.
+          </p>
+          <p>
+            • Wenn sich die Fitness über 5 Generationen nicht verbessert, werden Winkel und Kraft
+              der Eltern verstärkt, damit die Population aggressiver nach neuen Lösungen sucht.
+          </p>
+        </div>
+
+        <div class="chip-row">
+          <span class="chip">Start mit 2 Bällen</span>
+          <span class="chip">Vermehrungsfaktor pro Generation</span>
+          <span class="chip">Begrenzte Max-Population</span>
+          <span class="chip">Fitness: Mauer-Nähe am Apex</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Letzte Fitness-Werte</h3>
+        <div class="chart-text mono" id="fitnessLog">
+          Noch keine Daten – Schritt&nbsp;1: THROWER &amp; Mauerhöhe &amp; Vermehrungsfaktor &amp; maximale Populationsgröße wählen, Schritt&nbsp;2: „START LEARNING“.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Physik- und Evolutionsparameter
+const WIDTH = 800;
+const HEIGHT = 500;
+const GRAVITY = 0.5;
+const BOUNCE_DAMPING = 0.7;
+const TIME_SCALE = 0.25;
+const GENERATION_DURATION = 1200;
+
+// Position der Mauer (x-Koordinate)
+const WALL_X = 600;
+
+// dynamische Mauerhöhe (Slider)
+let wallHeight = 250;
+
+// dynamischer Vermehrungsfaktor
+let growthFactor = 2;
+
+// maximale Populationsgröße (Slider)
+let maxPop = 500;
+
+// Populationsgröße (dynamisch, startet immer mit 2)
+let populationSize = 2;
+
+// Startposition jetzt veränderbar
+let START_POS = { x: 50, y: 200 };
+
+// Simulationszustand
+let generation = 0;
+let isRunning = false;
+let successCount = 0;
+let bestFitness = 0;
+let stats = [];
+let winnerGene = null;
+
+let balls = [];
+let frameCount = 0;
+let bestGene = null;
+let hasPopulation = false;
+
+// Gewinner-Ball, der nach Erfolg weiterfliegen soll
+let winnerBallIndex = null;
+
+// Zähler: wie viele Individuen wurden insgesamt erzeugt?
+let totalIndividualsCreated = 0;
+
+// Globale Fitness-/Stagnations-Parameter
+let globalBestFitness = -Infinity;
+let stagnationGens = 0;
+
+// Canvas & DOM
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+
+const btnStartPause = document.getElementById('btnStartPause');
+const btnReset = document.getElementById('btnReset');
+const btnNewExperiment = document.getElementById('btnNewExperiment');
+
+const liveGen = document.getElementById('liveGen');
+const liveSucc = document.getElementById('liveSucc');
+const liveFit = document.getElementById('liveFit');
+const liveAngle = document.getElementById('liveAngle');
+const liveForce = document.getElementById('liveForce');
+const liveProg = document.getElementById('liveProg');
+const fitnessLog = document.getElementById('fitnessLog');
+
+const winnerOverlay = document.getElementById('winnerOverlay');
+const ovGen = document.getElementById('ovGen');
+const ovSucc = document.getElementById('ovSucc');
+const ovAngle = document.getElementById('ovAngle');
+const ovForce = document.getElementById('ovForce');
+const ovIndividuals = document.getElementById('ovIndividuals');
+
+const wallHeightSlider = document.getElementById('wallHeightSlider');
+const wallHeightValue = document.getElementById('wallHeightValue');
+const growthSlider = document.getElementById('growthSlider');
+const growthValue = document.getElementById('growthValue');
+const maxPopSlider = document.getElementById('maxPopSlider');
+const maxPopValue = document.getElementById('maxPopValue');
+
+// Slider-Logik
+wallHeightSlider.addEventListener('input', () => {
+  wallHeight = parseInt(wallHeightSlider.value, 10);
+  wallHeightValue.textContent = wallHeight;
+  drawScene();
+});
+
+growthSlider.addEventListener('input', () => {
+  const val = parseInt(growthSlider.value, 10);
+  growthFactor = val;
+  growthValue.textContent = val;
+});
+
+maxPopSlider.addEventListener('input', () => {
+  const val = parseInt(maxPopSlider.value, 10);
+  maxPop = val;
+  maxPopValue.textContent = val;
+});
+
+// THROWER per Pointer verschieben (nur vor Start)
+let draggingThrower = false;
+
+function canvasToWorld(x, y) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (x - rect.left) * scaleX,
+    y: (y - rect.top) * scaleY
+  };
+}
+
+canvas.addEventListener('pointerdown', e => {
+  if (hasPopulation || isRunning) return; // Nur vor Start verschieben
+  const p = canvasToWorld(e.clientX, e.clientY);
+  const dx = p.x - START_POS.x;
+  const dy = p.y - START_POS.y;
+  const dist2 = dx * dx + dy * dy;
+  const radius = 14;
+  if (dist2 <= radius * radius) {
+    draggingThrower = true;
+    canvas.setPointerCapture(e.pointerId);
+  }
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (!draggingThrower) return;
+  const p = canvasToWorld(e.clientX, e.clientY);
+  START_POS.x = Math.min(WIDTH - 20, Math.max(20, p.x));
+  START_POS.y = Math.min(HEIGHT - 20, Math.max(20, p.y));
+  drawScene();
+});
+
+canvas.addEventListener('pointerup', e => {
+  if (draggingThrower) {
+    draggingThrower = false;
+    canvas.releasePointerCapture(e.pointerId);
+  }
+});
+
+canvas.addEventListener('pointercancel', e => {
+  if (draggingThrower) {
+    draggingThrower = false;
+    canvas.releasePointerCapture(e.pointerId);
+  }
+});
+
+// Hilfsfunktionen
+function randomColor() {
+  const h = Math.floor(Math.random() * 360);
+  return `hsla(${h},70%,60%,0.5)`;
+}
+
+function createBall(gene) {
+  const rad = gene.angle * (Math.PI / 180);
+  totalIndividualsCreated += 1;
+  return {
+    pos: { x: START_POS.x, y: START_POS.y },
+    vel: { x: Math.cos(rad) * gene.force, y: Math.sin(rad) * gene.force },
+    gene: { angle: gene.angle, force: gene.force },
+    active: true,
+    bounced: false,
+    bounceCount: 0,
+    fitness: 0,
+    color: randomColor(),
+    isBest: false,
+    status: 'flying',
+    apexYAfterBounce: HEIGHT,
+    apexXAfterBounce: START_POS.x,
+    hasApexAfterBounce: false
+  };
+}
+
+function initPopulation() {
+  populationSize = 2; // immer mit 2 starten
+  const arr = [];
+  for (let i = 0; i < populationSize; i++) {
+    const angle = 60 + Math.random() * 20;
+    const force = 10 + Math.random() * 5;
+    arr.push(createBall({ angle, force }));
+  }
+  balls = arr;
+  generation = 1;
+  frameCount = 0;
+  successCount = 0;
+  stats = [];
+  bestFitness = 0;
+  bestGene = null;
+  winnerGene = null;
+  winnerBallIndex = null;
+  hasPopulation = true;
+  globalBestFitness = -Infinity;
+  stagnationGens = 0;
+  updateUI();
+  hideWinnerOverlay();
+}
+
+// Fitness-Funktion:
+// - Hauptziel: Abstand in x-Richtung zur Mauer (am Apex nach erstem Bounce) soll kleiner werden.
+// - Wird der Abstand größer, sinkt die Fitness automatisch.
+// - Unter der Mauerhöhe gibt es zusätzliche Strafe.
+function calculateFitness(ball) {
+  if (!ball.hasApexAfterBounce || ball.bounceCount === 0) {
+    return -1e9;
+  }
+
+  const apexY = ball.apexYAfterBounce;
+  const apexX = ball.apexXAfterBounce;
+  const apexHeight = HEIGHT - apexY;      // Höhe vom Boden
+  const wallTopHeight = wallHeight;       // Mauerhöhe vom Boden
+  const distX = Math.abs(apexX - WALL_X);
+
+  // Basis-Strafe: Abstand zur Mauer (je größer, desto schlechter)
+  let penalty = distX * 200;
+
+  // Unter der Mauerhöhe → zusätzliche Strafe
+  if (apexHeight < wallTopHeight) {
+    const deficit = wallTopHeight - apexHeight;
+    penalty += deficit * 400;
+  }
+
+  // Fitness = hoher Basiswert minus Penalty
+  let fitness = 100000 - penalty;
+
+  // Mehrere Bounces sind unerwünscht
+  if (ball.bounceCount > 1) {
+    fitness -= 20000;
+  }
+
+  // Sauberer Erfolg (genau 1 Bounce, dann drüber) wird stark belohnt
+  if (ball.status === 'success' && ball.bounceCount === 1) {
+    fitness += 50000;
+  }
+
+  return fitness;
+}
+
+function evolve() {
+  let maxFit = -Infinity;
+  let bestBall = null;
+  let successThisGen = 0;
+
+  for (const b of balls) {
+    b.fitness = calculateFitness(b);
+    if (b.fitness > maxFit) {
+      maxFit = b.fitness;
+      bestBall = b;
+    }
+    if (b.status === 'success' && b.bounceCount === 1) successThisGen++;
+  }
+
+  bestFitness = Math.floor(maxFit);
+  if (bestBall) {
+    bestGene = { angle: bestBall.gene.angle, force: bestBall.gene.force };
+  }
+
+  stats.push({ gen: generation, fitness: Math.floor(maxFit) });
+  if (stats.length > 20) stats.shift();
+
+  if (successThisGen > 0) {
+    successCount += successThisGen;
+  }
+
+  // Stagnation über mehrere Generationen erkennen
+  if (maxFit > globalBestFitness + 1e-6) {
+    globalBestFitness = maxFit;
+    stagnationGens = 0;
+  } else {
+    stagnationGens++;
+  }
+
+  const currentPop = balls.length;
+  const sorted = balls.slice().sort((a, b) => b.fitness - a.fitness);
+  const parentCount = Math.max(1, Math.floor(currentPop * 0.2));
+  const parents = sorted.slice(0, parentCount);
+
+  // Wenn sich 5 Generationen lang nichts verbessert hat:
+  // Winkel und Kraft der Eltern erhöhen, um aggressiver zu suchen.
+  if (stagnationGens >= 5) {
+    for (const p of parents) {
+      p.gene.force += 2;   // mehr Kraft
+      p.gene.angle += 5;   // größerer Winkel
+    }
+    stagnationGens = 0;
+  }
+
+  // Ziel-Populationsgröße der nächsten Generation = aktueller Pop * growthFactor
+  let nextPopSize = Math.floor(currentPop * growthFactor);
+  if (nextPopSize < 2) nextPopSize = 2;
+  if (nextPopSize > maxPop) nextPopSize = maxPop;
+
+  const nextGen = [];
+
+  if (parents.length > 0) {
+    const p0 = parents[0];
+    const champX = p0.hasApexAfterBounce ? p0.apexXAfterBounce : p0.pos.x;
+    const champY = p0.hasApexAfterBounce ? p0.apexYAfterBounce : p0.pos.y;
+    const champ = {
+      pos: { x: champX, y: champY },
+      vel: { x: 0, y: 0 },
+      gene: { angle: p0.gene.angle, force: p0.gene.force },
+      active: false,
+      bounced: p0.bounced,
+      bounceCount: p0.bounceCount,
+      fitness: p0.fitness,
+      color: '#ffffff',
+      isBest: true,
+      status: p0.status,
+      apexYAfterBounce: p0.apexYAfterBounce,
+      apexXAfterBounce: p0.apexXAfterBounce,
+      hasApexAfterBounce: p0.hasApexAfterBounce
+    };
+    nextGen.push(champ);
+  }
+
+  while (nextGen.length < nextPopSize) {
+    const parent = parents[Math.floor(Math.random() * parents.length)];
+    const newAngle = parent.gene.angle + (Math.random() - 0.5) * 10;
+    const newForce = parent.gene.force + (Math.random() - 0.5) * 2;
+    const child = createBall({ angle: newAngle, force: newForce });
+    nextGen.push(child);
+  }
+
+  balls = nextGen;
+  populationSize = nextPopSize;
+  generation += 1;
+  frameCount = 0;
+  updateUI();
+}
+
+function updatePhysics() {
+  let allStopped = true;
+
+  for (let i = 0; i < balls.length; i++) {
+    const ball = balls[i];
+    if (!ball.active) continue;
+    allStopped = false;
+
+    ball.pos.x += ball.vel.x * TIME_SCALE;
+    ball.pos.y += ball.vel.y * TIME_SCALE;
+    ball.vel.y += GRAVITY * TIME_SCALE;
+
+    if (ball.pos.y >= HEIGHT - 5) {
+      ball.pos.y = HEIGHT - 5;
+      ball.vel.y *= -BOUNCE_DAMPING;
+      ball.bounceCount += 1;
+      ball.bounced = true;
+      ball.vel.x *= 0.99;
+    }
+
+    if (ball.bounceCount >= 1) {
+      if (!ball.hasApexAfterBounce || ball.pos.y < ball.apexYAfterBounce) {
+        ball.apexYAfterBounce = ball.pos.y;
+        ball.apexXAfterBounce = ball.pos.x;
+        ball.hasApexAfterBounce = true;
+      }
+    }
+
+    const wallTopY = HEIGHT - wallHeight;
+
+    if (ball.pos.x + 5 >= WALL_X && ball.pos.x - 5 < WALL_X + 20) {
+      if (ball.pos.y > wallTopY) {
+        if (ball.pos.x < WALL_X + 5) {
+          ball.pos.x = WALL_X - 5;
+          ball.vel.x *= -0.5;
+          ball.active = false;
+          ball.status = 'crashed';
+        }
+      }
+    }
+
+    // Erfolg NUR wenn genau ein Bounce vor der Mauer und dann drüber
+    if (ball.bounceCount === 1 && ball.pos.x > WALL_X + 20 && ball.pos.y < HEIGHT - 5) {
+      if (ball.status !== 'success') {
+        ball.status = 'success';
+        if (winnerBallIndex === null) {
+          winnerBallIndex = i;
+          winnerGene = { angle: ball.gene.angle, force: ball.gene.force };
+          successCount += 1;
+        }
+      }
+    }
+
+    if (Math.abs(ball.vel.x) < 0.1 && Math.abs(ball.vel.y) < 0.1 && ball.pos.y > HEIGHT - 10) {
+      ball.active = false;
+    }
+
+    if (ball.pos.y > HEIGHT + 100 || ball.pos.x < -100 || ball.pos.x > WIDTH + 200) {
+      ball.active = false;
+    }
+  }
+
+  frameCount++;
+
+  if (winnerBallIndex !== null) {
+    const wb = balls[winnerBallIndex];
+    if (!wb || !wb.active) {
+      isRunning = false;
+      showWinnerOverlay();
+      updateUI();
+      return;
+    }
+    updateUI();
+    return;
+  }
+
+  if (frameCount > GENERATION_DURATION || allStopped) {
+    evolve();
+  } else {
+    updateUI();
+  }
+}
+
+function drawScene() {
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, HEIGHT - 2, WIDTH, 2);
+
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(WALL_X, HEIGHT - wallHeight, 20, wallHeight);
+  ctx.fillStyle = '#ef4444';
+  ctx.font = '12px monospace';
+  ctx.fillText('TARGET', WALL_X - 10, HEIGHT - wallHeight - 10);
+
+  ctx.fillStyle = '#3b82f6';
+  ctx.beginPath();
+  ctx.arc(START_POS.x, START_POS.y, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#9ca3af';
+  ctx.font = '12px monospace';
+  ctx.fillText('THROWER', START_POS.x - 25, START_POS.y - 16);
+
+  const sortedBalls = balls.slice().sort((a, b) => (a.isBest ? 1 : -1));
+
+  for (const ball of sortedBalls) {
+    const isChamp = !!ball.isBest;
+    if (isChamp) {
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = 'white';
+    }
+
+    ctx.fillStyle = isChamp ? '#ffffff' : ball.color;
+    ctx.globalAlpha = isChamp ? 1.0 : 0.4;
+
+    const radius = isChamp ? 9 : 5;
+    ctx.beginPath();
+    ctx.arc(ball.pos.x, ball.pos.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (isChamp) {
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = 'transparent';
+    }
+  }
+  ctx.globalAlpha = 1.0;
+
+  const pct = hasPopulation ? Math.min(1, frameCount / GENERATION_DURATION) * 100 : 0;
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(10, 10, 100, 6);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(10, 10, 100 * (pct / 100), 6);
+  ctx.fillStyle = '#9ca3af';
+  ctx.font = '11px monospace';
+  ctx.fillText('Gen-Time', 118, 16);
+}
+
+function updateUI() {
+  liveGen.textContent = String(generation);
+  liveSucc.textContent = String(successCount);
+  liveFit.textContent = String(bestFitness);
+  if (bestGene) {
+    liveAngle.textContent = bestGene.angle.toFixed(1) + '°';
+    liveForce.textContent = bestGene.force.toFixed(1);
+  } else {
+    liveAngle.textContent = '–';
+    liveForce.textContent = '–';
+  }
+  const p = hasPopulation ? Math.min(1, frameCount / GENERATION_DURATION) * 100 : 0;
+  liveProg.textContent = p.toFixed(0) + '%';
+
+  if (!hasPopulation) {
+    fitnessLog.innerHTML =
+      'Noch keine Daten – Schritt 1: THROWER &amp; Mauerhöhe &amp; Vermehrungsfaktor &amp; maximale Populationsgröße wählen, Schritt 2: „START LEARNING“.';
+  } else if (stats.length === 0) {
+    fitnessLog.textContent = 'Noch keine Fitnessdaten gesammelt …';
+  } else {
+    const lines = stats.map(s => `Gen ${String(s.gen).padStart(3, ' ')}: Fitness ${s.fitness}`);
+    fitnessLog.textContent = lines.join('\n');
+  }
+
+  if (winnerGene) {
+    btnStartPause.textContent = 'FERTIG';
+    btnStartPause.disabled = true;
+    btnStartPause.classList.remove('running');
+  } else {
+    btnStartPause.disabled = false;
+    if (!hasPopulation) {
+      btnStartPause.textContent = 'START LEARNING';
+      btnStartPause.classList.remove('running');
+    } else {
+      if (isRunning) {
+        btnStartPause.textContent = 'PAUSE';
+        btnStartPause.classList.add('running');
+      } else {
+        btnStartPause.textContent = 'FORTSETZEN';
+        btnStartPause.classList.remove('running');
+      }
+    }
+  }
+}
+
+function showWinnerOverlay() {
+  if (!winnerGene) return;
+  winnerOverlay.classList.remove('hidden');
+  ovGen.textContent = String(generation);
+  ovSucc.textContent = String(successCount);
+  ovAngle.textContent = winnerGene.angle.toFixed(2) + '°';
+  ovForce.textContent = winnerGene.force.toFixed(2);
+  ovIndividuals.textContent = String(totalIndividualsCreated);
+}
+
+function hideWinnerOverlay() {
+  winnerOverlay.classList.add('hidden');
+}
+
+function loop() {
+  if (isRunning && hasPopulation) {
+    updatePhysics();
+  }
+  drawScene();
+  requestAnimationFrame(loop);
+}
+
+btnStartPause.addEventListener('click', () => {
+  if (winnerGene) return;
+
+  if (!hasPopulation) {
+    totalIndividualsCreated = 0; // neues Experiment: Zähler zurücksetzen
+    initPopulation();
+    isRunning = true;
+  } else {
+    isRunning = !isRunning;
+  }
+  updateUI();
+});
+
+btnReset.addEventListener('click', () => {
+  isRunning = false;
+  hasPopulation = false;
+  balls = [];
+  stats = [];
+  generation = 0;
+  successCount = 0;
+  bestFitness = 0;
+  bestGene = null;
+  winnerGene = null;
+  winnerBallIndex = null;
+  totalIndividualsCreated = 0;
+  globalBestFitness = -Infinity;
+  stagnationGens = 0;
+  populationSize = 2;
+  hideWinnerOverlay();
+  updateUI();
+});
+
+btnNewExperiment.addEventListener('click', () => {
+  isRunning = false;
+  hasPopulation = false;
+  balls = [];
+  stats = [];
+  generation = 0;
+  successCount = 0;
+  bestFitness = 0;
+  bestGene = null;
+  winnerGene = null;
+  winnerBallIndex = null;
+  totalIndividualsCreated = 0;
+  globalBestFitness = -Infinity;
+  stagnationGens = 0;
+  populationSize = 2;
+  hideWinnerOverlay();
+  updateUI();
+});
+
+updateUI();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
