@@ -1,422 +1,441 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Apps – Menü</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apps – Menü</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #05060a;
-      color: #eee;
-      min-height: 100vh;
-      display: flex;
-    }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #05060a;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+        }
 
-    .app {
-      display: flex;
-      flex: 1;
-      min-height: 100vh;
-      position: relative;
-    }
+        .app {
+            display: flex;
+            flex: 1;
+            min-height: 100vh;
+            position: relative;
+        }
 
-    .sidebar {
-      width: 240px;
-      background: #0b0d16;
-      border-right: 1px solid #222;
-      padding: 16px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      z-index: 900;
-    }
+        .sidebar {
+            width: 240px;
+            background: #0b0d16;
+            border-right: 1px solid #222;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            z-index: 900;
+        }
 
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 0 4px;
-    }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 0 4px;
+        }
 
-    .sidebar-header h2 {
-      margin: 0;
-      font-size: 1.2rem;
-      color: #00ccff;
-    }
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #00ccff;
+        }
 
-    .nav-group-title {
-      margin: 8px;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #888;
-    }
+        .nav-group-title {
+            margin: 8px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #888;
+        }
 
-    .nav-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
 
-    .nav-link {
-      width: 100%;
-      text-align: left;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: none;
-      background: transparent;
-      color: #ddd;
-      cursor: pointer;
-      font-size: 0.95rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.15s, color 0.15s, transform 0.1s;
-    }
+        .nav-link {
+            width: 100%;
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: #ddd;
+            cursor: pointer;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s, color 0.15s, transform 0.1s;
+        }
 
-    .nav-link span.icon {
-      font-size: 1rem;
-      opacity: 0.9;
-    }
+        .nav-link span.icon {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
 
-    .nav-link:hover {
-      background: #151827;
-      transform: translateY(-1px);
-    }
+        .nav-link:hover {
+            background: #151827;
+            transform: translateY(-1px);
+        }
 
-    .nav-link.active {
-      background: linear-gradient(135deg, #00ccff, #0066ff);
-      color: #000;
-      font-weight: 600;
-      box-shadow: 0 0 16px rgba(0, 150, 255, 0.6);
-    }
+        .nav-link.active {
+            background: linear-gradient(135deg, #00ccff, #0066ff);
+            color: #000;
+            font-weight: 600;
+            box-shadow: 0 0 16px rgba(0, 150, 255, 0.6);
+        }
 
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
 
-    .topbar {
-      height: 48px;
-      padding: 8px 16px;
-      border-bottom: 1px solid #222;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: radial-gradient(circle at top left, #1b2840, #05060a);
-      z-index: 800;
-    }
+        .topbar {
+            height: 48px;
+            padding: 8px 16px;
+            border-bottom: 1px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: radial-gradient(circle at top left, #1b2840, #05060a);
+            z-index: 800;
+        }
 
-    .topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    .topbar-title {
-      font-size: 1rem;
-      color: #cfd3ff;
-    }
+        .topbar-title {
+            font-size: 1rem;
+            color: #cfd3ff;
+        }
 
-    .topbar-title strong {
-      color: #00ccff;
-    }
+        .topbar-title strong {
+            color: #00ccff;
+        }
 
-    .topbar-right {
-      font-size: 0.8rem;
-      color: #777;
-    }
+        .topbar-right {
+            font-size: 0.8rem;
+            color: #777;
+        }
 
-    .frame-wrap {
-      flex: 1;
-      min-height: 0;
-      background: radial-gradient(circle at top, #111827, #020308);
-    }
+        .frame-wrap {
+            flex: 1;
+            min-height: 0;
+            background: radial-gradient(circle at top, #111827, #020308);
+        }
 
-    #content-frame {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-    }
+        #content-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
 
-    /* Theme-Toggle in der Sidebar */
-    .theme-toggle-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
-      border: 1px solid #333;
-      background: #050815;
-      color: #ffd86b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 1.2rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.6);
-    }
+        /* Theme-Toggle in der Sidebar */
+        .theme-toggle-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            border: 1px solid #333;
+            background: #050815;
+            color: #ffd86b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.6);
+        }
 
-    /* Burger-Button */
-    .burger {
-      display: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 6px;
-      border: 1px solid #333;
-      background: #0b0d16;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      padding: 0;
-    }
+        /* Burger-Button */
+        .burger {
+            display: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background: #0b0d16;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+        }
 
-    .burger-lines {
-      width: 18px;
-      height: 14px;
-      position: relative;
-    }
+        .burger-lines {
+            width: 18px;
+            height: 14px;
+            position: relative;
+        }
 
-    .burger-lines span {
-      position: absolute;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: #cfd3ff;
-      border-radius: 999px;
-      transition: transform 0.2s, opacity 0.2s, top 0.2s, bottom 0.2s;
-    }
+        .burger-lines span {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #cfd3ff;
+            border-radius: 999px;
+            transition: transform 0.2s, opacity 0.2s, top 0.2s, bottom 0.2s;
+        }
 
-    .burger-lines span:nth-child(1) { top: 0; }
-    .burger-lines span:nth-child(2) { top: 6px; }
-    .burger-lines span:nth-child(3) { bottom: 0; }
+        .burger-lines span:nth-child(1) { top: 0; }
+        .burger-lines span:nth-child(2) { top: 6px; }
+        .burger-lines span:nth-child(3) { bottom: 0; }
 
-    .burger.open .burger-lines span:nth-child(1) {
-      top: 6px;
-      transform: rotate(45deg);
-    }
+        .burger.open .burger-lines span:nth-child(1) {
+            top: 6px;
+            transform: rotate(45deg);
+        }
 
-    .burger.open .burger-lines span:nth-child(2) {
-      opacity: 0;
-    }
+        .burger.open .burger-lines span:nth-child(2) {
+            opacity: 0;
+        }
 
-    .burger.open .burger-lines span:nth-child(3) {
-      bottom: 6px;
-      transform: rotate(-45deg);
-    }
+        .burger.open .burger-lines span:nth-child(3) {
+            bottom: 6px;
+            transform: rotate(-45deg);
+        }
 
-    /* Light Theme für Index */
-    body.light-theme {
-      background: #f4f6fb;
-      color: #111;
-    }
+        /* Light Theme für Index */
+        body.light-theme {
+            background: #f4f6fb;
+            color: #111;
+        }
 
-    body.light-theme .sidebar {
-      background: #ffffff;
-      border-right-color: #d0d5e3;
-    }
+        body.light-theme .sidebar {
+            background: #ffffff;
+            border-right-color: #d0d5e3;
+        }
 
-    body.light-theme .sidebar-header h2 {
-      color: #0059aa;
-    }
+        body.light-theme .sidebar-header h2 {
+            color: #0059aa;
+        }
 
-    body.light-theme .nav-group-title {
-      color: #777;
-    }
+        body.light-theme .nav-group-title {
+            color: #777;
+        }
 
-    body.light-theme .nav-link {
-      color: #222;
-    }
+        body.light-theme .nav-link {
+            color: #222;
+        }
 
-    body.light-theme .nav-link:hover {
-      background: #e8edf9;
-    }
+        body.light-theme .nav-link:hover {
+            background: #e8edf9;
+        }
 
-    body.light-theme .nav-link.active {
-      background: linear-gradient(135deg, #1976d2, #42a5f5);
-      color: #fff;
-      box-shadow: 0 0 12px rgba(25,118,210,0.6);
-    }
+        body.light-theme .nav-link.active {
+            background: linear-gradient(135deg, #1976d2, #42a5f5);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(25,118,210,0.6);
+        }
 
-    body.light-theme .topbar {
-      background: linear-gradient(90deg, #e3f2fd, #c5cae9);
-      border-bottom-color: #d0d5e3;
-    }
+        body.light-theme .topbar {
+            background: linear-gradient(90deg, #e3f2fd, #c5cae9);
+            border-bottom-color: #d0d5e3;
+        }
 
-    body.light-theme .topbar-title {
-      color: #333;
-    }
+        body.light-theme .topbar-title {
+            color: #333;
+        }
 
-    body.light-theme .topbar-title strong {
-      color: #1976d2;
-    }
+        body.light-theme .topbar-title strong {
+            color: #1976d2;
+        }
 
-    body.light-theme .topbar-right {
-      color: #555;
-    }
+        body.light-theme .topbar-right {
+            color: #555;
+        }
 
-    body.light-theme .frame-wrap {
-      background: #dde3f5;
-    }
+        body.light-theme .frame-wrap {
+            background: #dde3f5;
+        }
 
-    body.light-theme .theme-toggle-btn {
-      background: #ffffff;
-      border-color: #d0d5e3;
-      color: #ff9800;
-      box-shadow: 0 0 6px rgba(0,0,0,0.2);
-    }
+        body.light-theme .theme-toggle-btn {
+            background: #ffffff;
+            border-color: #d0d5e3;
+            color: #ff9800;
+            box-shadow: 0 0 6px rgba(0,0,0,0.2);
+        }
 
-    /* Mobile Layout: Sidebar als einfahrendes Menü */
-    @media (max-width: 768px) {
-      .app {
-        flex-direction: column;
-      }
+        /* Mobile Layout: Sidebar als einfahrendes Menü */
+        @media (max-width: 768px) {
+            .app {
+                flex-direction: column;
+            }
 
-      .sidebar {
-        position: absolute;
-        top: 48px;
-        left: 0;
-        width: 220px;
-        height: calc(100% - 48px);
-        border-right: 1px solid #222;
-        background: rgba(11,13,22,0.98);
-        transform: translateX(-100%);
-        transition: transform 0.2s ease-out;
-      }
+            .sidebar {
+                position: absolute;
+                top: 48px;
+                left: 0;
+                width: 220px;
+                height: calc(100% - 48px);
+                border-right: 1px solid #222;
+                background: rgba(11,13,22,0.98);
+                transform: translateX(-100%);
+                transition: transform 0.2s ease-out;
+            }
 
-      body.light-theme .sidebar {
-        background: rgba(255,255,255,0.98);
-      }
+            body.light-theme .sidebar {
+                background: rgba(255,255,255,0.98);
+            }
 
-      .sidebar.open {
-        transform: translateX(0);
-      }
+            .sidebar.open {
+                transform: translateX(0);
+            }
 
-      .burger {
-        display: inline-flex;
-      }
-    }
-  </style>
+            .burger {
+                display: inline-flex;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <h2>Apps</h2>
-        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Day/Night umschalten">☀️</button>
-      </div>
-
-      <div class="nav-group-title">Menü</div>
-      <ul class="nav-list">
-        <li>
-          <button class="nav-link active" data-target="home.html">
-            <span class="icon">🏠</span>
-            <span>Home</span>
-          </button>
-        </li>
-        <li>
-          <button class="nav-link" data-target="quadratzahlen_quiz_v3.html">
-            <span class="icon">🧮</span>
-            <span>Quadratzahlen-Quiz</span>
-          </button>
-        </li>
-        <li>
-          <button class="nav-link" data-target="einmaleins_quiz.html">
-            <span class="icon">✖️</span>
-            <span>Einmaleins-Quiz</span>
-          </button>
-        </li>
-      </ul>
-    </aside>
-
-    <main class="main">
-      <div class="topbar">
-        <div class="topbar-left">
-          <button class="burger" id="burger" aria-label="Menü öffnen/schließen">
-            <div class="burger-lines">
-              <span></span><span></span><span></span>
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Apps</h2>
+                <button id="theme-toggle" class="theme-toggle-btn" aria-label="Day/Night umschalten">☀️</button>
             </div>
-          </button>
-          <div class="topbar-title">
-            <strong>Apps</strong> – Quadratzahlen &amp; Co.
-          </div>
-        </div>
-        <div class="topbar-right">
-          GitHub Pages · Demo
-        </div>
-      </div>
-      <div class="frame-wrap">
-        <iframe id="content-frame" src="home.html"></iframe>
-      </div>
-    </main>
-  </div>
 
-  <script>
-    const frame   = document.getElementById('content-frame');
-    const links   = Array.from(document.querySelectorAll('.nav-link'));
-    const sidebar = document.getElementById('sidebar');
-    const burger  = document.getElementById('burger');
+            <div class="nav-group-title">Menü</div>
+            <ul class="nav-list">
+                <li>
+                    <button class="nav-link active" data-target="home.html">
+                        <span class="icon">🏠</span>
+                        <span>Home</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-link" data-target="quadratzahlen_quiz_v3.html">
+                        <span class="icon">🧮</span>
+                        <span>Quadratzahlen-Quiz</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-link" data-target="einmaleins_quiz.html">
+                        <span class="icon">✖️</span>
+                        <span>Einmaleins-Quiz</span>
+                    </button>
+                </li>
+            </ul>
 
-    const indexThemeBtn = document.getElementById('theme-toggle');
-    let indexLightOn = false; // false = dunkel, true = hell
+            <div class="nav-group-title">Desktop</div>
+            <ul class="nav-list">
+                <li>
+                    <button class="nav-link" data-target="ball_evolution_thrower_wall_v12.html">
+                        <span class="icon">🏀</span> <span>Ball Evolution Thrower</span>
+                    </button>
+                </li>
+            </ul>
+            </aside>
 
-    function applyIndexTheme() {
-      document.body.classList.toggle('light-theme', indexLightOn);
-      indexThemeBtn.textContent = indexLightOn ? '🌙' : '☀️';
-    }
+        <main class="main">
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="burger" id="burger" aria-label="Menü öffnen/schließen">
+                        <div class="burger-lines">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </button>
+                    <div class="topbar-title">
+                        <strong>Apps</strong> – Quadratzahlen &amp; Co.
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    GitHub Pages · Demo
+                </div>
+            </div>
+            <div class="frame-wrap">
+                <iframe id="content-frame" src="home.html"></iframe>
+            </div>
+        </main>
+    </div>
 
-    indexThemeBtn.addEventListener('click', () => {
-      indexLightOn = !indexLightOn;
-      applyIndexTheme();
-    });
+    <script>
+        const frame    = document.getElementById('content-frame');
+        const links    = Array.from(document.querySelectorAll('.nav-link'));
+        const sidebar = document.getElementById('sidebar');
+        const burger  = document.getElementById('burger');
 
-    applyIndexTheme();
+        const indexThemeBtn = document.getElementById('theme-toggle');
+        let indexLightOn = false; // false = dunkel, true = hell
 
-    function closeSidebarOnMobile() {
-      if (window.innerWidth <= 768) {
-        sidebar.classList.remove('open');
-        burger.classList.remove('open');
-      }
-    }
+        function applyIndexTheme() {
+            document.body.classList.toggle('light-theme', indexLightOn);
+            indexThemeBtn.textContent = indexLightOn ? '🌙' : '☀️';
+        }
 
-    function setActive(link) {
-      links.forEach(el => el.classList.remove('active'));
-      link.classList.add('active');
-      const target = link.getAttribute('data-target');
-      if (target) {
-        frame.src = target;
-      }
-      closeSidebarOnMobile();
-    }
+        indexThemeBtn.addEventListener('click', () => {
+            indexLightOn = !indexLightOn;
+            applyIndexTheme();
+        });
 
-    links.forEach(link => {
-      link.addEventListener('click', () => setActive(link));
-    });
+        applyIndexTheme();
 
-    if (burger) {
-      burger.addEventListener('click', () => {
-        const isOpen = sidebar.classList.toggle('open');
-        burger.classList.toggle('open', isOpen);
-      });
-    }
+        function closeSidebarOnMobile() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+                burger.classList.remove('open');
+            }
+        }
 
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 768) {
-        sidebar.classList.remove('open');
-        burger.classList.remove('open');
-      }
-    });
-  </script>
+        function setActive(link) {
+            links.forEach(el => el.classList.remove('active'));
+            link.classList.add('active');
+            const target = link.getAttribute('data-target');
+            if (target) {
+                frame.src = target;
+            }
+            closeSidebarOnMobile();
+        }
+
+        links.forEach(link => {
+            link.addEventListener('click', () => setActive(link));
+        });
+
+        if (burger) {
+            burger.addEventListener('click', () => {
+                const isOpen = sidebar.classList.toggle('open');
+                burger.classList.toggle('open', isOpen);
+            });
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('open');
+                burger.classList.remove('open');
+            }
+        });
+
+        // Beim Laden der Seite den aktiven Link anhand des iframe-src setzen
+        // (Optional, um den Link "Ball Evolution Thrower" nach Klick richtig zu markieren, 
+        // falls er als Startseite eingestellt würde oder die Seite neu geladen wird, 
+        // wenn er im iframe ist)
+        // const initialSrc = frame.src.split('/').pop();
+        // const initialLink = links.find(link => link.getAttribute('data-target') === initialSrc);
+        // if (initialLink) {
+        //   setActive(initialLink);
+        // }
+    </script>
 </body>
 </html>
