@@ -339,15 +339,23 @@
                 </li>
             </ul>
 
-            <div class="nav-group-title">Desktop</div>
+            <!-- Neuer Block in der Mitte: Desktop Apps -->
+            <div class="nav-group-title">Desktop Apps</div>
             <ul class="nav-list">
                 <li>
+                    <button class="nav-link" data-target="evolution_ball_mauer_V20.html">
+                        <span class="icon">🏀</span>
+                        <span>Evolution Ball Über Mauer</span>
+                    </button>
+                </li>
+                <li>
                     <button class="nav-link" data-target="ball_evolution_thrower_wall_v12.html">
-                        <span class="icon">🏀</span> <span>Ball Evolution Thrower</span>
+                        <span class="icon">🏀</span>
+                        <span>Ball Evolution Thrower</span>
                     </button>
                 </li>
             </ul>
-            </aside>
+        </aside>
 
         <main class="main">
             <div class="topbar">
@@ -372,10 +380,10 @@
     </div>
 
     <script>
-        const frame    = document.getElementById('content-frame');
-        const links    = Array.from(document.querySelectorAll('.nav-link'));
+        const frame   = document.getElementById('content-frame');
+        const links   = Array.from(document.querySelectorAll('.nav-link'));
         const sidebar = document.getElementById('sidebar');
-        const burger  = document.getElementById('burger');
+        const burger  = document.getElementById('burger');
 
         const indexThemeBtn = document.getElementById('theme-toggle');
         let indexLightOn = false; // false = dunkel, true = hell
@@ -426,16 +434,6 @@
                 burger.classList.remove('open');
             }
         });
-
-        // Beim Laden der Seite den aktiven Link anhand des iframe-src setzen
-        // (Optional, um den Link "Ball Evolution Thrower" nach Klick richtig zu markieren, 
-        // falls er als Startseite eingestellt würde oder die Seite neu geladen wird, 
-        // wenn er im iframe ist)
-        // const initialSrc = frame.src.split('/').pop();
-        // const initialLink = links.find(link => link.getAttribute('data-target') === initialSrc);
-        // if (initialLink) {
-        //   setActive(initialLink);
-        // }
     </script>
 </body>
 </html>
