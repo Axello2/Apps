@@ -310,52 +310,55 @@
     </style>
 </head>
 <body>
-    <div class="app">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h2>Apps</h2>
-                <button id="theme-toggle" class="theme-toggle-btn" aria-label="Day/Night umschalten">☀️</button>
-            </div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h2>Apps</h2>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Day/Night umschalten">☀️</button>
+    </div>
 
-            <div class="nav-group-title">Menü</div>
-            <ul class="nav-list">
-                <li>
-                    <button class="nav-link active" data-target="home.html">
-                        <span class="icon">🏠</span>
-                        <span>Home</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="nav-link" data-target="quadratzahlen_quiz_v3.html">
-                        <span class="icon">🧮</span>
-                        <span>Quadratzahlen-Quiz</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="nav-link" data-target="einmaleins_quiz.html">
-                        <span class="icon">✖️</span>
-                        <span>Einmaleins-Quiz</span>
-                    </button>
-                </li>
-            </ul>
+    <!-- Hauptmenü -->
+    <div class="nav-group-title">Menü</div>
+    <ul class="nav-list">
+        <li>
+            <button class="nav-link active" data-target="home.html">
+                <span class="icon">🏠</span>
+                <span>Home</span>
+            </button>
+        </li>
+        <li>
+            <button class="nav-link" data-target="quadratzahlen_quiz_v3.html">
+                <span class="icon">🧮</span>
+                <span>Quadratzahlen-Quiz</span>
+            </button>
+        </li>
+        <li>
+            <button class="nav-link" data-target="einmaleins_quiz.html">
+                <span class="icon">✖️</span>
+                <span>Einmaleins-Quiz</span>
+            </button>
+        </li>
+    </ul>
 
-            <!-- Neuer Block in der Mitte: Desktop Apps -->
-            <div class="nav-group-title">Desktop Apps</div>
-            <ul class="nav-list">
-                <li>
-                    <button class="nav-link" data-target="evolution_ball_mauer_V20.html">
-                        <span class="icon">🏀</span>
-                        <span>Evolution Ball Über Mauer</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="nav-link" data-target="ball_evolution_thrower_wall_v12.html">
-                        <span class="icon">🏀</span>
-                        <span>Ball Evolution Thrower</span>
-                    </button>
-                </li>
-            </ul>
-        </aside>
+    <!-- Neuer Bereich: Desktop Apps -->
+    <div class="nav-group-title">Desktop Apps</div>
+    <ul class="nav-list">
+        <li>
+            <!-- WICHTIG: absoluter GitHub-Pages-Link -->
+            <button class="nav-link" data-target="https://axello2.github.io/Apps/evolution_ball_mauer_V20.html">
+                <span class="icon">🏀</span>
+                <span>Evolution Ball Über Mauer</span>
+            </button>
+        </li>
+
+        <li>
+            <button class="nav-link" data-target="ball_evolution_thrower_wall_v12.html">
+                <span class="icon">🏀</span>
+                <span>Ball Evolution Thrower</span>
+            </button>
+        </li>
+    </ul>
+</aside>
+
 
         <main class="main">
             <div class="topbar">
