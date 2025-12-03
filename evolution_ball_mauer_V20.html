@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Evolutionärer Ballwurf – Einzeldatei-Demo</title>
+<title>Evolutionärer Ballwurf – Einzeldatei-Demo (V21)</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -216,6 +216,38 @@
   .slider-row input[type="range"] {
     width: 100%;
   }
+
+  /* Tabelle + Chart für Champion-Historie */
+  .fitness-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    margin-top: 4px;
+    margin-bottom: 8px;
+  }
+  .fitness-table th,
+  .fitness-table td {
+    border-bottom: 1px solid #1f2937;
+    padding: 2px 4px;
+    text-align: right;
+  }
+  .fitness-table th:first-child,
+  .fitness-table td:first-child {
+    text-align: left;
+  }
+  .fitness-table tbody tr:nth-child(odd) {
+    background: rgba(15,23,42,0.4);
+  }
+  .fitness-chart-wrap {
+    width: 100%;
+    height: 140px;
+    margin-top: 4px;
+  }
+  .fitness-chart {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
 </style>
 </head>
 <body>
@@ -312,6 +344,39 @@
             <div class="live-label">Generationsfortschritt</div>
             <div class="live-value" id="liveProg">0%</div>
           </div>
+
+          <div>
+            <div class="live-label">Kleinster Winkel</div>
+            <div class="live-value" id="liveMinAngle">–</div>
+          </div>
+          <div>
+            <div class="live-label">Größter Winkel</div>
+            <div class="live-value" id="liveMaxAngle">–</div>
+          </div>
+          <div>
+            <div class="live-label">Kleinste Kraft</div>
+            <div class="live-value" id="liveMinForce">–</div>
+          </div>
+          <div>
+            <div class="live-label">Größte Kraft</div>
+            <div class="live-value" id="liveMaxForce">–</div>
+          </div>
+          <div>
+            <div class="live-label">Δ Winkel (absolut)</div>
+            <div class="live-value" id="liveDeltaAngleAbs">0</div>
+          </div>
+          <div>
+            <div class="live-label">Δ Winkel (%)</div>
+            <div class="live-value" id="liveDeltaAnglePct">0%</div>
+          </div>
+          <div>
+            <div class="live-label">Δ Kraft (absolut)</div>
+            <div class="live-value" id="liveDeltaForceAbs">0</div>
+          </div>
+          <div>
+            <div class="live-label">Δ Kraft (%)</div>
+            <div class="live-value" id="liveDeltaForcePct">0%</div>
+          </div>
         </div>
 
         <div class="slider-row">
@@ -338,6 +403,14 @@
           <input type="range" id="maxPopSlider" min="10" max="200" step="10" value="10">
         </div>
 
+        <div class="slider-row">
+          <label for="startAngleSlider">
+            Startwinkel (erster Wurf)
+            <span><span id="startAngleValue">70</span>°</span>
+          </label>
+          <input type="range" id="startAngleSlider" min="60" max="120" step="1" value="70">
+        </div>
+
         <p class="hint">
           Gestartet wird immer mit 1 Ball. In jeder Generation wächst die
           Populationsgröße ungefähr um den eingestellten Faktor (z. B. 2 → 4 → 8 → 16 …),
@@ -352,7 +425,8 @@
         <div class="log-list">
           <p>
             • Start immer mit <strong>1</strong> Ball aus der WERFER-Position
-              mit zufälligem Winkel <span class="mono">(ca. 80–120°)</span> und Kraft.
+              mit Winkel <span class="mono">60–120°</span> – der Startwinkel des
+              allerersten Balls wird über den Slider festgelegt (Standard 70°).
           </p>
           <p>
             • In jeder neuen Generation wird die Populationsgröße mit dem gewählten
@@ -363,7 +437,8 @@
               rote Mauer überspringen und dahinter wieder landen.
           </p>
           <p>
-            • Der weiße Ball ist der "Champion" der letzten Generation mit den höchsten Fitnesswerten, der dem   		      Mauerüberqueren bisher am nächsten ist.
+            • Der weiße Ball ist der "Champion" der letzten Generation mit den höchsten Fitnesswerten, der dem
+              Mauerüberqueren bisher am nächsten ist.
           </p>
 
           <p>
@@ -382,14 +457,33 @@
           <span class="chip">Vermehrungsfaktor pro Generation</span>
           <span class="chip">Begrenzte Max-Population</span>
           <span class="chip">Fitness: Mauer-Nähe am Apex</span>
+          <span class="chip">Startwinkel per Slider</span>
         </div>
       </div>
 
       <div class="card">
         <h3>Letzte Fitness-Werte</h3>
-        <div class="chart-text mono" id="fitnessLog">
-          Noch keine Daten – Schritt&nbsp;1: WERFER &amp; Mauerhöhe &amp; Vermehrungsfaktor &amp; maximale Populationsgröße wählen, Schritt&nbsp;2: „START LEARNING“.
+        <table class="fitness-table">
+          <thead>
+            <tr>
+              <th>Gen</th>
+              <th>Fitness</th>
+              <th>Winkel</th>
+              <th>Kraft</th>
+            </tr>
+          </thead>
+          <tbody id="fitnessTableBody">
+            <tr>
+              <td colspan="4">Noch keine Daten – Simulation mit „START LEARNING“ starten.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="fitness-chart-wrap">
+          <canvas id="fitnessChart" class="fitness-chart" width="320" height="140"></canvas>
         </div>
+        <p class="hint">
+          Liniengrafik: Fitness (grün), Winkel (blau) und Kraft (orange) über alle Generationen der Champions.
+        </p>
       </div>
     </div>
   </div>
@@ -420,7 +514,10 @@ let maxPop = 20;
 let populationSize = 1;
 
 // Startposition jetzt veränderbar
-let START_POS = { x: 400, y: 425 };  // 75 px über dem Boden (Halle Mauerhöhe 150)
+let START_POS = { x: 400, y: 425 };  // 75 px über dem Boden
+
+// Startwinkel für den allerersten Ball (vom User gesetzt)
+let startAngleUser = 70;
 
 // Simulationszustand
 let generation = 0;
@@ -445,6 +542,20 @@ let totalIndividualsCreated = 0;
 let globalBestFitness = -Infinity;
 let stagnationGens = 0;
 
+// Populations-Statistiken (Winkel/Kraft + Aggressivität)
+let popMinAngle = null;
+let popMaxAngle = null;
+let popMinForce = null;
+let popMaxForce = null;
+let popMeanAngle = null;
+let popMeanForce = null;
+let prevMeanAngle = null;
+let prevMeanForce = null;
+let deltaAngleAbs = 0;
+let deltaAnglePct = 0;
+let deltaForceAbs = 0;
+let deltaForcePct = 0;
+
 // Canvas & DOM
 const canvas = document.getElementById('simCanvas');
 const ctx = canvas.getContext('2d');
@@ -459,7 +570,15 @@ const liveFit = document.getElementById('liveFit');
 const liveAngle = document.getElementById('liveAngle');
 const liveForce = document.getElementById('liveForce');
 const liveProg = document.getElementById('liveProg');
-const fitnessLog = document.getElementById('fitnessLog');
+
+const liveMinAngle = document.getElementById('liveMinAngle');
+const liveMaxAngle = document.getElementById('liveMaxAngle');
+const liveMinForce = document.getElementById('liveMinForce');
+const liveMaxForce = document.getElementById('liveMaxForce');
+const liveDeltaAngleAbs = document.getElementById('liveDeltaAngleAbs');
+const liveDeltaAnglePct = document.getElementById('liveDeltaAnglePct');
+const liveDeltaForceAbs = document.getElementById('liveDeltaForceAbs');
+const liveDeltaForcePct = document.getElementById('liveDeltaForcePct');
 
 const winnerOverlay = document.getElementById('winnerOverlay');
 const ovGen = document.getElementById('ovGen');
@@ -474,6 +593,13 @@ const growthSlider = document.getElementById('growthSlider');
 const growthValue = document.getElementById('growthValue');
 const maxPopSlider = document.getElementById('maxPopSlider');
 const maxPopValue = document.getElementById('maxPopValue');
+
+const startAngleSlider = document.getElementById('startAngleSlider');
+const startAngleValue  = document.getElementById('startAngleValue');
+
+const fitnessTableBody = document.getElementById('fitnessTableBody');
+const fitnessChartCanvas = document.getElementById('fitnessChart');
+const fitnessChartCtx = fitnessChartCanvas.getContext('2d');
 
 // Slider-Logik
 wallHeightSlider.addEventListener('input', () => {
@@ -492,6 +618,11 @@ maxPopSlider.addEventListener('input', () => {
   const val = parseInt(maxPopSlider.value, 10);
   maxPop = val;
   maxPopValue.textContent = val;
+});
+
+startAngleSlider.addEventListener('input', () => {
+  startAngleUser = parseInt(startAngleSlider.value, 10);
+  startAngleValue.textContent = startAngleUser;
 });
 
 // WERFER per Pointer verschieben (nur vor Start)
@@ -568,11 +699,66 @@ function createBall(gene) {
   };
 }
 
+function computePopulationStats() {
+  if (!balls || balls.length === 0) {
+    popMinAngle = popMaxAngle = popMinForce = popMaxForce = null;
+    popMeanAngle = popMeanForce = null;
+    deltaAngleAbs = deltaAnglePct = deltaForceAbs = deltaForcePct = 0;
+    return;
+  }
+
+  let minA = Infinity, maxA = -Infinity;
+  let minF = Infinity, maxF = -Infinity;
+  let sumA = 0, sumF = 0, count = 0;
+
+  for (const b of balls) {
+    const a = b.gene.angle;
+    const f = b.gene.force;
+    if (a < minA) minA = a;
+    if (a > maxA) maxA = a;
+    if (f < minF) minF = f;
+    if (f > maxF) maxF = f;
+    sumA += a;
+    sumF += f;
+    count++;
+  }
+
+  const meanA = sumA / count;
+  const meanF = sumF / count;
+
+  if (prevMeanAngle != null) {
+    deltaAngleAbs = meanA - prevMeanAngle;
+    deltaAnglePct = prevMeanAngle !== 0 ? (deltaAngleAbs / Math.abs(prevMeanAngle)) * 100 : 0;
+  } else {
+    deltaAngleAbs = 0;
+    deltaAnglePct = 0;
+  }
+
+  if (prevMeanForce != null) {
+    deltaForceAbs = meanF - prevMeanForce;
+    deltaForcePct = prevMeanForce !== 0 ? (deltaForceAbs / Math.abs(prevMeanForce)) * 100 : 0;
+  } else {
+    deltaForceAbs = 0;
+    deltaForcePct = 0;
+  }
+
+  popMinAngle = minA;
+  popMaxAngle = maxA;
+  popMinForce = minF;
+  popMaxForce = maxF;
+  popMeanAngle = meanA;
+  popMeanForce = meanF;
+
+  prevMeanAngle = meanA;
+  prevMeanForce = meanF;
+}
+
 function initPopulation() {
   populationSize = 1; // immer mit 1 Ball starten
   const arr = [];
   for (let i = 0; i < populationSize; i++) {
-    const angle = 60 + Math.random() * 30;
+    // Startwinkel des ersten Balls = User-Wert
+    const angle = startAngleUser;
     const force = 10 + Math.random() * 5;
     arr.push(createBall({ angle, force }));
   }
@@ -588,14 +774,16 @@ function initPopulation() {
   hasPopulation = true;
   globalBestFitness = -Infinity;
   stagnationGens = 0;
+
+  prevMeanAngle = null;
+  prevMeanForce = null;
+  computePopulationStats();
+
   updateUI();
   hideWinnerOverlay();
 }
 
-// Fitness-Funktion:
-// - Hauptziel: Abstand in x-Richtung zur Mauer (am Apex nach erstem Bounce) soll kleiner werden.
-// - Wird der Abstand größer, sinkt die Fitness automatisch.
-// - Unter der Mauerhöhe gibt es zusätzliche Strafe.
+// Fitness-Funktion
 function calculateFitness(ball) {
   if (!ball.hasApexAfterBounce || ball.bounceCount === 0) {
     return -1e9;
@@ -646,13 +834,16 @@ function evolve() {
     if (b.status === 'success' && b.bounceCount === 1) successThisGen++;
   }
 
-  bestFitness = Math.floor(maxFit);
   if (bestBall) {
+    bestFitness = Math.floor(maxFit);
     bestGene = { angle: bestBall.gene.angle, force: bestBall.gene.force };
+    stats.push({
+      gen: generation,
+      fitness: Math.floor(maxFit),
+      angle: bestBall.gene.angle,
+      force: bestBall.gene.force
+    });
   }
-
-  stats.push({ gen: generation, fitness: Math.floor(maxFit) });
-  if (stats.length > 20) stats.shift();
 
   if (successThisGen > 0) {
     successCount += successThisGen;
@@ -722,6 +913,8 @@ function evolve() {
   populationSize = nextPopSize;
   generation += 1;
   frameCount = 0;
+
+  computePopulationStats();
   updateUI();
 }
 
@@ -867,8 +1060,179 @@ function drawScene() {
   ctx.fillText('Gen-Time', 118, 16);
 }
 
+function clearFitnessChart() {
+  if (!fitnessChartCtx || !fitnessChartCanvas) return;
+  fitnessChartCtx.clearRect(0, 0, fitnessChartCanvas.width, fitnessChartCanvas.height);
+}
+
+function drawFitnessChart() {
+  if (!fitnessChartCtx || !fitnessChartCanvas) return;
+  const n = stats.length;
+  const ctxChart = fitnessChartCtx;
+  const canvasChart = fitnessChartCanvas;
+  const w = canvasChart.width;
+  const h = canvasChart.height;
+
+  ctxChart.clearRect(0, 0, w, h);
+
+  if (n === 0) return;
+
+  const padding = 10;
+  const innerW = w - padding * 2;
+  const innerH = h - padding * 2;
+
+  // Rahmen
+  ctxChart.strokeStyle = '#1f2937';
+  ctxChart.lineWidth = 1;
+  ctxChart.strokeRect(padding, padding, innerW, innerH);
+
+  const fitnessVals = stats.map(s => s.fitness);
+  const angleVals = stats.map(s => s.angle);
+  const forceVals = stats.map(s => s.force);
+
+  function getMinMax(arr) {
+    let min = Infinity, max = -Infinity;
+    for (const v of arr) {
+      if (v == null || isNaN(v)) continue;
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+    if (!isFinite(min) || !isFinite(max)) {
+      min = 0;
+      max = 1;
+    }
+    if (min === max) {
+      min -= 1;
+      max += 1;
+    }
+    return { min, max };
+  }
+
+  const fMM = getMinMax(fitnessVals);
+  const aMM = getMinMax(angleVals);
+  const kMM = getMinMax(forceVals);
+
+  function xForIndex(i) {
+    if (n === 1) return padding + innerW / 2;
+    return padding + (i / (n - 1)) * innerW;
+  }
+
+  function yFor(v, mm) {
+    const ratio = (v - mm.min) / (mm.max - mm.min);
+    const clamped = Math.max(0, Math.min(1, ratio));
+    return padding + (1 - clamped) * innerH;
+  }
+
+  function drawSeries(vals, mm, color) {
+    ctxChart.beginPath();
+    let started = false;
+    for (let i = 0; i < n; i++) {
+      const v = vals[i];
+      if (v == null || isNaN(v)) continue;
+      const x = xForIndex(i);
+      const y = yFor(v, mm);
+      if (!started) {
+        ctxChart.moveTo(x, y);
+        started = true;
+      } else {
+        ctxChart.lineTo(x, y);
+      }
+    }
+    if (started) {
+      ctxChart.strokeStyle = color;
+      ctxChart.lineWidth = 1.4;
+      ctxChart.stroke();
+    }
+  }
+
+  drawSeries(fitnessVals, fMM, '#22c55e'); // Fitness
+  drawSeries(angleVals, aMM, '#3b82f6');   // Winkel
+  drawSeries(forceVals, kMM, '#f97316');   // Kraft
+
+  // Legende
+  const legendX = padding + 4;
+  let legendY = padding + 10;
+  const dy = 12;
+
+  function drawLegend(color, label) {
+    ctxChart.fillStyle = color;
+    ctxChart.fillRect(legendX, legendY - 6, 10, 2);
+    ctxChart.fillStyle = '#9ca3af';
+    ctxChart.font = '10px monospace';
+    ctxChart.fillText(label, legendX + 14, legendY - 2);
+    legendY += dy;
+  }
+
+  drawLegend('#22c55e', 'Fitness');
+  drawLegend('#3b82f6', 'Winkel');
+  drawLegend('#f97316', 'Kraft');
+}
+
+function updateFitnessViews() {
+  if (!fitnessTableBody) return;
+  fitnessTableBody.innerHTML = '';
+
+  if (!hasPopulation) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 4;
+    cell.textContent = 'Noch keine Daten – Simulation mit „START LEARNING“ starten.';
+    row.appendChild(cell);
+    fitnessTableBody.appendChild(row);
+    clearFitnessChart();
+    return;
+  }
+
+  if (stats.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 4;
+    cell.textContent = 'Noch keine Fitnessdaten gesammelt …';
+    row.appendChild(cell);
+    fitnessTableBody.appendChild(row);
+    clearFitnessChart();
+    return;
+  }
+
+  for (const s of stats) {
+    const row = document.createElement('tr');
+
+    const tdGen = document.createElement('td');
+    tdGen.textContent = 'Gen ' + s.gen;
+    tdGen.style.textAlign = 'left';
+    row.appendChild(tdGen);
+
+    const tdFit = document.createElement('td');
+    tdFit.textContent = String(s.fitness);
+    row.appendChild(tdFit);
+
+    const tdAng = document.createElement('td');
+    tdAng.textContent = (s.angle != null) ? s.angle.toFixed(2) + '°' : '–';
+    row.appendChild(tdAng);
+
+    const tdForce = document.createElement('td');
+    tdForce.textContent = (s.force != null) ? s.force.toFixed(2) : '–';
+    row.appendChild(tdForce);
+
+    fitnessTableBody.appendChild(row);
+  }
+
+  drawFitnessChart();
+}
+
 function updateUI() {
-  liveGen.textContent = String(generation);
+  const popCount = hasPopulation && balls ? balls.length : 0;
+  const spreadA = (popMinAngle != null && popMaxAngle != null) ? (popMaxAngle - popMinAngle) : null;
+  const spreadF = (popMinForce != null && popMaxForce != null) ? (popMaxForce - popMinForce) : null;
+
+  let genText = String(generation);
+  if (popCount > 0 && spreadA != null && spreadF != null) {
+    genText += ' | n=' + popCount +
+               ' | ΔW=' + spreadA.toFixed(2) + '°' +
+               ' | ΔK=' + spreadF.toFixed(2);
+  }
+  liveGen.textContent = genText;
+
   liveSucc.textContent = String(successCount);
   liveFit.textContent = String(bestFitness);
   if (bestGene) {
@@ -881,15 +1245,24 @@ function updateUI() {
   const p = hasPopulation ? Math.min(1, frameCount / GENERATION_DURATION) * 100 : 0;
   liveProg.textContent = p.toFixed(0) + '%';
 
-  if (!hasPopulation) {
-    fitnessLog.innerHTML =
-      'Noch keine Daten – Schritt 1: WERFER &amp; Mauerhöhe &amp; Vermehrungsfaktor &amp; maximale Populationsgröße wählen, Schritt 2: „START LEARNING“.';
-  } else if (stats.length === 0) {
-    fitnessLog.textContent = 'Noch keine Fitnessdaten gesammelt …';
+  if (popMinAngle != null) {
+    liveMinAngle.textContent = popMinAngle.toFixed(2) + '°';
+    liveMaxAngle.textContent = popMaxAngle.toFixed(2) + '°';
+    liveMinForce.textContent = popMinForce.toFixed(2);
+    liveMaxForce.textContent = popMaxForce.toFixed(2);
   } else {
-    const lines = stats.map(s => `Gen ${String(s.gen).padStart(3, ' ')}: Fitness ${s.fitness}`);
-    fitnessLog.textContent = lines.join('\n');
+    liveMinAngle.textContent = '–';
+    liveMaxAngle.textContent = '–';
+    liveMinForce.textContent = '–';
+    liveMaxForce.textContent = '–';
   }
+
+  liveDeltaAngleAbs.textContent = deltaAngleAbs.toFixed(2);
+  liveDeltaAnglePct.textContent = deltaAnglePct.toFixed(1) + '%';
+  liveDeltaForceAbs.textContent = deltaForceAbs.toFixed(2);
+  liveDeltaForcePct.textContent = deltaForcePct.toFixed(1) + '%';
+
+  updateFitnessViews();
 
   if (winnerGene) {
     btnStartPause.textContent = 'FERTIG';
@@ -962,6 +1335,12 @@ btnReset.addEventListener('click', () => {
   globalBestFitness = -Infinity;
   stagnationGens = 0;
   populationSize = 1;
+
+  popMinAngle = popMaxAngle = popMinForce = popMaxForce = null;
+  popMeanAngle = popMeanForce = null;
+  prevMeanAngle = prevMeanForce = null;
+  deltaAngleAbs = deltaAnglePct = deltaForceAbs = deltaForcePct = 0;
+
   hideWinnerOverlay();
   updateUI();
 });
@@ -981,6 +1360,12 @@ btnNewExperiment.addEventListener('click', () => {
   globalBestFitness = -Infinity;
   stagnationGens = 0;
   populationSize = 1;
+
+  popMinAngle = popMaxAngle = popMinForce = popMaxForce = null;
+  popMeanAngle = popMeanForce = null;
+  prevMeanAngle = prevMeanForce = null;
+  deltaAngleAbs = deltaAnglePct = deltaForceAbs = deltaForcePct = 0;
+
   hideWinnerOverlay();
   updateUI();
 });
