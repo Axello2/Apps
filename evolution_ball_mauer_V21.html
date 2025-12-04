@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Evolutionärer Ballwurf – Einzeldatei-Demo (V21)</title>
+<title>Evolutionärer Ballwurf – Einzeldatei-Demo (V22)</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -238,6 +238,15 @@
   .fitness-table tbody tr:nth-child(odd) {
     background: rgba(15,23,42,0.4);
   }
+
+  /* NEU: Scrollbarer Frame für die Fitness-Tabelle */
+  .fitness-table-container {
+    max-height: 160px;         /* vertikal begrenzt */
+    overflow: auto;            /* vertikal + horizontal scrollbar */
+    border-radius: 10px;
+    border: 1px solid #1f2937;
+  }
+
   .fitness-chart-wrap {
     width: 100%;
     height: 140px;
@@ -463,21 +472,24 @@
 
       <div class="card">
         <h3>Letzte Fitness-Werte</h3>
-        <table class="fitness-table">
-          <thead>
-            <tr>
-              <th>Gen</th>
-              <th>Fitness</th>
-              <th>Winkel</th>
-              <th>Kraft</th>
-            </tr>
-          </thead>
-          <tbody id="fitnessTableBody">
-            <tr>
-              <td colspan="4">Noch keine Daten – Simulation mit „START LEARNING“ starten.</td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- NEU: Scrollbarer Container -->
+        <div id="fitnessTableContainer" class="fitness-table-container">
+          <table class="fitness-table">
+            <thead>
+              <tr>
+                <th>Gen</th>
+                <th>Fitness</th>
+                <th>Winkel</th>
+                <th>Kraft</th>
+              </tr>
+            </thead>
+            <tbody id="fitnessTableBody">
+              <tr>
+                <td colspan="4">Noch keine Daten – Simulation mit „START LEARNING“ starten.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <div class="fitness-chart-wrap">
           <canvas id="fitnessChart" class="fitness-chart" width="320" height="140"></canvas>
         </div>
@@ -495,8 +507,12 @@ const WIDTH = 800;
 const HEIGHT = 500;
 const GRAVITY = 0.5;
 const BOUNCE_DAMPING = 0.7;
-const TIME_SCALE = 0.4;
-const GENERATION_DURATION = 400;
+
+// NEU: 15 % schneller
+const TIME_SCALE = 0.46;
+
+// NEU: 15 % kürzere Generationsdauer
+const GENERATION_DURATION = 340;
 
 // Position der Mauer (x-Koordinate)
 const WALL_X = 600;
@@ -597,6 +613,8 @@ const maxPopValue = document.getElementById('maxPopValue');
 const startAngleSlider = document.getElementById('startAngleSlider');
 const startAngleValue  = document.getElementById('startAngleValue');
 
+// NEU: Container + Body + Chart
+const fitnessTableContainer = document.getElementById('fitnessTableContainer');
 const fitnessTableBody = document.getElementById('fitnessTableBody');
 const fitnessChartCanvas = document.getElementById('fitnessChart');
 const fitnessChartCtx = fitnessChartCanvas.getContext('2d');
@@ -1215,6 +1233,11 @@ function updateFitnessViews() {
     row.appendChild(tdForce);
 
     fitnessTableBody.appendChild(row);
+  }
+
+  // NEU: automatisch zur neuesten Zeile (unten) scrollen
+  if (fitnessTableContainer) {
+    fitnessTableContainer.scrollTop = fitnessTableContainer.scrollHeight;
   }
 
   drawFitnessChart();
