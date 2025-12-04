@@ -814,7 +814,7 @@ function calculateFitness(ball) {
   const distX = Math.abs(apexX - WALL_X);
 
   // Basis-Strafe: Abstand zur Mauer (je größer, desto schlechter)
-  let penalty = distX * 200;
+  let penalty = distX * 600;
 
   // Unter der Mauerhöhe → zusätzliche Strafe
   if (apexHeight < wallTopHeight) {
