@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Evolutionärer Ballwurf – Einzeldatei-Demo (V22)</title>
+<title>Evolutionärer Ballwurf – Einzeldatei-Demo (V23)</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -239,10 +239,10 @@
     background: rgba(15,23,42,0.4);
   }
 
-  /* NEU: Scrollbarer Frame für die Fitness-Tabelle */
+  /* Scrollbarer Frame für die Fitness-Tabelle
+     – Höhe wird später per JS erst ab >10 Zeilen begrenzt */
   .fitness-table-container {
-    max-height: 160px;         /* vertikal begrenzt */
-    overflow: auto;            /* vertikal + horizontal scrollbar */
+    overflow: hidden;           /* zunächst mitwachsen */
     border-radius: 10px;
     border: 1px solid #1f2937;
   }
@@ -472,7 +472,7 @@
 
       <div class="card">
         <h3>Letzte Fitness-Werte</h3>
-        <!-- NEU: Scrollbarer Container -->
+        <!-- Scrollbarer Container; Höhe wird ab 11 Zeilen begrenzt -->
         <div id="fitnessTableContainer" class="fitness-table-container">
           <table class="fitness-table">
             <thead>
@@ -508,10 +508,10 @@ const HEIGHT = 500;
 const GRAVITY = 0.5;
 const BOUNCE_DAMPING = 0.7;
 
-// NEU: 15 % schneller
+// 15 % schneller
 const TIME_SCALE = 0.46;
 
-// NEU: 15 % kürzere Generationsdauer
+// 15 % kürzere Generationsdauer
 const GENERATION_DURATION = 340;
 
 // Position der Mauer (x-Koordinate)
@@ -1197,6 +1197,14 @@ function updateFitnessViews() {
     cell.textContent = 'Noch keine Daten – Simulation mit „START LEARNING“ starten.';
     row.appendChild(cell);
     fitnessTableBody.appendChild(row);
+
+    // Reset Container, wenn nichts läuft
+    if (fitnessTableContainer) {
+      fitnessTableContainer.style.maxHeight = '';
+      fitnessTableContainer.style.overflow = 'hidden';
+      fitnessTableContainer.scrollTop = 0;
+    }
+
     clearFitnessChart();
     return;
   }
@@ -1208,6 +1216,13 @@ function updateFitnessViews() {
     cell.textContent = 'Noch keine Fitnessdaten gesammelt …';
     row.appendChild(cell);
     fitnessTableBody.appendChild(row);
+
+    if (fitnessTableContainer) {
+      fitnessTableContainer.style.maxHeight = '';
+      fitnessTableContainer.style.overflow = 'hidden';
+      fitnessTableContainer.scrollTop = 0;
+    }
+
     clearFitnessChart();
     return;
   }
@@ -1235,9 +1250,21 @@ function updateFitnessViews() {
     fitnessTableBody.appendChild(row);
   }
 
-  // NEU: automatisch zur neuesten Zeile (unten) scrollen
+  // Dynamik:
+  // - bis 10 Zeilen: Container wächst mit, keine Scrollbar, Grafik rutscht mit nach unten
+  // - ab 11 Zeilen: Containerhöhe fix, Scrollbar, neue Zeilen schieben alte nach oben, Grafik bleibt stehen
   if (fitnessTableContainer) {
-    fitnessTableContainer.scrollTop = fitnessTableContainer.scrollHeight;
+    const rowCount = stats.length;
+
+    if (rowCount > 10) {
+      fitnessTableContainer.style.maxHeight = '160px';
+      fitnessTableContainer.style.overflow = 'auto';
+      fitnessTableContainer.scrollTop = fitnessTableContainer.scrollHeight; // immer unterste Zeile im Blick
+    } else {
+      fitnessTableContainer.style.maxHeight = '';
+      fitnessTableContainer.style.overflow = 'hidden';
+      fitnessTableContainer.scrollTop = 0;
+    }
   }
 
   drawFitnessChart();
