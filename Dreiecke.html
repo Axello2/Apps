@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dreiecks-Konstruktor</title>
+
+<style>
+  * { 
+    -webkit-tap-highlight-color: transparent; 
+    box-sizing: border-box; 
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;          /* nichts scrollen, alles wird skaliert */
+    background: #000;
+    color: #eee;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  /* Fester „Design-Rahmen“, wird später komplett skaliert */
+  #app-root {
+    position: absolute;
+    width: 900px;              /* Design-Breite */
+    height: 720px;             /* Design-Höhe */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 16px;
+    box-sizing: border-box;
+  }
+
+  h1 { 
+    color: #00ccff; 
+    text-shadow: 0 0 15px #00ccff; 
+    margin: 4px 0 14px 0; 
+    font-size: 1.8rem;
+    text-align: center;
+    max-width: 100%;
+    word-wrap: break-word;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 820px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .column {
+    flex: 1;
+    min-width: 260px;
+    max-width: 400px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 15px;
+    padding: 12px;
+    box-shadow: 0 0 15px rgba(0, 204, 255, 0.1);
+  }
+
+  .column h2 {
+    color: #00ff99;
+    font-size: 1.05rem;
+    margin-top: 0;
+    border-bottom: 1px solid #333;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+  }
+
+  .input-group {
+    margin-bottom: 12px;
+    text-align: left;
+  }
+
+  .label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    gap: 6px;
+  }
+
+  label {
+    font-weight: bold;
+    color: #ccc;
+    font-size: 0.9rem;
+  }
+
+  input[type="number"] {
+    background: #222;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 5px;
+    border-radius: 8px;
+    width: 72px;
+    text-align: center;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  input[type="number"]:focus {
+    border-color: #00ccff;
+    background: #2a2a2a;
+  }
+
+  /* berechnete Werte (grün) */
+  input.calculated {
+    color: #00ff99;
+    font-weight: bold;
+    border-color: #00ff99;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    margin-top: 6px;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #00ccff;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
+    margin-top: -4px;
+  }
+
+  input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    background: #444;
+    border-radius: 3px;
+  }
+
+  /* Canvas-Bereich: feste Design-Höhe, wird skaliert */
+  #canvas-container {
+    width: 100%;
+    max-width: 640px;
+    height: 260px;
+    background: #080808;
+    border: 2px dashed #333;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 10px;
+  }
+
+  canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  #overlay-msg {
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  #info-box {
+    background: linear-gradient(135deg, #001122, #000);
+    border: 1px solid #00ccff;
+    border-radius: 15px;
+    padding: 10px 12px;
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 8px;
+    display: none;
+    box-shadow: 0 0 20px rgba(0, 204, 255, 0.2);
+    text-align: left;
+    font-size: 0.9rem;
+  }
+
+  #triangle-type {
+    font-size: 1.1rem;
+    color: #00ccff;
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+
+  #area-display {
+    font-size: 0.95rem;
+    color: #eee;
+  }
+
+  .highlight { color: #00ff99; font-weight: bold; }
+
+  button.reset-btn {
+    padding: 8px 20px; 
+    font-size: 0.95rem;
+    background: #333; 
+    color: #fff; 
+    border: 1px solid #555;
+    border-radius: 10px; 
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 2px;
+  }
+
+  button.reset-btn:hover {
+    background: #444;
+    border-color: #eee;
+  }
+
+  .error-msg {
+    color: #ff3300;
+    font-weight: bold;
+    margin-top: 2px;
+    margin-bottom: 4px;
+    min-height: 18px;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div id="app-root">
+  <h1>Dreiecks-Konstruktor</h1>
+
+  <div class="container">
+    <!-- Seiten -->
+    <div class="column">
+      <h2>Seitenlängen</h2>
+      <div class="input-group">
+        <div class="label-row">
+          <label>Seite a</label>
+          <input type="number" id="in_a" placeholder="-" oninput="handleInput('a')">
+        </div>
+        <input type="range" id="sl_a" min="1" max="200" value="0" oninput="handleSlider('a')">
+      </div>
+
+      <div class="input-group">
+        <div class="label-row">
+          <label>Seite b</label>
+          <input type="number" id="in_b" placeholder="-" oninput="handleInput('b')">
+        </div>
+        <input type="range" id="sl_b" min="1" max="200" value="0" oninput="handleSlider('b')">
+      </div>
+
+      <div class="input-group">
+        <div class="label-row">
+          <label>Seite c</label>
+          <input type="number" id="in_c" placeholder="-" oninput="handleInput('c')">
+        </div>
+        <input type="range" id="sl_c" min="1" max="200" value="0" oninput="handleSlider('c')">
+      </div>
+    </div>
+
+    <!-- Winkel -->
+    <div class="column">
+      <h2>Winkel (Grad)</h2>
+      <div class="input-group">
+        <div class="label-row">
+          <label>α (Alpha)</label>
+          <input type="number" id="in_alpha" placeholder="-" oninput="handleInput('alpha')">
+        </div>
+        <input type="range" id="sl_alpha" min="1" max="178" value="0" oninput="handleSlider('alpha')">
+      </div>
+
+      <div class="input-group">
+        <div class="label-row">
+          <label>β (Beta)</label>
+          <input type="number" id="in_beta" placeholder="-" oninput="handleInput('beta')">
+        </div>
+        <input type="range" id="sl_beta" min="1" max="178" value="0" oninput="handleSlider('beta')">
+      </div>
+
+      <div class="input-group">
+        <div class="label-row">
+          <label>γ (Gamma)</label>
+          <input type="number" id="in_gamma" placeholder="-" oninput="handleInput('gamma')">
+        </div>
+        <input type="range" id="sl_gamma" min="1" max="178" value="0" oninput="handleSlider('gamma')">
+      </div>
+    </div>
+  </div>
+
+  <div id="canvas-container">
+    <canvas id="triCanvas"></canvas>
+    <div id="overlay-msg" style="position:absolute; color:#555; pointer-events:none;">
+      Gib genau 3 Werte ein
+    </div>
+  </div>
+
+  <div class="error-msg" id="error-msg"></div>
+
+  <div id="info-box">
+    <div id="triangle-type">Beliebiges Dreieck</div>
+    <div id="area-display">Fläche: <span class="highlight">0</span></div>
+  </div>
+
+  <button class="reset-btn" onclick="resetAll()">Alles Zurücksetzen</button>
+</div>
+
+<script>
+// --- GLOBALE VARIABLEN ---
+let givenValues = {}; 
+const keys = ['a', 'b', 'c', 'alpha', 'beta', 'gamma'];
+
+const canvas = document.getElementById('triCanvas');
+const ctx = canvas.getContext('2d');
+
+// Design-Maße für Skalierung
+const DESIGN_WIDTH  = 900;
+const DESIGN_HEIGHT = 720;
+
+// gesamte App an Fenstergröße anpassen (skalieren + zentrieren)
+function applyScale() {
+  const app = document.getElementById('app-root');
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  const scale = Math.min(w / DESIGN_WIDTH, h / DESIGN_HEIGHT);
+  const x = (w - DESIGN_WIDTH * scale) / 2;
+  const y = (h - DESIGN_HEIGHT * scale) / 2;
+
+  app.style.transformOrigin = 'top left';
+  app.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+}
+
+// Canvas an Design-Container anpassen
+function resizeCanvas() {
+  const container = document.getElementById('canvas-container');
+  canvas.width  = container.clientWidth;
+  canvas.height = container.clientHeight;
+  redraw();
+}
+
+window.addEventListener('resize', function() {
+  applyScale();
+});
+
+// --- INPUT HANDLING ---
+
+function handleSlider(key) {
+  const slider = document.getElementById('sl_' + key);
+  const input = document.getElementById('in_' + key);
+  input.value = slider.value;
+  updateValue(key, parseFloat(slider.value));
+}
+
+function handleInput(key) {
+  const input  = document.getElementById('in_' + key);
+  const slider = document.getElementById('sl_' + key);
+  let val = parseFloat(input.value);
+  if (isNaN(val)) val = 0;
+  
+  if (val >= parseFloat(slider.min) && val <= parseFloat(slider.max)) {
+    slider.value = val;
+  }
+  
+  updateValue(key, val);
+}
+
+// Änderung eines berechneten Feldes -> ggf. andere Vorgabe freigeben
+function updateValue(key, value) {
+  const inputEl   = document.getElementById('in_' + key);
+  const wasGiven  = (givenValues[key] !== undefined);
+  const wasCalc   = inputEl.classList.contains('calculated');
+  const angleKeys = ['alpha', 'beta', 'gamma'];
+  const sideKeys  = ['a', 'b', 'c'];
+
+  if (!wasGiven && wasCalc && value > 0) {
+    const currentGivenCount = Object.keys(givenValues).length;
+    if (currentGivenCount >= 3) {
+      let toDrop = null;
+
+      if (angleKeys.includes(key)) {
+        const givenAngles = angleKeys.filter(k => givenValues[k] !== undefined && k !== key);
+        if (givenAngles.length > 0) {
+          toDrop = givenAngles[0];
+        } else {
+          const oppMap = { alpha: 'a', beta: 'b', gamma: 'c' };
+          const opp    = oppMap[key];
+          if (givenValues[opp] !== undefined) {
+            toDrop = opp;
+          }
+        }
+      } else if (sideKeys.includes(key)) {
+        const givenSides = sideKeys.filter(k => givenValues[k] !== undefined && k !== key);
+        if (givenSides.length > 0) {
+          toDrop = givenSides[0];
+        } else {
+          const corrMap = { a: 'alpha', b: 'beta', c: 'gamma' };
+          const ang     = corrMap[key];
+          if (givenValues[ang] !== undefined) {
+            toDrop = ang;
+          }
+        }
+      }
+
+      if (!toDrop) {
+        const allGiven = Object.keys(givenValues);
+        if (allGiven.length > 0) toDrop = allGiven[0];
+      }
+
+      if (toDrop) {
+        delete givenValues[toDrop];
+      }
+    }
+  }
+
+  if (value > 0) {
+    givenValues[key] = value;
+  } else {
+    delete givenValues[key];
+  }
+
+  keys.forEach(k => {
+    const el = document.getElementById('in_' + k);
+    if (givenValues[k] !== undefined) {
+      el.classList.remove('calculated');
+      el.style.border = "1px solid #00ccff";
+    } else {
+      el.style.border = "1px solid #444";
+    }
+  });
+
+  trySolve();
+}
+
+function resetAll() {
+  givenValues = {};
+  keys.forEach(k => {
+    const inp = document.getElementById('in_' + k);
+    const sl  = document.getElementById('sl_' + k);
+    inp.value = '';
+    sl.value  = 0;
+    inp.classList.remove('calculated');
+    inp.style.border = "1px solid #444";
+  });
+  document.getElementById('info-box').style.display = 'none';
+  document.getElementById('error-msg').textContent = '';
+  document.getElementById('overlay-msg').style.display = 'block';
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// --- SOLVER ENGINE ---
+
+function toRad(deg) { return deg * (Math.PI / 180); }
+function toDeg(rad) { return rad * (180 / Math.PI); }
+
+function trySolve() {
+  const inputs = Object.keys(givenValues);
+  const msgEl  = document.getElementById('overlay-msg');
+  const errEl  = document.getElementById('error-msg');
+  
+  errEl.textContent = "";
+
+  if (inputs.length < 3) {
+    msgEl.style.display = 'block';
+    msgEl.textContent = `Gib noch ${3 - inputs.length} Wert(e) ein`;
+    document.getElementById('info-box').style.display = 'none';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
+
+  if (inputs.length > 3) {
+    msgEl.style.display = 'block';
+    msgEl.textContent = "Zu viele Werte! (Maximal 3)";
+    return;
+  }
+
+  msgEl.style.display = 'none';
+  
+  let a = givenValues.a, b = givenValues.b, c = givenValues.c;
+  let A = givenValues.alpha, B = givenValues.beta, G = givenValues.gamma;
+
+  let res    = { a, b, c, A, B, G };
+  let solved = false;
+
+  try {
+    // SSS
+    if (a && b && c) {
+      if (a + b <= c || a + c <= b || b + c <= a) throw "Kein Dreieck möglich (Ungleichung)";
+      res.A = toDeg(Math.acos((b*b + c*c - a*a) / (2*b*c)));
+      res.B = toDeg(Math.acos((a*a + c*c - b*b) / (2*a*c)));
+      res.G = 180 - res.A - res.B;
+      solved = true;
+    }
+    // nur Winkel -> nicht erlaubt
+    else if (!a && !b && !c) {
+      throw "Mindestens eine Seite wird benötigt!";
+    }
+    // 1 Seite + 2 Winkel (WSW)
+    else if ((A && B) || (A && G) || (B && G)) {
+      if (!res.A) res.A = 180 - (res.B || 0) - (res.G || 0);
+      if (!res.B) res.B = 180 - res.A - (res.G || 0);
+      if (!res.G) res.G = 180 - res.A - res.B;
+      if (res.A <= 0 || res.B <= 0 || res.G <= 0) throw "Winkelsumme > 180°";
+
+      let baseSide, baseAng;
+      if (a)      { baseSide = a; baseAng = res.A; }
+      else if (b) { baseSide = b; baseAng = res.B; }
+      else        { baseSide = c; baseAng = res.G; }
+
+      const ratio = baseSide / Math.sin(toRad(baseAng));
+      res.a = ratio * Math.sin(toRad(res.A));
+      res.b = ratio * Math.sin(toRad(res.B));
+      res.c = ratio * Math.sin(toRad(res.G));
+      solved = true;
+    }
+    // SWS (2 Seiten + eingeschlossener Winkel)
+    else if ((a && b && G) || (b && c && A) || (a && c && B)) {
+      if (a && b && G) {
+        res.c = Math.sqrt(a*a + b*b - 2*a*b*Math.cos(toRad(G)));
+        res.A = toDeg(Math.acos((b*b + res.c*res.c - a*a)/(2*b*res.c)));
+        res.B = 180 - res.A - G;
+      } else if (b && c && A) {
+        res.a = Math.sqrt(b*b + c*c - 2*b*c*Math.cos(toRad(A)));
+        res.B = toDeg(Math.acos((res.a*res.a + c*c - b*b)/(2*res.a*c)));
+        res.G = 180 - A - res.B;
+      } else {
+        res.b = Math.sqrt(a*a + c*c - 2*a*c*Math.cos(toRad(B)));
+        res.A = toDeg(Math.acos((res.b*res.b + c*c - a*a)/(2*res.b*c)));
+        res.G = 180 - res.A - B;
+      }
+      solved = true;
+    }
+    // SSW
+    else {
+      let val1, val2, ang1; 
+      let targetKey; 
+      
+      if (a && b && A)      { val1 = a; ang1 = A; val2 = b; targetKey = 'B'; }
+      else if (a && b && B) { val1 = b; ang1 = B; val2 = a; targetKey = 'A'; }
+      else if (b && c && B) { val1 = b; ang1 = B; val2 = c; targetKey = 'G'; }
+      else if (b && c && G) { val1 = c; ang1 = G; val2 = b; targetKey = 'B'; }
+      else if (a && c && A) { val1 = a; ang1 = A; val2 = c; targetKey = 'G'; }
+      else if (a && c && G) { val1 = c; ang1 = G; val2 = a; targetKey = 'A'; }
+      
+      if (val1) {
+        const sinVal = (val2 * Math.sin(toRad(ang1))) / val1;
+        if (sinVal > 1) throw "Kein Dreieck möglich (Seite zu kurz)";
+        const foundAng = toDeg(Math.asin(sinVal));
+        res[targetKey] = foundAng;
+        const k3   = ['A','B','G'].find(k => res[k] === undefined);
+        res[k3]    = 180 - res[targetKey] - ang1;
+        const kSide3 = k3.toLowerCase();
+        res[kSide3] = (val1 / Math.sin(toRad(ang1))) * Math.sin(toRad(res[k3]));
+        solved = true;
+      } else {
+        throw "Kombination nicht unterstützbar / unvollständig.";
+      }
+    }
+
+    if (solved) {
+      displayResults(res);
+    }
+
+  } catch (e) {
+    errEl.textContent = e;
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+  }
+}
+
+function displayResults(res) {
+  keys.forEach(k => {
+    if (!givenValues[k]) {
+      let val;
+      if      (k === 'alpha') val = res.A;
+      else if (k === 'beta')  val = res.B;
+      else if (k === 'gamma') val = res.G;
+      else                    val = res[k];
+
+      if (val) {
+        val = Math.round(val * 100) / 100;
+        const input = document.getElementById('in_' + k);
+        input.value = val;
+        input.classList.add('calculated');
+        const sl = document.getElementById('sl_' + k);
+        if (val >= parseFloat(sl.min) && val <= parseFloat(sl.max)) sl.value = val;
+      }
+    }
+  });
+
+  const area = 0.5 * res.a * res.b * Math.sin(toRad(res.G));
+  
+  let type    = [];
+  const sides = [res.a, res.b, res.c].sort((x,y)=>x-y);
+  const angs  = [res.A, res.B, res.G].sort((x,y)=>x-y);
+  
+  if (Math.abs(sides[0]-sides[2]) < 0.1) {
+    type.push("Gleichseitig");
+  } else if (Math.abs(sides[0]-sides[1]) < 0.1 || Math.abs(sides[1]-sides[2]) < 0.1) {
+    type.push("Gleichschenklig");
+  } else {
+    type.push("Allgemein");
+  }
+
+  if (Math.abs(angs[2]-90) < 0.1) {
+    type.push("Rechtwinklig");
+  } else if (angs[2] > 90) {
+    type.push("Stumpfwinklig");
+  } else {
+    type.push("Spitzwinklig");
+  }
+
+  document.getElementById('info-box').style.display = 'block';
+  document.getElementById('triangle-type').textContent = type.join(", ");
+  document.getElementById('area-display').innerHTML =
+    `Fläche: <span class="highlight">${area.toFixed(2)}</span>`;
+
+  drawTriangle(res);
+}
+
+// --- Zeichnen: A rechts unten, B oben, C links unten; a gegenüber A, b gegenüber B, c gegenüber C ---
+function drawTriangle(res) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const a = res.a;
+  const b = res.b;
+  const c = res.c;
+  if (!a || !b || !c) return;
+
+  // A = (0,0) rechts unten, C = (-b,0) links unten,
+  // B so, dass |AB| = c und |BC| = a.
+  const Ax = 0,   Ay = 0;
+  const Cx = -b,  Cy = 0;
+
+  let xB = (a*a - c*c - b*b) / (2*b);
+  let y2 = c*c - xB*xB;
+  if (y2 < 0) y2 = 0;
+  const Bx = xB;
+  const By = Math.sqrt(y2);    // oberer Schnittpunkt
+
+  const minX = Math.min(Ax, Bx, Cx);
+  const maxX = Math.max(Ax, Bx, Cx);
+  const minY = Math.min(Ay, By, Cy);
+  const maxY = Math.max(Ay, By, Cy);
+  
+  let w = maxX - minX;
+  let h = maxY - minY;
+  if (w <= 0 || !isFinite(w)) w = 1;
+  if (h <= 0 || !isFinite(h)) h = 1;
+
+  const padding = 22;
+  const scaleX  = (canvas.width  - padding*2) / w;
+  const scaleY  = (canvas.height - padding*2) / h;
+  const scale   = Math.max(Math.min(scaleX, scaleY), 0.1);
+  
+  const midX = (minX + maxX) / 2;
+  const midY = (minY + maxY) / 2;
+  
+  const cx = canvas.width  / 2;
+  const cy = canvas.height / 2;
+  
+  function trX(v) { return cx + (v - midX) * scale; }
+  function trY(v) { return cy - (v - midY) * scale; }
+
+  // Dreieck zeichnen: A -> B -> C -> A
+  ctx.strokeStyle = '#00ccff';
+  ctx.lineWidth   = 2.2;
+  ctx.lineJoin    = 'round';
+  ctx.beginPath();
+  ctx.moveTo(trX(Ax), trY(Ay));
+  ctx.lineTo(trX(Bx), trY(By));
+  ctx.lineTo(trX(Cx), trY(Cy));
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(0, 204, 255, 0.12)';
+  ctx.fill();
+
+  // Eckpunkte: A rechts unten, B oben, C links unten
+  ctx.fillStyle = '#fff';
+  ctx.font      = 'bold 14px sans-serif';
+  ctx.fillText("A", trX(Ax) + 8,  trY(Ay) + 18);
+  ctx.fillText("B", trX(Bx) - 8,  trY(By) - 10);
+  ctx.fillText("C", trX(Cx) - 16, trY(Cy) + 18);
+  
+  // Seitenmitten für a,b,c
+  const midBCx = (Bx + Cx) / 2;
+  const midBCy = (By + Cy) / 2;
+  const midACx = (Ax + Cx) / 2;
+  const midACy = (Ay + Cy) / 2;
+  const midABx = (Ax + Bx) / 2;
+  const midABy = (Ay + By) / 2;
+
+  ctx.fillStyle = '#00ff99';
+  ctx.font      = '15px sans-serif';
+  ctx.fillText("a=" + Math.round(a), trX(midBCx) - 12, trY(midBCy));
+  ctx.fillText("b=" + Math.round(b), trX(midACx) - 18, trY(midACy) - 6);
+  ctx.fillText("c=" + Math.round(c), trX(midABx) + 10, trY(midABy));
+}
+
+function redraw() {
+  if (Object.keys(givenValues).length === 3) {
+    trySolve();
+  }
+}
+
+// --- Default-Dreieck beim Start: a=30, b=40, c=50 ---
+function setDefaultTriangle() {
+  const defaults = { a: 30, b: 40, c: 50 };  // hier ggf. ändern
+
+  givenValues = {};
+
+  keys.forEach(k => {
+    const inp = document.getElementById('in_' + k);
+    const sl  = document.getElementById('sl_' + k);
+
+    if (defaults[k] !== undefined) {
+      const v = defaults[k];
+      if (inp)  inp.value = v;
+      if (sl)   sl.value  = v;
+      givenValues[k] = v;
+      if (inp) {
+        inp.classList.remove('calculated');
+        inp.style.border = "1px solid #00ccff";
+      }
+    } else {
+      if (inp) {
+        inp.value = '';
+        inp.classList.remove('calculated');
+        inp.style.border = "1px solid #444";
+      }
+      if (sl) sl.value = 0;
+    }
+  });
+
+  document.getElementById('overlay-msg').style.display = 'none';
+  trySolve();
+}
+
+// Initial: Canvas-Size setzen, App skalieren, Default-Werte laden
+resizeCanvas();
+applyScale();
+setDefaultTriangle();
+</script>
+</body>
+</html>
