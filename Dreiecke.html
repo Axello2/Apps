@@ -354,7 +354,7 @@
   <div id="canvas-container">
     <canvas id="triCanvas"></canvas>
     <div id="overlay-msg" style="position:absolute; color:#555; pointer-events:none;">
-      Bitte 3 Werte mit Checkbox fixieren
+      Bitte 3 Werte (oder 3 Winkel + 1 Seite) mit Checkbox fixieren
     </div>
   </div>
 
@@ -381,19 +381,19 @@ const ctx = canvas.getContext('2d');
 const DESIGN_WIDTH  = 900;
 const DESIGN_HEIGHT = 720;
 
-// Zahl -> String mit 2 Nachkommastellen (Punkt als Dezimaltrenner)
+// Zahl -> String mit 2 Nachkommastellen
 function format2(val) {
   const n = Number(val);
   if (!isFinite(n)) return '';
   return n.toFixed(2);
 }
 
-// Anzahl fixierter (mit Wert > 0)
+// fixierte Werte mit Wert > 0
 function getLockedKeys() {
   return keys.filter(k => locked[k] && values[k] > 0);
 }
 
-// Kombinations-Typ bestimmen: SSS, SAS, ASA, SSA, AAA, invalid
+// Kombinations-Typ bestimmen: SSS, SAS, ASA, SSA, AAA, AAA+S, invalid
 function classifyTriple(lockedKeys) {
   const sideSet  = ['a','b','c'];
   const angleSet = ['alpha','beta','gamma'];
@@ -404,12 +404,16 @@ function classifyTriple(lockedKeys) {
   const sideCount  = sides.length;
   const angleCount = angles.length;
 
+  // Spezialfall: 3 Winkel + 1 Seite
+  if (sideCount === 1 && angleCount === 3) {
+    return 'AAA+S';
+  }
+
   if (sideCount === 3 && angleCount === 0) {
     return 'SSS';
   }
 
   if (angleCount === 2 && sideCount === 1) {
-    // 2 Winkel + 1 Seite -> ASA/AAS
     return 'ASA';
   }
 
@@ -422,10 +426,6 @@ function classifyTriple(lockedKeys) {
     const s2 = sides[1];
     const ang = angles[0];
 
-    // Eingeschlossene Winkel:
-    // a & b -> gamma
-    // b & c -> alpha
-    // a & c -> beta
     const isSAS =
       (( (s1 === 'a' && s2 === 'b') || (s1 === 'b' && s2 === 'a') ) && ang === 'gamma') ||
       (( (s1 === 'b' && s2 === 'c') || (s1 === 'c' && s2 === 'b') ) && ang === 'alpha') ||
@@ -434,7 +434,6 @@ function classifyTriple(lockedKeys) {
     if (isSAS) {
       return 'SAS';
     } else {
-      // 2 Seiten + "zugehöriger" Winkel -> SSA (mehrdeutig)
       return 'SSA';
     }
   }
@@ -468,24 +467,44 @@ window.addEventListener('resize', function() {
   applyScale();
 });
 
-// Checkbox toggeln
+// Checkbox toggeln (max 3, außer 3 Winkel + 1 Seite)
 function toggleLock(key) {
   const chk = document.getElementById('chk_' + key);
   const newState = chk.checked;
   const errEl = document.getElementById('error-msg');
 
   if (newState) {
-    const currentLocked = keys.filter(k => locked[k]).length;
-    if (currentLocked >= 3) {
+    // simulierte Locked-Menge nach dem Klick
+    const tempLocked = { ...locked, [key]: true };
+    const newLockedKeys = keys.filter(k => tempLocked[k]);
+
+    const sideSet  = ['a','b','c'];
+    const angleSet = ['alpha','beta','gamma'];
+
+    const sideCount  = newLockedKeys.filter(k => sideSet.includes(k)).length;
+    const angleCount = newLockedKeys.filter(k => angleSet.includes(k)).length;
+    const total      = newLockedKeys.length;
+
+    let allowed = false;
+    if (total <= 3) {
+      allowed = true;
+    } else if (total === 4 && sideCount === 1 && angleCount === 3) {
+      // erlaubter Spezialfall: 3 Winkel + 1 Seite
+      allowed = true;
+    }
+
+    if (!allowed) {
       chk.checked = false;
-      errEl.textContent = "Es können maximal 3 Werte fixiert werden.";
+      errEl.textContent = "Erlaubt sind max. 3 Werte oder 3 Winkel + 1 Seite.";
       return;
     }
+
     locked[key] = true;
   } else {
     locked[key] = false;
   }
 
+  errEl.textContent = "";
   updateLockStyles();
   trySolve();
 }
@@ -506,7 +525,7 @@ function updateLockStyles() {
   });
 }
 
-// Slider -> Wert in Feld + Model
+// Slider -> Wert in Feld + Model, live rechnen
 function handleSlider(key) {
   const slider = document.getElementById('sl_' + key);
   const input  = document.getElementById('in_' + key);
@@ -523,8 +542,8 @@ function handleSlider(key) {
 }
 
 // Tastatureingabe im Feld
-// doFormat = false: während Eingabe
-// doFormat = true: beim Verlassen -> formatieren
+// doFormat = false: während Eingabe (kein Rechnen)
+// doFormat = true: beim Verlassen -> formatieren + rechnen
 function handleInput(key, doFormat) {
   const input  = document.getElementById('in_' + key);
   const slider = document.getElementById('sl_' + key);
@@ -537,22 +556,25 @@ function handleInput(key, doFormat) {
   if (isNaN(val) || val <= 0) {
     if (doFormat) {
       input.value = '';
+      values[key] = 0;
+      trySolve();
+    } else {
+      values[key] = 0;
     }
-    values[key] = 0;
-    trySolve();
     return;
   }
 
-  if (doFormat) {
-    input.value = format2(val);
-  }
-
+  // Slider darf mitlaufen, aber noch nicht neu rechnen
   if (val >= parseFloat(slider.min) && val <= parseFloat(slider.max)) {
     slider.value = val;
   }
 
   values[key] = val;
-  trySolve();
+
+  if (doFormat) {
+    input.value = format2(val);
+    trySolve();
+  }
 }
 
 // Reset
@@ -578,7 +600,7 @@ function resetAll() {
   document.getElementById('error-msg').textContent = '';
   const msgEl = document.getElementById('overlay-msg');
   msgEl.style.display = 'block';
-  msgEl.textContent = "Bitte 3 Werte mit Checkbox fixieren";
+  msgEl.textContent = "Bitte 3 Werte (oder 3 Winkel + 1 Seite) mit Checkbox fixieren";
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
@@ -595,15 +617,18 @@ function trySolve() {
 
   const lockedKeys = getLockedKeys();
 
-  if (lockedKeys.length !== 3) {
+  if (lockedKeys.length < 3) {
     msgEl.style.display = 'block';
-    msgEl.textContent = "Bitte genau 3 Werte mit Checkbox fixieren.";
+    msgEl.textContent = "Bitte mindestens 3 Werte (oder 3 Winkel + 1 Seite) mit Checkbox fixieren.";
+    return;
+  }
+  if (lockedKeys.length > 4) {
+    errEl.textContent = "Zu viele feste Werte. Erlaubt sind 3 oder 3 Winkel + 1 Seite.";
     return;
   }
 
   const pattern = classifyTriple(lockedKeys);
 
-  // ungünstige / unzulässige Kombinationen abfangen
   if (pattern === 'AAA') {
     errEl.textContent =
       "Drei Winkel allein bestimmen nur die Form, aber nicht die Größe des Dreiecks. " +
@@ -622,15 +647,13 @@ function trySolve() {
   if (pattern === 'invalid') {
     errEl.textContent =
       "Mit dieser Kombination kann kein Dreieck eindeutig bestimmt werden. " +
-      "Erlaubt sind: 3 Seiten (SSS), 2 Seiten + eingeschlossener Winkel (SAS) " +
-      "oder 2 Winkel + 1 Seite (ASA/AAS).";
+      "Erlaubt sind: 3 Seiten (SSS), 2 Seiten + eingeschlossener Winkel (SAS), " +
+      "2 Winkel + 1 Seite (ASA/AAS) oder 3 Winkel + 1 Seite.";
     return;
   }
 
-  // ab hier: SSS, SAS oder ASA -> gültig
   msgEl.style.display = 'none';
 
-  // lokale Kopie der vorgegebenen Werte (nur die 3 fixierten)
   const given = {};
   lockedKeys.forEach(k => { given[k] = values[k]; });
 
@@ -649,7 +672,7 @@ function trySolve() {
       res.G = 180 - res.A - res.B;
       solved = true;
     }
-    // ASA / AAS (2 Winkel + 1 Seite)
+    // ASA / AAS / AAA+S (2 oder 3 Winkel + 1 Seite)
     else if ((A && B) || (A && G) || (B && G)) {
       if (!res.A) res.A = 180 - (res.B || 0) - (res.G || 0);
       if (!res.B) res.B = 180 - res.A - (res.G || 0);
@@ -693,12 +716,10 @@ function trySolve() {
 
   } catch (e) {
     errEl.textContent = e;
-    // alte Zeichnung bleibt stehen
   }
 }
 
 function displayResults(res) {
-  // Werte in globales values zurückschreiben
   values.a      = res.a;
   values.b      = res.b;
   values.c      = res.c;
@@ -706,7 +727,6 @@ function displayResults(res) {
   values.beta   = res.B;
   values.gamma  = res.G;
 
-  // Eingabefelder + Slider aktualisieren
   keys.forEach(k => {
     const inp = document.getElementById('in_' + k);
     const sl  = document.getElementById('sl_' + k);
@@ -854,7 +874,7 @@ function drawTriangle(res) {
 }
 
 function redraw() {
-  if (getLockedKeys().length === 3) {
+  if (getLockedKeys().length >= 3) {
     trySolve();
   }
 }
