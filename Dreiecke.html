@@ -94,6 +94,12 @@
     font-size: 0.9rem;
   }
 
+  .value-lock {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   input[type="number"] {
     background: #222;
     border: 1px solid #444;
@@ -116,6 +122,12 @@
     color: #00ff99;
     font-weight: bold;
     border-color: #00ff99;
+  }
+
+  .value-lock input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
   }
 
   /* Slider */
@@ -258,8 +270,11 @@
       <div class="input-group">
         <div class="label-row">
           <label>Seite a</label>
-          <input type="number" id="in_a" placeholder="-" step="0.01"
-                 oninput="handleInput('a', false)" onblur="handleInput('a', true)">
+          <div class="value-lock">
+            <input type="number" id="in_a" placeholder="-" step="0.01"
+                   oninput="handleInput('a', false)" onblur="handleInput('a', true)">
+            <input type="checkbox" id="chk_a" onchange="toggleLock('a')" title="Diesen Wert fixieren">
+          </div>
         </div>
         <input type="range" id="sl_a" min="1" max="200" step="0.01" value="0"
                oninput="handleSlider('a')">
@@ -268,8 +283,11 @@
       <div class="input-group">
         <div class="label-row">
           <label>Seite b</label>
-          <input type="number" id="in_b" placeholder="-" step="0.01"
-                 oninput="handleInput('b', false)" onblur="handleInput('b', true)">
+          <div class="value-lock">
+            <input type="number" id="in_b" placeholder="-" step="0.01"
+                   oninput="handleInput('b', false)" onblur="handleInput('b', true)">
+            <input type="checkbox" id="chk_b" onchange="toggleLock('b')" title="Diesen Wert fixieren">
+          </div>
         </div>
         <input type="range" id="sl_b" min="1" max="200" step="0.01" value="0"
                oninput="handleSlider('b')">
@@ -278,8 +296,11 @@
       <div class="input-group">
         <div class="label-row">
           <label>Seite c</label>
-          <input type="number" id="in_c" placeholder="-" step="0.01"
-                 oninput="handleInput('c', false)" onblur="handleInput('c', true)">
+          <div class="value-lock">
+            <input type="number" id="in_c" placeholder="-" step="0.01"
+                   oninput="handleInput('c', false)" onblur="handleInput('c', true)">
+            <input type="checkbox" id="chk_c" onchange="toggleLock('c')" title="Diesen Wert fixieren">
+          </div>
         </div>
         <input type="range" id="sl_c" min="1" max="200" step="0.01" value="0"
                oninput="handleSlider('c')">
@@ -292,8 +313,11 @@
       <div class="input-group">
         <div class="label-row">
           <label>α (Alpha)</label>
-          <input type="number" id="in_alpha" placeholder="-" step="0.01"
-                 oninput="handleInput('alpha', false)" onblur="handleInput('alpha', true)">
+          <div class="value-lock">
+            <input type="number" id="in_alpha" placeholder="-" step="0.01"
+                   oninput="handleInput('alpha', false)" onblur="handleInput('alpha', true)">
+            <input type="checkbox" id="chk_alpha" onchange="toggleLock('alpha')" title="Diesen Wert fixieren">
+          </div>
         </div>
         <input type="range" id="sl_alpha" min="1" max="178" step="0.01" value="0"
                oninput="handleSlider('alpha')">
@@ -302,8 +326,11 @@
       <div class="input-group">
         <div class="label-row">
           <label>β (Beta)</label>
-          <input type="number" id="in_beta" placeholder="-" step="0.01"
-                 oninput="handleInput('beta', false)" onblur="handleInput('beta', true)">
+          <div class="value-lock">
+            <input type="number" id="in_beta" placeholder="-" step="0.01"
+                   oninput="handleInput('beta', false)" onblur="handleInput('beta', true)">
+            <input type="checkbox" id="chk_beta" onchange="toggleLock('beta')" title="Diesen Wert fixieren">
+          </div>
         </div>
         <input type="range" id="sl_beta" min="1" max="178" step="0.01" value="0"
                oninput="handleSlider('beta')">
@@ -312,8 +339,11 @@
       <div class="input-group">
         <div class="label-row">
           <label>γ (Gamma)</label>
-          <input type="number" id="in_gamma" placeholder="-" step="0.01"
-                 oninput="handleInput('gamma', false)" onblur="handleInput('gamma', true)">
+          <div class="value-lock">
+            <input type="number" id="in_gamma" placeholder="-" step="0.01"
+                   oninput="handleInput('gamma', false)" onblur="handleInput('gamma', true)">
+            <input type="checkbox" id="chk_gamma" onchange="toggleLock('gamma')" title="Diesen Wert fixieren">
+          </div>
         </div>
         <input type="range" id="sl_gamma" min="1" max="178" step="0.01" value="0"
                oninput="handleSlider('gamma')">
@@ -324,7 +354,7 @@
   <div id="canvas-container">
     <canvas id="triCanvas"></canvas>
     <div id="overlay-msg" style="position:absolute; color:#555; pointer-events:none;">
-      Gib genau 3 Werte ein
+      Bitte 3 Werte mit Checkbox fixieren
     </div>
   </div>
 
@@ -340,8 +370,10 @@
 
 <script>
 // --- GLOBALE VARIABLEN ---
-let givenValues = {}; 
 const keys = ['a', 'b', 'c', 'alpha', 'beta', 'gamma'];
+
+let values = { a:0, b:0, c:0, alpha:0, beta:0, gamma:0 };
+let locked = { a:false, b:false, c:false, alpha:false, beta:false, gamma:false };
 
 const canvas = document.getElementById('triCanvas');
 const ctx = canvas.getContext('2d');
@@ -349,11 +381,16 @@ const ctx = canvas.getContext('2d');
 const DESIGN_WIDTH  = 900;
 const DESIGN_HEIGHT = 720;
 
-// Zahl -> String mit 2 Nachkommastellen (Punkt als Dezimaltrenner)
+// Zahl -> String mit 2 Nachkommastellen, Punkt als Dezimaltrenner
 function format2(val) {
   const n = Number(val);
   if (!isFinite(n)) return '';
   return n.toFixed(2);
+}
+
+// Anzahl fixierter (mit Wert)
+function getLockedKeys() {
+  return keys.filter(k => locked[k] && values[k] > 0);
 }
 
 // gesamte App an Fenstergröße anpassen
@@ -382,9 +419,46 @@ window.addEventListener('resize', function() {
   applyScale();
 });
 
-// --- INPUT HANDLING ---
+// Checkbox toggeln
+function toggleLock(key) {
+  const chk = document.getElementById('chk_' + key);
+  const newState = chk.checked;
+  const errEl = document.getElementById('error-msg');
 
-// Slider -> Wert sofort in Feld (2 Nachkommastellen) + Model
+  if (newState) {
+    const currentLocked = keys.filter(k => locked[k]).length;
+    if (currentLocked >= 3) {
+      // nicht zulassen, wieder zurück
+      chk.checked = false;
+      errEl.textContent = "Es können maximal 3 Werte fixiert werden.";
+      return;
+    }
+    locked[key] = true;
+  } else {
+    locked[key] = false;
+  }
+
+  updateLockStyles();
+  trySolve();
+}
+
+// Stil für fixierte vs. berechnete Felder
+function updateLockStyles() {
+  keys.forEach(k => {
+    const inp = document.getElementById('in_' + k);
+    if (!inp) return;
+    if (locked[k]) {
+      inp.classList.remove('calculated');
+      inp.style.border = "1px solid #00ccff";
+    } else {
+      if (!inp.classList.contains('calculated')) {
+        inp.style.border = "1px solid #444";
+      }
+    }
+  });
+}
+
+// Slider -> Wert in Feld + Model
 function handleSlider(key) {
   const slider = document.getElementById('sl_' + key);
   const input  = document.getElementById('in_' + key);
@@ -392,16 +466,17 @@ function handleSlider(key) {
   if (isNaN(v) || v <= 0) {
     v = 0;
     input.value = '';
-    updateValue(key, 0);
+    values[key] = 0;
   } else {
     input.value = format2(v);
-    updateValue(key, v);
+    values[key] = v;
   }
+  trySolve();
 }
 
 // Tastatureingabe im Feld
-// doFormat = false: während Eingabe -> NICHT formatieren
-// doFormat = true: beim Verlassen (blur) -> formatieren auf 2 Nachkommastellen
+// doFormat = false: während Eingabe
+// doFormat = true: beim Verlassen -> formatieren
 function handleInput(key, doFormat) {
   const input  = document.getElementById('in_' + key);
   const slider = document.getElementById('sl_' + key);
@@ -416,7 +491,8 @@ function handleInput(key, doFormat) {
     if (doFormat) {
       input.value = '';
     }
-    updateValue(key, 0);
+    values[key] = 0;
+    trySolve();
     return;
   }
 
@@ -428,89 +504,35 @@ function handleInput(key, doFormat) {
     slider.value = val;
   }
 
-  updateValue(key, val);
-}
-
-// Änderung eines Werts im Model
-function updateValue(key, value) {
-  const inputEl   = document.getElementById('in_' + key);
-  const wasGiven  = (givenValues[key] !== undefined);
-  const wasCalc   = inputEl.classList.contains('calculated');
-  const angleKeys = ['alpha', 'beta', 'gamma'];
-  const sideKeys  = ['a', 'b', 'c'];
-
-  if (!wasGiven && wasCalc && value > 0) {
-    const currentGivenCount = Object.keys(givenValues).length;
-    if (currentGivenCount >= 3) {
-      let toDrop = null;
-
-      if (angleKeys.includes(key)) {
-        const givenAngles = angleKeys.filter(k => givenValues[k] !== undefined && k !== key);
-        if (givenAngles.length > 0) {
-          toDrop = givenAngles[0];
-        } else {
-          const oppMap = { alpha: 'a', beta: 'b', gamma: 'c' };
-          const opp    = oppMap[key];
-          if (givenValues[opp] !== undefined) {
-            toDrop = opp;
-          }
-        }
-      } else if (sideKeys.includes(key)) {
-        const givenSides = sideKeys.filter(k => givenValues[k] !== undefined && k !== key);
-        if (givenSides.length > 0) {
-          toDrop = givenSides[0];
-        } else {
-          const corrMap = { a: 'alpha', b: 'beta', c: 'gamma' };
-          const ang     = corrMap[key];
-          if (givenValues[ang] !== undefined) {
-            toDrop = ang;
-          }
-        }
-      }
-
-      if (!toDrop) {
-        const allGiven = Object.keys(givenValues);
-        if (allGiven.length > 0) toDrop = allGiven[0];
-      }
-
-      if (toDrop) {
-        delete givenValues[toDrop];
-      }
-    }
-  }
-
-  if (value > 0) {
-    givenValues[key] = value;
-  } else {
-    delete givenValues[key];
-  }
-
-  keys.forEach(k => {
-    const el = document.getElementById('in_' + k);
-    if (givenValues[k] !== undefined) {
-      el.classList.remove('calculated');
-      el.style.border = "1px solid #00ccff";
-    } else {
-      el.style.border = "1px solid #444";
-    }
-  });
-
+  values[key] = val;
   trySolve();
 }
 
+// Reset
 function resetAll() {
-  givenValues = {};
+  values = { a:0, b:0, c:0, alpha:0, beta:0, gamma:0 };
+  locked = { a:false, b:false, c:false, alpha:false, beta:false, gamma:false };
+
   keys.forEach(k => {
     const inp = document.getElementById('in_' + k);
     const sl  = document.getElementById('sl_' + k);
-    inp.value = '';
-    sl.value  = 0;
-    inp.classList.remove('calculated');
-    inp.style.border = "1px solid #444";
+    const chk = document.getElementById('chk_' + k);
+
+    if (inp) {
+      inp.value = '';
+      inp.classList.remove('calculated');
+      inp.style.border = "1px solid #444";
+    }
+    if (sl) sl.value = 0;
+    if (chk) chk.checked = false;
   });
+
   document.getElementById('info-box').style.display = 'none';
   document.getElementById('error-msg').textContent = '';
-  document.getElementById('overlay-msg').style.display = 'block';
+  const msgEl = document.getElementById('overlay-msg');
+  msgEl.style.display = 'block';
+  msgEl.textContent = "Bitte 3 Werte mit Checkbox fixieren";
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
@@ -520,30 +542,26 @@ function toRad(deg) { return deg * (Math.PI / 180); }
 function toDeg(rad) { return rad * (180 / Math.PI); }
 
 function trySolve() {
-  const inputs = Object.keys(givenValues);
   const msgEl  = document.getElementById('overlay-msg');
   const errEl  = document.getElementById('error-msg');
-  
   errEl.textContent = "";
 
-  if (inputs.length < 3) {
-    msgEl.style.display = 'block';
-    msgEl.textContent = `Gib noch ${3 - inputs.length} Wert(e) ein`;
-    document.getElementById('info-box').style.display = 'none';
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    return;
-  }
+  const lockedKeys = getLockedKeys();
 
-  if (inputs.length > 3) {
+  if (lockedKeys.length !== 3) {
     msgEl.style.display = 'block';
-    msgEl.textContent = "Zu viele Werte! (Maximal 3)";
-    return;
+    msgEl.textContent = "Bitte genau 3 Werte mit Checkbox fixieren.";
+    return; // alte Zeichnung bleibt stehen
   }
 
   msgEl.style.display = 'none';
-  
-  let a = givenValues.a, b = givenValues.b, c = givenValues.c;
-  let A = givenValues.alpha, B = givenValues.beta, G = givenValues.gamma;
+
+  // lokale Kopie der vorgegebenen Werte
+  const given = {};
+  lockedKeys.forEach(k => { given[k] = values[k]; });
+
+  let a = given.a, b = given.b, c = given.c;
+  let A = given.alpha, B = given.beta, G = given.gamma;
 
   let res    = { a, b, c, A, B, G };
   let solved = false;
@@ -629,38 +647,50 @@ function trySolve() {
 
   } catch (e) {
     errEl.textContent = e;
-    ctx.clearRect(0,0,canvas.width, canvas.height);
+    // alte Zeichnung bleibt stehen, damit man sieht, was vorher war
   }
 }
 
 function displayResults(res) {
-  // berechnete Felder füllen (2 Nachkommastellen)
-  keys.forEach(k => {
-    if (!givenValues[k]) {
-      let val;
-      if      (k === 'alpha') val = res.A;
-      else if (k === 'beta')  val = res.B;
-      else if (k === 'gamma') val = res.G;
-      else                    val = res[k];
+  // Werte in globales values zurückschreiben
+  values.a      = res.a;
+  values.b      = res.b;
+  values.c      = res.c;
+  values.alpha  = res.A;
+  values.beta   = res.B;
+  values.gamma  = res.G;
 
-      if (val) {
-        const input = document.getElementById('in_' + k);
-        const sl    = document.getElementById('sl_' + k);
-        input.value = format2(val);
-        input.classList.add('calculated');
-        if (val >= parseFloat(sl.min) && val <= parseFloat(sl.max)) {
-          sl.value = val;
-        }
+  // Eingabefelder + Slider aktualisieren
+  keys.forEach(k => {
+    const inp = document.getElementById('in_' + k);
+    const sl  = document.getElementById('sl_' + k);
+    const v   = values[k];
+
+    if (!inp) return;
+
+    if (v && isFinite(v)) {
+      if (locked[k]) {
+        inp.value = format2(v);
+        inp.classList.remove('calculated');
+        inp.style.border = "1px solid #00ccff";
+      } else {
+        inp.value = format2(v);
+        inp.classList.add('calculated');
+        inp.style.border = "1px solid #444";
+      }
+
+      if (sl && v >= parseFloat(sl.min) && v <= parseFloat(sl.max)) {
+        sl.value = v;
       }
     }
   });
 
-  const area = 0.5 * res.a * res.b * Math.sin(toRad(res.G));
+  const area = 0.5 * values.a * values.b * Math.sin(toRad(values.gamma));
   const areaStr = format2(area);
   
   let type    = [];
-  const sides = [res.a, res.b, res.c].sort((x,y)=>x-y);
-  const angs  = [res.A, res.B, res.G].sort((x,y)=>x-y);
+  const sides = [values.a, values.b, values.c].sort((x,y)=>x-y);
+  const angs  = [values.alpha, values.beta, values.gamma].sort((x,y)=>x-y);
   
   if (Math.abs(sides[0]-sides[2]) < 0.1) {
     type.push("Gleichseitig");
@@ -683,7 +713,7 @@ function displayResults(res) {
   document.getElementById('area-display').innerHTML =
     `Fläche: <span class="highlight">${areaStr}</span>`;
 
-  drawTriangle(res);
+  drawTriangle(values);
 }
 
 // --- Zeichnen ---
@@ -763,10 +793,10 @@ function drawTriangle(res) {
   ctx.fillText("c=" + format2(c), trX(midABx) + 10, trY(midABy));
 
   // Winkel (α bei A, β bei B, γ bei C)
-  if (res.A && res.B && res.G) {
-    const alphaText = "α=" + format2(res.A) + "°";
-    const betaText  = "β=" + format2(res.B) + "°";
-    const gammaText = "γ=" + format2(res.G) + "°";
+  if (res.alpha && res.beta && res.gamma) {
+    const alphaText = "α=" + format2(res.alpha) + "°";
+    const betaText  = "β=" + format2(res.beta) + "°";
+    const gammaText = "γ=" + format2(res.gamma) + "°";
 
     ctx.font = '17px sans-serif';
     ctx.fillStyle = '#00ff99';
@@ -778,41 +808,43 @@ function drawTriangle(res) {
 }
 
 function redraw() {
-  if (Object.keys(givenValues).length === 3) {
+  // nur neu rechnen, wenn 3 Werte fix
+  if (getLockedKeys().length === 3) {
     trySolve();
   }
 }
 
 // --- Default-Dreieck a=30, b=40, c=50 ---
 function setDefaultTriangle() {
-  const defaults = { a: 30, b: 40, c: 50 };
-
-  givenValues = {};
+  values = { a:30, b:40, c:50, alpha:0, beta:0, gamma:0 };
+  locked = { a:true, b:true, c:true, alpha:false, beta:false, gamma:false };
 
   keys.forEach(k => {
     const inp = document.getElementById('in_' + k);
     const sl  = document.getElementById('sl_' + k);
+    const chk = document.getElementById('chk_' + k);
 
-    if (defaults[k] !== undefined) {
-      const v = defaults[k];
-      if (inp)  {
+    const v = values[k];
+
+    if (inp) {
+      if (v > 0) {
         inp.value = format2(v);
-        inp.classList.remove('calculated');
-        inp.style.border = "1px solid #00ccff";
-      }
-      if (sl)   sl.value  = v;
-      givenValues[k] = v;
-    } else {
-      if (inp) {
+      } else {
         inp.value = '';
-        inp.classList.remove('calculated');
-        inp.style.border = "1px solid #444";
       }
-      if (sl) sl.value = 0;
+      inp.classList.remove('calculated');
     }
+
+    if (sl) {
+      if (v > 0) sl.value = v;
+      else       sl.value = 0;
+    }
+
+    if (chk) chk.checked = !!locked[k];
   });
 
   document.getElementById('overlay-msg').style.display = 'none';
+  updateLockStyles();
   trySolve();
 }
 
