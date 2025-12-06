@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Waldsee-Puzzle</title>
+  <title>Waldsee-Puzzle (ohne Vorlage)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -78,18 +78,16 @@
       width: 100%;
       padding-top: 56.25%; /* 16:9 */
       border-radius: 14px;
-      border: 1px solid #475569;
+      border: 1px solid #64748b;      /* etwas hellerer, dünner Rahmen */
       overflow: hidden;
-      box-shadow: 0 0 20px rgba(15, 23, 42, 0.9) inset;
-      background-color: #020617;
-      background-position: center;
-      background-size: cover;
-      opacity: 0.4; /* schwach als Vorlage */
+      box-shadow: 0 0 18px rgba(15, 23, 42, 0.8) inset;
+      background-color: #020617;      /* nur dunkler Hintergrund */
+      /* kein Hintergrundbild, keine Vorlage */
     }
 
     .puzzle-tray {
       margin-top: 10px;
-      height: 260px;          /* genügend Platz für 2 Reihen */
+      height: 260px;
       border-radius: 14px;
       border: 1px dashed #475569;
       background: #020617;
@@ -153,10 +151,11 @@
     .puzzle-piece {
       position: absolute;
       border-radius: 10px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7);
+      /* sehr dünner, heller Rahmen */
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.6);
       overflow: hidden;
       cursor: grab;
-      border: 1px solid #0f172a;
       background: #020617;
       z-index: 5;
       touch-action: none;
@@ -164,7 +163,7 @@
 
     .puzzle-piece.dragging {
       cursor: grabbing;
-      box-shadow: 0 16px 30px rgba(0, 0, 0, 0.9);
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.9);
     }
 
     .puzzle-piece img {
@@ -176,14 +175,14 @@
 </head>
 <body>
   <div class="page">
-    <h1>Waldsee-Puzzle</h1>
+    <h1>Waldsee-Puzzle (ohne Vorlage)</h1>
 
     <section class="section">
       <h2>Zieh die 8 großen Puzzleteile an die richtige Stelle</h2>
       <p class="section-desc">
-        Für Kinder ab ca. 6 Jahren gedacht: Das Bild ist in 8 große Teile
-        (4 × 2) aufgeteilt. Zieh die Teile mit dem Finger oder der Maus auf das
-        Bild. Wenn alle Teile richtig liegen, ist das Puzzle gelöst.
+        Das fertige Bild wird nicht eingeblendet – du siehst nur den Rahmen.
+        Zieh die Teile mit Maus oder Finger ins Rechteck oben. Wenn alle Teile
+        richtig liegen, ist das Puzzle gelöst.
       </p>
 
       <div class="puzzle-layout">
@@ -238,7 +237,8 @@
       boardEl    = document.getElementById("puzzleBoard");
       trayEl     = document.getElementById("puzzleTray");
 
-      boardEl.style.backgroundImage = "url('" + IMAGE_SRC + "')";
+      // KEIN Hintergrundbild mehr auf dem Board:
+      // boardEl.style.backgroundImage = "url('" + IMAGE_SRC + "')";
 
       // Puzzleteile anlegen
       for (let i = 0; i < TOTAL; i++) {
@@ -262,12 +262,10 @@
         makeDraggable(piece);
       }
 
-      // Wenn alles gerendert ist, initial layouten
       window.addEventListener("load", () => {
         layoutInitial();
       });
 
-      // Bei Größenänderung alles neu anordnen
       window.addEventListener("resize", () => {
         layoutInitial();
       });
@@ -320,7 +318,6 @@
       piece.dataset.scale = String(scale);
     }
 
-    // Alle Teile sauber unten in 2 Reihen anordnen
     function layoutInitial() {
       updateGeometry();
       computeTrayScale();
@@ -328,7 +325,6 @@
       const margin = 8;
       const colsTray = 4;
 
-      // einfache zufällige Reihenfolge für die Ablage
       const order = [...Array(TOTAL).keys()];
       for (let i = order.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -336,8 +332,8 @@
       }
 
       pieces.forEach((piece, idxInTray) => {
-        const i = order[idxInTray];          // ursprünglicher Index
-        piece.dataset.index = String(i);     // korrekter Index für Prüfung
+        const i = order[idxInTray];
+        piece.dataset.index = String(i);
 
         const rowTray = Math.floor(idxInTray / colsTray);
         const colTray = idxInTray % colsTray;
@@ -438,7 +434,6 @@
       const centerX = rect.left + rect.width  / 2;
       const centerY = rect.top  + rect.height / 2;
 
-      // Liegt die Mitte im Board? -> auf Rasterfeld schnappen (Originalgröße)
       if (
         centerX >= boardRect.left &&
         centerX <= boardRect.right &&
@@ -451,13 +446,8 @@
         row = Math.max(0, Math.min(ROWS - 1, row));
 
         const slot = row * COLS + col;
-
-        // Falls dort schon ein anderes Teil liegt, dieses bleibt einfach,
-        // wir überschreiben es nicht – die Teile dürfen sich überlappen.
         placeOnBoard(piece, slot);
       } else {
-        // Frei im Puzzlebereich liegen lassen, zählt aber als "nicht platziert".
-        // Wir verkleinern wieder auf Tray-Größe und halten die Mitte ungefähr bei.
         const oldCenterX = centerX;
         const oldCenterY = centerY;
 
@@ -517,4 +507,3 @@
   </script>
 </body>
 </html>
-
