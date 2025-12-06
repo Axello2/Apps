@@ -78,11 +78,11 @@
       width: 100%;
       padding-top: 56.25%; /* 16:9 */
       border-radius: 14px;
-      border: 1px solid #64748b;      /* etwas hellerer, dünner Rahmen */
+      border: 1px solid #64748b;
       overflow: hidden;
       box-shadow: 0 0 18px rgba(15, 23, 42, 0.8) inset;
-      background-color: #020617;      /* nur dunkler Hintergrund */
-      /* kein Hintergrundbild, keine Vorlage */
+      background-color: #020617;
+      /* keine Vorlage */
     }
 
     .puzzle-tray {
@@ -151,7 +151,6 @@
     .puzzle-piece {
       position: absolute;
       border-radius: 10px;
-      /* sehr dünner, heller Rahmen */
       border: 1px solid rgba(148, 163, 184, 0.7);
       box-shadow: 0 6px 10px rgba(0, 0, 0, 0.6);
       overflow: hidden;
@@ -181,8 +180,8 @@
       <h2>Zieh die 8 großen Puzzleteile an die richtige Stelle</h2>
       <p class="section-desc">
         Das fertige Bild wird nicht eingeblendet – du siehst nur den Rahmen.
-        Zieh die Teile mit Maus oder Finger ins Rechteck oben. Wenn alle Teile
-        richtig liegen, ist das Puzzle gelöst.
+        Zieh die Teile ins Rechteck oben. Wenn alle Teile richtig liegen,
+        ist das Puzzle gelöst.
       </p>
 
       <div class="puzzle-layout">
@@ -190,10 +189,10 @@
           <div class="puzzle-board" id="puzzleBoard"></div>
           <div class="puzzle-tray" id="puzzleTray">
             <div class="puzzle-tray-text">
-              Hier starten die Puzzleteile. Alle 8 sollten unten gut sichtbar sein.
+              Hier starten die Puzzleteile. Alle 8 sind unten sichtbar,
+              aber in zufälliger Reihenfolge.
             </div>
           </div>
-          <!-- Puzzleteile werden per Script hinzugefügt -->
         </div>
 
         <div class="puzzle-side">
@@ -214,7 +213,7 @@
   </div>
 
   <script>
-    // Bilddatei im gleichen Ordner ablegen und Namen hier anpassen:
+    // PNG-Bild im gleichen Ordner:
     const IMAGE_SRC = "waldsee_puzzle.png";
 
     const COLS = 4;
@@ -224,7 +223,7 @@
     let puzzleArea, boardEl, trayEl, pieces = [];
     let areaRect, boardRect, trayRect;
     let segW, segH;
-    let trayScale = 0.5;  // wird dynamisch angepasst
+    let trayScale = 0.5;
 
     let activePiece = null;
     let activePointerId = null;
@@ -237,18 +236,14 @@
       boardEl    = document.getElementById("puzzleBoard");
       trayEl     = document.getElementById("puzzleTray");
 
-      // KEIN Hintergrundbild mehr auf dem Board:
-      // boardEl.style.backgroundImage = "url('" + IMAGE_SRC + "')";
-
-      // Puzzleteile anlegen
+      // Teile erzeugen
       for (let i = 0; i < TOTAL; i++) {
         const piece = document.createElement("div");
         piece.className = "puzzle-piece";
-        piece.dataset.index = String(i);
-
+        piece.dataset.index = String(i);   // richtige Position
         const row = Math.floor(i / COLS);
         const col = i % COLS;
-        piece.dataset.row = String(row); // für Bildausschnitt
+        piece.dataset.row = String(row);   // Bildausschnitt
         piece.dataset.col = String(col);
 
         const img = document.createElement("img");
@@ -265,7 +260,6 @@
       window.addEventListener("load", () => {
         layoutInitial();
       });
-
       window.addEventListener("resize", () => {
         layoutInitial();
       });
@@ -325,18 +319,22 @@
       const margin = 8;
       const colsTray = 4;
 
+      // Permutation der Ablage-Positionen (0..7)
       const order = [...Array(TOTAL).keys()];
       for (let i = order.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [order[i], order[j]] = [order[j], order[i]];
       }
+      // Sicherstellen, dass es NICHT die Identität ist
+      if (order.every((v, i) => v === i) && order.length > 1) {
+        [order[0], order[1]] = [order[1], order[0]];
+      }
 
-      pieces.forEach((piece, idxInTray) => {
-        const i = order[idxInTray];
-        piece.dataset.index = String(i);
+      pieces.forEach((piece, idxPiece) => {
+        const posIndex = order[idxPiece];      // 0..7, zufällig
 
-        const rowTray = Math.floor(idxInTray / colsTray);
-        const colTray = idxInTray % colsTray;
+        const rowTray = Math.floor(posIndex / colsTray);
+        const colTray = posIndex % colsTray;
 
         applyPieceImage(piece, trayScale);
 
@@ -359,10 +357,10 @@
     }
 
     function placeOnBoard(piece, slotIndex) {
+      applyPieceImage(piece, 1);
+
       const row = Math.floor(slotIndex / COLS);
       const col = slotIndex % COLS;
-
-      applyPieceImage(piece, 1);
 
       const left =
         boardRect.left - areaRect.left + col * segW;
@@ -374,7 +372,7 @@
       piece.dataset.slot = String(slotIndex);
     }
 
-    // ---------- Drag & Drop ----------
+    // -------- Drag & Drop --------
 
     function makeDraggable(piece) {
       piece.addEventListener("pointerdown", onPieceDown);
@@ -471,7 +469,7 @@
       updateStatus();
     }
 
-    // ---------- Status & Buttons ----------
+    // -------- Status & Buttons --------
 
     function updateStatus() {
       const statusEl = document.getElementById("puzzleStatus");
