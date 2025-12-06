@@ -70,6 +70,7 @@
       flex: 1.4;
       position: relative;
       min-height: 420px;
+      touch-action: none;
     }
 
     .puzzle-board {
@@ -95,6 +96,7 @@
       padding: 8px;
       font-size: 0.85rem;
       color: #9ca3af;
+      touch-action: none;
     }
 
     .puzzle-tray-text {
@@ -148,12 +150,6 @@
       margin-top: 4px;
     }
 
-    .puzzle-area,
-    .puzzle-board,
-    .puzzle-tray {
-      touch-action: none;
-    }
-
     .puzzle-piece {
       position: absolute;
       border-radius: 10px;
@@ -202,11 +198,6 @@
         </div>
 
         <div class="puzzle-side">
-          <p>
-            A ist immer die rechte untere Ecke, B oben, C links unten.
-            Die Seiten a, b, c liegen gegenüber der jeweiligen Eckpunkte,
-            genau wie in deinen anderen Dreiecks-Apps.
-          </p>
           <div class="btn-row">
             <button class="btn-primary" type="button" onclick="shufflePieces()">
               Neu mischen
@@ -224,9 +215,8 @@
   </div>
 
   <script>
-    // WICHTIG: Bilddatei im gleichen Ordner speichern
-    // und ggf. Dateinamen hier anpassen:
-    const IMAGE_SRC = "waldsee_puzzle.jpg";
+    // HIER ggf. den Dateinamen/Endung deines Bildes anpassen (z. B. .png)
+    const IMAGE_SRC = "waldsee_puzzle.png";
 
     const COLS = 4;
     const ROWS = 2;
@@ -242,9 +232,7 @@
     let dragOffsetY = 0;
     let zCounter = 10;
 
-    document.addEventListener("DOMContentLoaded", initPuzzle);
-
-    function initPuzzle() {
+    document.addEventListener("DOMContentLoaded", () => {
       puzzleArea = document.getElementById("puzzleArea");
       boardEl = document.getElementById("puzzleBoard");
       trayEl = document.getElementById("puzzleTray");
@@ -268,15 +256,19 @@
         makeDraggable(piece);
       }
 
-      layoutPuzzle(true);
+      // Erst wenn alles fertig gerendert ist, Layout berechnen
+      window.addEventListener("load", () => {
+        layoutPuzzle(true);
+      });
 
+      // Bei Größenänderung neu ausrichten
       window.addEventListener("resize", () => layoutPuzzle(false));
-    }
+    });
 
     function updateGeometry() {
-      areaRect = puzzleArea.getBoundingClientRect();
+      areaRect  = puzzleArea.getBoundingClientRect();
       boardRect = boardEl.getBoundingClientRect();
-      trayRect = trayEl.getBoundingClientRect();
+      trayRect  = trayEl.getBoundingClientRect();
 
       const bw = boardRect.width;
       const bh = boardRect.height;
@@ -304,7 +296,7 @@
         img.style.width = bw + "px";
         img.style.height = bh + "px";
         img.style.left = -col * pieceW + "px";
-        img.style.top = -row * pieceH + "px";
+        img.style.top  = -row * pieceH + "px";
 
         if (
           resetToTray ||
@@ -325,15 +317,15 @@
 
       const margin = 6;
       const xMin = trayRect.left - areaRect.left + margin;
-      const yMin = trayRect.top - areaRect.top + margin;
-      const xMax = xMin + Math.max(trayRect.width - pieceW - 2 * margin, 0);
+      const yMin = trayRect.top  - areaRect.top  + margin;
+      const xMax = xMin + Math.max(trayRect.width  - pieceW - 2 * margin, 0);
       const yMax = yMin + Math.max(trayRect.height - pieceH - 2 * margin, 0);
 
-      const x = xMin + Math.random() * (xMax - xMin);
-      const y = yMin + Math.random() * (yMax - yMin);
+      const x = xMin + Math.random() * (xMax - xMin || 1);
+      const y = yMin + Math.random() * (yMax - yMin || 1);
 
       piece.style.left = x + "px";
-      piece.style.top = y + "px";
+      piece.style.top  = y + "px";
       piece.dataset.slot = "tray";
     }
 
@@ -346,10 +338,10 @@
       const left =
         boardRect.left - areaRect.left + col * pieceW;
       const top =
-        boardRect.top - areaRect.top + row * pieceH;
+        boardRect.top  - areaRect.top  + row * pieceH;
 
       piece.style.left = left + "px";
-      piece.style.top = top + "px";
+      piece.style.top  = top  + "px";
     }
 
     // Drag & Drop (Pointer-Events)
@@ -376,16 +368,17 @@
 
       piece.addEventListener("pointermove", onPieceMove);
       piece.addEventListener("pointerup", onPieceUp);
+      piece.addEventListener("pointercancel", onPieceUp);
     }
 
     function onPieceMove(e) {
       if (!activePiece || e.pointerId !== activePointerId) return;
 
       const x = e.clientX - areaRect.left - dragOffsetX;
-      const y = e.clientY - areaRect.top - dragOffsetY;
+      const y = e.clientY - areaRect.top  - dragOffsetY;
 
       activePiece.style.left = x + "px";
-      activePiece.style.top = y + "px";
+      activePiece.style.top  = y + "px";
     }
 
     function onPieceUp(e) {
@@ -396,6 +389,7 @@
 
       activePiece.removeEventListener("pointermove", onPieceMove);
       activePiece.removeEventListener("pointerup", onPieceUp);
+      activePiece.removeEventListener("pointercancel", onPieceUp);
 
       snapAfterDrop(activePiece);
 
@@ -407,10 +401,10 @@
       updateGeometry();
 
       const rect = piece.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+      const centerX = rect.left + rect.width  / 2;
+      const centerY = rect.top  + rect.height / 2;
 
-      // Liegt die Mitte außerhalb des Boards? -> zurück in die Ablage
+      // außerhalb des Boards? -> zurück in die Ablage
       if (
         centerX < boardRect.left ||
         centerX > boardRect.right ||
@@ -424,13 +418,13 @@
 
       // nächste Zelle bestimmen
       let col = Math.floor((centerX - boardRect.left) / pieceW);
-      let row = Math.floor((centerY - boardRect.top) / pieceH);
+      let row = Math.floor((centerY - boardRect.top)  / pieceH);
       col = Math.max(0, Math.min(COLS - 1, col));
       row = Math.max(0, Math.min(ROWS - 1, row));
 
       const slot = row * COLS + col;
 
-      // Falls schon ein anderes Teil in diesem Slot liegt, dieses zurück in die Ablage
+      // Falls Slot schon belegt, altes Teil zurück in die Ablage
       pieces.forEach((p) => {
         if (p !== piece && p.dataset.slot === String(slot)) {
           putPieceInTray(p);
