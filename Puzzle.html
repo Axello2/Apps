@@ -69,7 +69,7 @@
     .puzzle-area {
       flex: 1.4;
       position: relative;
-      min-height: 420px;
+      min-height: 480px;
       touch-action: none;
     }
 
@@ -89,7 +89,7 @@
 
     .puzzle-tray {
       margin-top: 10px;
-      height: 150px;
+      height: 260px;          /* genügend Platz für 2 Reihen */
       border-radius: 14px;
       border: 1px dashed #475569;
       background: #020617;
@@ -191,7 +191,7 @@
           <div class="puzzle-board" id="puzzleBoard"></div>
           <div class="puzzle-tray" id="puzzleTray">
             <div class="puzzle-tray-text">
-              Hier starten die Puzzleteile. Zieh sie nach oben ins Bild.
+              Hier starten die Puzzleteile. Alle 8 sollten unten gut sichtbar sein.
             </div>
           </div>
           <!-- Puzzleteile werden per Script hinzugefügt -->
@@ -215,8 +215,8 @@
   </div>
 
   <script>
-    // HIER ggf. den Dateinamen/Endung deines Bildes anpassen (z. B. .png)
-    const IMAGE_SRC = "waldsee_puzzle.png";
+    // Bilddatei im gleichen Ordner ablegen und Namen hier anpassen:
+    const IMAGE_SRC = "waldsee_puzzle.jpg";
 
     const COLS = 4;
     const ROWS = 2;
@@ -224,7 +224,8 @@
 
     let puzzleArea, boardEl, trayEl, pieces = [];
     let areaRect, boardRect, trayRect;
-    let pieceW, pieceH;
+    let segW, segH;
+    let trayScale = 0.5;  // wird dynamisch angepasst
 
     let activePiece = null;
     let activePointerId = null;
@@ -234,16 +235,21 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       puzzleArea = document.getElementById("puzzleArea");
-      boardEl = document.getElementById("puzzleBoard");
-      trayEl = document.getElementById("puzzleTray");
+      boardEl    = document.getElementById("puzzleBoard");
+      trayEl     = document.getElementById("puzzleTray");
 
       boardEl.style.backgroundImage = "url('" + IMAGE_SRC + "')";
 
-      // 8 Puzzleteile erzeugen
+      // Puzzleteile anlegen
       for (let i = 0; i < TOTAL; i++) {
         const piece = document.createElement("div");
         piece.className = "puzzle-piece";
         piece.dataset.index = String(i);
+
+        const row = Math.floor(i / COLS);
+        const col = i % COLS;
+        piece.dataset.row = String(row); // für Bildausschnitt
+        piece.dataset.col = String(col);
 
         const img = document.createElement("img");
         img.src = IMAGE_SRC;
@@ -256,13 +262,15 @@
         makeDraggable(piece);
       }
 
-      // Erst wenn alles fertig gerendert ist, Layout berechnen
+      // Wenn alles gerendert ist, initial layouten
       window.addEventListener("load", () => {
-        layoutPuzzle(true);
+        layoutInitial();
       });
 
-      // Bei Größenänderung neu ausrichten
-      window.addEventListener("resize", () => layoutPuzzle(false));
+      // Bei Größenänderung alles neu anordnen
+      window.addEventListener("resize", () => {
+        layoutInitial();
+      });
     });
 
     function updateGeometry() {
@@ -272,79 +280,105 @@
 
       const bw = boardRect.width;
       const bh = boardRect.height;
-      pieceW = bw / COLS;
-      pieceH = bh / ROWS;
+      segW = bw / COLS;
+      segH = bh / ROWS;
     }
 
-    function layoutPuzzle(resetToTray) {
-      updateGeometry();
+    function computeTrayScale() {
+      const margin = 8;
+      const rowsTray = 2;
+      const colsTray = 4;
+
+      const maxScaleX =
+        (trayRect.width - (colsTray + 1) * margin) / (colsTray * segW);
+      const maxScaleY =
+        (trayRect.height - (rowsTray + 1) * margin) / (rowsTray * segH);
+
+      trayScale = Math.min(1, maxScaleX, maxScaleY);
+      if (!isFinite(trayScale) || trayScale <= 0) trayScale = 0.4;
+    }
+
+    function applyPieceImage(piece, scale) {
+      const row = parseInt(piece.dataset.row, 10);
+      const col = parseInt(piece.dataset.col, 10);
 
       const bw = boardRect.width;
       const bh = boardRect.height;
 
-      pieces.forEach((piece) => {
-        const idx = parseInt(piece.dataset.index, 10);
-        const row = Math.floor(idx / COLS);
-        const col = idx % COLS;
-        piece.dataset.row = String(row);
-        piece.dataset.col = String(col);
+      const pieceW = segW * scale;
+      const pieceH = segH * scale;
 
-        piece.style.width = pieceW + "px";
-        piece.style.height = pieceH + "px";
+      piece.style.width  = pieceW + "px";
+      piece.style.height = pieceH + "px";
 
-        const img = piece.querySelector("img");
-        img.style.width = bw + "px";
-        img.style.height = bh + "px";
-        img.style.left = -col * pieceW + "px";
-        img.style.top  = -row * pieceH + "px";
+      const img = piece.querySelector("img");
+      img.style.width  = bw * scale + "px";
+      img.style.height = bh * scale + "px";
+      img.style.left   = -col * segW * scale + "px";
+      img.style.top    = -row * segH * scale + "px";
 
-        if (
-          resetToTray ||
-          piece.dataset.slot === undefined ||
-          piece.dataset.slot === "tray"
-        ) {
-          putPieceInTray(piece);
-        } else if (piece.dataset.slot !== "tray") {
-          snapPieceToCell(piece, parseInt(piece.dataset.slot, 10));
-        }
+      piece.dataset.scale = String(scale);
+    }
+
+    // Alle Teile sauber unten in 2 Reihen anordnen
+    function layoutInitial() {
+      updateGeometry();
+      computeTrayScale();
+
+      const margin = 8;
+      const colsTray = 4;
+
+      // einfache zufällige Reihenfolge für die Ablage
+      const order = [...Array(TOTAL).keys()];
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+
+      pieces.forEach((piece, idxInTray) => {
+        const i = order[idxInTray];          // ursprünglicher Index
+        piece.dataset.index = String(i);     // korrekter Index für Prüfung
+
+        const rowTray = Math.floor(idxInTray / colsTray);
+        const colTray = idxInTray % colsTray;
+
+        applyPieceImage(piece, trayScale);
+
+        const left =
+          trayRect.left - areaRect.left +
+          margin +
+          colTray * (segW * trayScale + margin);
+
+        const top =
+          trayRect.top - areaRect.top +
+          margin +
+          rowTray * (segH * trayScale + margin);
+
+        piece.style.left = left + "px";
+        piece.style.top  = top  + "px";
+        piece.dataset.slot = "tray";
       });
 
       updateStatus();
     }
 
-    function putPieceInTray(piece) {
-      updateGeometry();
-
-      const margin = 6;
-      const xMin = trayRect.left - areaRect.left + margin;
-      const yMin = trayRect.top  - areaRect.top  + margin;
-      const xMax = xMin + Math.max(trayRect.width  - pieceW - 2 * margin, 0);
-      const yMax = yMin + Math.max(trayRect.height - pieceH - 2 * margin, 0);
-
-      const x = xMin + Math.random() * (xMax - xMin || 1);
-      const y = yMin + Math.random() * (yMax - yMin || 1);
-
-      piece.style.left = x + "px";
-      piece.style.top  = y + "px";
-      piece.dataset.slot = "tray";
-    }
-
-    function snapPieceToCell(piece, slotIndex) {
-      updateGeometry();
-
+    function placeOnBoard(piece, slotIndex) {
       const row = Math.floor(slotIndex / COLS);
       const col = slotIndex % COLS;
 
+      applyPieceImage(piece, 1);
+
       const left =
-        boardRect.left - areaRect.left + col * pieceW;
-      const top =
-        boardRect.top  - areaRect.top  + row * pieceH;
+        boardRect.left - areaRect.left + col * segW;
+      const top  =
+        boardRect.top  - areaRect.top  + row * segH;
 
       piece.style.left = left + "px";
       piece.style.top  = top  + "px";
+      piece.dataset.slot = String(slotIndex);
     }
 
-    // Drag & Drop (Pointer-Events)
+    // ---------- Drag & Drop ----------
 
     function makeDraggable(piece) {
       piece.addEventListener("pointerdown", onPieceDown);
@@ -404,38 +438,50 @@
       const centerX = rect.left + rect.width  / 2;
       const centerY = rect.top  + rect.height / 2;
 
-      // außerhalb des Boards? -> zurück in die Ablage
+      // Liegt die Mitte im Board? -> auf Rasterfeld schnappen (Originalgröße)
       if (
-        centerX < boardRect.left ||
-        centerX > boardRect.right ||
-        centerY < boardRect.top ||
-        centerY > boardRect.bottom
+        centerX >= boardRect.left &&
+        centerX <= boardRect.right &&
+        centerY >= boardRect.top &&
+        centerY <= boardRect.bottom
       ) {
-        putPieceInTray(piece);
-        updateStatus();
-        return;
+        let col = Math.floor((centerX - boardRect.left) / segW);
+        let row = Math.floor((centerY - boardRect.top)  / segH);
+        col = Math.max(0, Math.min(COLS - 1, col));
+        row = Math.max(0, Math.min(ROWS - 1, row));
+
+        const slot = row * COLS + col;
+
+        // Falls dort schon ein anderes Teil liegt, dieses bleibt einfach,
+        // wir überschreiben es nicht – die Teile dürfen sich überlappen.
+        placeOnBoard(piece, slot);
+      } else {
+        // Frei im Puzzlebereich liegen lassen, zählt aber als "nicht platziert".
+        // Wir verkleinern wieder auf Tray-Größe und halten die Mitte ungefähr bei.
+        const oldCenterX = centerX;
+        const oldCenterY = centerY;
+
+        applyPieceImage(piece, trayScale);
+
+        const rect2 = piece.getBoundingClientRect();
+        const newCenterX = rect2.left + rect2.width  / 2;
+        const newCenterY = rect2.top  + rect2.height / 2;
+
+        const dx = oldCenterX - newCenterX;
+        const dy = oldCenterY - newCenterY;
+
+        const left = parseFloat(piece.style.left || "0") + dx;
+        const top  = parseFloat(piece.style.top  || "0") + dy;
+
+        piece.style.left = left + "px";
+        piece.style.top  = top  + "px";
+        piece.dataset.slot = "tray";
       }
-
-      // nächste Zelle bestimmen
-      let col = Math.floor((centerX - boardRect.left) / pieceW);
-      let row = Math.floor((centerY - boardRect.top)  / pieceH);
-      col = Math.max(0, Math.min(COLS - 1, col));
-      row = Math.max(0, Math.min(ROWS - 1, row));
-
-      const slot = row * COLS + col;
-
-      // Falls Slot schon belegt, altes Teil zurück in die Ablage
-      pieces.forEach((p) => {
-        if (p !== piece && p.dataset.slot === String(slot)) {
-          putPieceInTray(p);
-        }
-      });
-
-      snapPieceToCell(piece, slot);
-      piece.dataset.slot = String(slot);
 
       updateStatus();
     }
+
+    // ---------- Status & Buttons ----------
 
     function updateStatus() {
       const statusEl = document.getElementById("puzzleStatus");
@@ -458,16 +504,13 @@
     }
 
     function shufflePieces() {
-      layoutPuzzle(true);
+      layoutInitial();
       document.getElementById("puzzleStatus").textContent =
         "Zieh die acht großen Teile ins Bild.";
     }
 
     function resetSolved() {
-      pieces.forEach((p) => {
-        p.dataset.slot = "tray";
-      });
-      layoutPuzzle(true);
+      layoutInitial();
       document.getElementById("puzzleStatus").textContent =
         "Puzzle zurückgesetzt. Viel Spaß beim neu zusammensetzen!";
     }
