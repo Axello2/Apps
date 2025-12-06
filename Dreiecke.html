@@ -17,17 +17,16 @@
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;          /* nichts scrollen, alles wird skaliert */
+    overflow: hidden;
     background: #000;
     color: #eee;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
-  /* Fester „Design-Rahmen“, wird später komplett skaliert */
   #app-root {
     position: absolute;
-    width: 900px;              /* Design-Breite */
-    height: 720px;             /* Design-Höhe */
+    width: 900px;
+    height: 720px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -113,17 +112,16 @@
     background: #2a2a2a;
   }
 
-  /* berechnete Werte (grün) */
   input.calculated {
     color: #00ff99;
     font-weight: bold;
     border-color: #00ff99;
   }
 
-  /* Slider / Range */
+  /* Slider */
   input[type="range"] {
     width: 100%;
-    height: 10px;              /* etwas höher */
+    height: 10px;
     background: #333;
     border-radius: 5px;
     outline: none;
@@ -132,16 +130,15 @@
     cursor: pointer;
   }
 
-  /* WebKit (Safari, Chrome) */
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 22px;               /* größerer Handle */
+    width: 22px;
     height: 22px;
     border-radius: 50%;
     background: #00ccff;
     cursor: pointer;
     box-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
-    margin-top: -6px;          /* vertikal zentrieren auf 10px-Track */
+    margin-top: -6px;
   }
 
   input[type="range"]::-webkit-slider-runnable-track {
@@ -151,7 +148,6 @@
     border-radius: 5px;
   }
 
-  /* Firefox */
   input[type="range"]::-moz-range-track {
     width: 100%;
     height: 10px;
@@ -169,7 +165,6 @@
     border: none;
   }
 
-  /* Canvas-Bereich: feste Design-Höhe, wird skaliert */
   #canvas-container {
     width: 100%;
     max-width: 640px;
@@ -263,25 +258,25 @@
       <div class="input-group">
         <div class="label-row">
           <label>Seite a</label>
-          <input type="number" id="in_a" placeholder="-" oninput="handleInput('a')">
+          <input type="number" id="in_a" placeholder="-" step="0.01" oninput="handleInput('a')">
         </div>
-        <input type="range" id="sl_a" min="1" max="200" value="0" oninput="handleSlider('a')">
+        <input type="range" id="sl_a" min="1" max="200" step="0.01" value="0" oninput="handleSlider('a')">
       </div>
 
       <div class="input-group">
         <div class="label-row">
           <label>Seite b</label>
-          <input type="number" id="in_b" placeholder="-" oninput="handleInput('b')">
+          <input type="number" id="in_b" placeholder="-" step="0.01" oninput="handleInput('b')">
         </div>
-        <input type="range" id="sl_b" min="1" max="200" value="0" oninput="handleSlider('b')">
+        <input type="range" id="sl_b" min="1" max="200" step="0.01" value="0" oninput="handleSlider('b')">
       </div>
 
       <div class="input-group">
         <div class="label-row">
           <label>Seite c</label>
-          <input type="number" id="in_c" placeholder="-" oninput="handleInput('c')">
+          <input type="number" id="in_c" placeholder="-" step="0.01" oninput="handleInput('c')">
         </div>
-        <input type="range" id="sl_c" min="1" max="200" value="0" oninput="handleSlider('c')">
+        <input type="range" id="sl_c" min="1" max="200" step="0.01" value="0" oninput="handleSlider('c')">
       </div>
     </div>
 
@@ -291,25 +286,25 @@
       <div class="input-group">
         <div class="label-row">
           <label>α (Alpha)</label>
-          <input type="number" id="in_alpha" placeholder="-" oninput="handleInput('alpha')">
+          <input type="number" id="in_alpha" placeholder="-" step="0.01" oninput="handleInput('alpha')">
         </div>
-        <input type="range" id="sl_alpha" min="1" max="178" value="0" oninput="handleSlider('alpha')">
+        <input type="range" id="sl_alpha" min="1" max="178" step="0.01" value="0" oninput="handleSlider('alpha')">
       </div>
 
       <div class="input-group">
         <div class="label-row">
           <label>β (Beta)</label>
-          <input type="number" id="in_beta" placeholder="-" oninput="handleInput('beta')">
+          <input type="number" id="in_beta" placeholder="-" step="0.01" oninput="handleInput('beta')">
         </div>
-        <input type="range" id="sl_beta" min="1" max="178" value="0" oninput="handleSlider('beta')">
+        <input type="range" id="sl_beta" min="1" max="178" step="0.01" value="0" oninput="handleSlider('beta')">
       </div>
 
       <div class="input-group">
         <div class="label-row">
           <label>γ (Gamma)</label>
-          <input type="number" id="in_gamma" placeholder="-" oninput="handleInput('gamma')">
+          <input type="number" id="in_gamma" placeholder="-" step="0.01" oninput="handleInput('gamma')">
         </div>
-        <input type="range" id="sl_gamma" min="1" max="178" value="0" oninput="handleSlider('gamma')">
+        <input type="range" id="sl_gamma" min="1" max="178" step="0.01" value="0" oninput="handleSlider('gamma')">
       </div>
     </div>
   </div>
@@ -325,7 +320,7 @@
 
   <div id="info-box">
     <div id="triangle-type">Beliebiges Dreieck</div>
-    <div id="area-display">Fläche: <span class="highlight">0</span></div>
+    <div id="area-display">Fläche: <span class="highlight">0.00</span></div>
   </div>
 
   <button class="reset-btn" onclick="resetAll()">Alles Zurücksetzen</button>
@@ -339,11 +334,16 @@ const keys = ['a', 'b', 'c', 'alpha', 'beta', 'gamma'];
 const canvas = document.getElementById('triCanvas');
 const ctx = canvas.getContext('2d');
 
-// Design-Maße für Skalierung
 const DESIGN_WIDTH  = 900;
 const DESIGN_HEIGHT = 720;
 
-// gesamte App an Fenstergröße anpassen (skalieren + zentrieren)
+function format2(val) {
+  const n = Number(val);
+  if (!isFinite(n)) return '';
+  return n.toFixed(2);
+}
+
+// gesamte App an Fenstergröße anpassen
 function applyScale() {
   const app = document.getElementById('app-root');
   const w = window.innerWidth;
@@ -357,7 +357,7 @@ function applyScale() {
   app.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
 }
 
-// Canvas an Design-Container anpassen
+// Canvas an Container anpassen
 function resizeCanvas() {
   const container = document.getElementById('canvas-container');
   canvas.width  = container.clientWidth;
@@ -374,24 +374,35 @@ window.addEventListener('resize', function() {
 function handleSlider(key) {
   const slider = document.getElementById('sl_' + key);
   const input = document.getElementById('in_' + key);
-  input.value = slider.value;
-  updateValue(key, parseFloat(slider.value));
+  let v = parseFloat(slider.value);
+  if (isNaN(v)) v = 0;
+  if (v > 0) {
+    input.value = format2(v);
+  } else {
+    input.value = '';
+  }
+  updateValue(key, v);
 }
 
 function handleInput(key) {
   const input  = document.getElementById('in_' + key);
   const slider = document.getElementById('sl_' + key);
   let val = parseFloat(input.value);
-  if (isNaN(val)) val = 0;
-  
+
+  if (isNaN(val) || val <= 0) {
+    val = 0;
+    input.value = '';
+  } else {
+    input.value = format2(val);
+  }
+
   if (val >= parseFloat(slider.min) && val <= parseFloat(slider.max)) {
     slider.value = val;
   }
-  
+
   updateValue(key, val);
 }
 
-// Änderung eines berechneten Feldes -> ggf. andere Vorgabe freigeben
 function updateValue(key, value) {
   const inputEl   = document.getElementById('in_' + key);
   const wasGiven  = (givenValues[key] !== undefined);
@@ -594,6 +605,7 @@ function trySolve() {
 }
 
 function displayResults(res) {
+  // berechnete Felder füllen (2 Nachkommastellen)
   keys.forEach(k => {
     if (!givenValues[k]) {
       let val;
@@ -603,12 +615,13 @@ function displayResults(res) {
       else                    val = res[k];
 
       if (val) {
-        val = Math.round(val * 100) / 100;
         const input = document.getElementById('in_' + k);
-        input.value = val;
+        const sl    = document.getElementById('sl_' + k);
+        input.value = format2(val);
         input.classList.add('calculated');
-        const sl = document.getElementById('sl_' + k);
-        if (val >= parseFloat(sl.min) && val <= parseFloat(sl.max)) sl.value = val;
+        if (val >= parseFloat(sl.min) && val <= parseFloat(sl.max)) {
+          sl.value = val;
+        }
       }
     }
   });
@@ -643,7 +656,7 @@ function displayResults(res) {
   drawTriangle(res);
 }
 
-// --- Zeichnen: A rechts unten, B oben, C links unten; a gegenüber A, b gegenüber B, c gegenüber C ---
+// --- Zeichnen ---
 function drawTriangle(res) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -652,8 +665,6 @@ function drawTriangle(res) {
   const c = res.c;
   if (!a || !b || !c) return;
 
-  // A = (0,0) rechts unten, C = (-b,0) links unten,
-  // B so, dass |AB| = c und |BC| = a.
   const Ax = 0,   Ay = 0;
   const Cx = -b,  Cy = 0;
 
@@ -661,7 +672,7 @@ function drawTriangle(res) {
   let y2 = c*c - xB*xB;
   if (y2 < 0) y2 = 0;
   const Bx = xB;
-  const By = Math.sqrt(y2);    // oberer Schnittpunkt
+  const By = Math.sqrt(y2);
 
   const minX = Math.min(Ax, Bx, Cx);
   const maxX = Math.max(Ax, Bx, Cx);
@@ -687,7 +698,6 @@ function drawTriangle(res) {
   function trX(v) { return cx + (v - midX) * scale; }
   function trY(v) { return cy - (v - midY) * scale; }
 
-  // Dreieck zeichnen: A -> B -> C -> A
   ctx.strokeStyle = '#00ccff';
   ctx.lineWidth   = 2.2;
   ctx.lineJoin    = 'round';
@@ -701,14 +711,14 @@ function drawTriangle(res) {
   ctx.fillStyle = 'rgba(0, 204, 255, 0.12)';
   ctx.fill();
 
-  // Eckpunkte: A rechts unten, B oben, C links unten
+  // Eckpunkte
   ctx.fillStyle = '#fff';
-  ctx.font      = 'bold 14px sans-serif';  // Eckpunkt-Beschriftung wie bisher
+  ctx.font      = 'bold 14px sans-serif';
   ctx.fillText("A", trX(Ax) + 8,  trY(Ay) + 18);
   ctx.fillText("B", trX(Bx) - 8,  trY(By) - 10);
   ctx.fillText("C", trX(Cx) - 16, trY(Cy) + 18);
   
-  // Seitenmitten für a,b,c (Schrift etwas größer)
+  // Seitenmitten
   const midBCx = (Bx + Cx) / 2;
   const midBCy = (By + Cy) / 2;
   const midACx = (Ax + Cx) / 2;
@@ -717,26 +727,22 @@ function drawTriangle(res) {
   const midABy = (Ay + By) / 2;
 
   ctx.fillStyle = '#00ff99';
-  ctx.font      = '17px sans-serif';       // Seitenlängen größer
-  ctx.fillText("a=" + Math.round(a), trX(midBCx) - 12, trY(midBCy));
-  ctx.fillText("b=" + Math.round(b), trX(midACx) - 18, trY(midACy) - 6);
-  ctx.fillText("c=" + Math.round(c), trX(midABx) + 10, trY(midABy));
+  ctx.font      = '17px sans-serif';
+  ctx.fillText("a=" + format2(a), trX(midBCx) - 12, trY(midBCy));
+  ctx.fillText("b=" + format2(b), trX(midACx) - 18, trY(midACy) - 6);
+  ctx.fillText("c=" + format2(c), trX(midABx) + 10, trY(midABy));
 
-  // Winkel an den Ecken (α bei A, β bei B, γ bei C), ebenfalls größer
+  // Winkel (α bei A, β bei B, γ bei C)
   if (res.A && res.B && res.G) {
-    const alphaText = "α=" + Math.round(res.A) + "°";
-    const betaText  = "β=" + Math.round(res.B) + "°";
-    const gammaText = "γ=" + Math.round(res.G) + "°";
+    const alphaText = "α=" + format2(res.A) + "°";
+    const betaText  = "β=" + format2(res.B) + "°";
+    const gammaText = "γ=" + format2(res.G) + "°";
 
-    // gleiche Schrift wie Seitenlängen
     ctx.font = '17px sans-serif';
     ctx.fillStyle = '#00ff99';
 
-    // A (rechts unten) – Text leicht nach links oben versetzt
-    ctx.fillText(alphaText, trX(Ax) - 60, trY(Ay) - 8);
-    // B (oben) – Text etwas nach rechts neben die Spitze
+    ctx.fillText(alphaText, trX(Ax) - 70, trY(Ay) - 8);
     ctx.fillText(betaText,  trX(Bx) + 10, trY(By) - 10);
-    // C (links unten) – Text leicht nach rechts oben versetzt
     ctx.fillText(gammaText, trX(Cx) + 10, trY(Cy) - 8);
   }
 }
@@ -747,9 +753,9 @@ function redraw() {
   }
 }
 
-// --- Default-Dreieck beim Start: a=30, b=40, c=50 ---
+// --- Default-Dreieck a=30, b=40, c=50 ---
 function setDefaultTriangle() {
-  const defaults = { a: 30, b: 40, c: 50 };  // hier ggf. ändern
+  const defaults = { a: 30, b: 40, c: 50 };
 
   givenValues = {};
 
@@ -759,13 +765,13 @@ function setDefaultTriangle() {
 
     if (defaults[k] !== undefined) {
       const v = defaults[k];
-      if (inp)  inp.value = v;
-      if (sl)   sl.value  = v;
-      givenValues[k] = v;
-      if (inp) {
+      if (inp)  {
+        inp.value = format2(v);
         inp.classList.remove('calculated');
         inp.style.border = "1px solid #00ccff";
       }
+      if (sl)   sl.value  = v;
+      givenValues[k] = v;
     } else {
       if (inp) {
         inp.value = '';
@@ -780,7 +786,7 @@ function setDefaultTriangle() {
   trySolve();
 }
 
-// Initial: Canvas-Size setzen, App skalieren, Default-Werte laden
+// Initial
 resizeCanvas();
 applyScale();
 setDefaultTriangle();
