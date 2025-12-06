@@ -332,7 +332,7 @@
 
   <div id="info-box">
     <div id="triangle-type">Beliebiges Dreieck</div>
-    <div id="area-display">Fläche: <span class="highlight">0,00</span></div>
+    <div id="area-display">Fläche: <span class="highlight">0.00</span></div>
   </div>
 
   <button class="reset-btn" onclick="resetAll()">Alles Zurücksetzen</button>
@@ -349,11 +349,11 @@ const ctx = canvas.getContext('2d');
 const DESIGN_WIDTH  = 900;
 const DESIGN_HEIGHT = 720;
 
-// Zahl -> String mit 2 Nachkommastellen, Komma
+// Zahl -> String mit 2 Nachkommastellen (Punkt als Dezimaltrenner)
 function format2(val) {
   const n = Number(val);
   if (!isFinite(n)) return '';
-  return n.toFixed(2).replace('.', ',');
+  return n.toFixed(2);
 }
 
 // gesamte App an Fenstergröße anpassen
@@ -634,7 +634,7 @@ function trySolve() {
 }
 
 function displayResults(res) {
-  // berechnete Felder füllen (2 Nachkommastellen, Komma)
+  // berechnete Felder füllen (2 Nachkommastellen)
   keys.forEach(k => {
     if (!givenValues[k]) {
       let val;
