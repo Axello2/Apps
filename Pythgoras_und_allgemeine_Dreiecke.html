@@ -343,30 +343,36 @@
   }
 
   // --- Zeichnen: rechtwinkliges Dreieck ---
-  // a, b = Katheten, c = Hypotenuse, alpha/beta in Grad, area = Fläche
+  // a, b = Katheten (a = BC, b = AC), c = Hypotenuse (AB),
+  // A unten rechts, B oben, C unten links (γ = 90°)
   function drawRightTriangle(canvasId, a, b, c, alpha, beta, area) {
     const {ctx, w, h} = prepareCanvas(canvasId);
 
-    // Koordinaten im mathematischen System
-    const Ax = 0, Ay = b;     // oben links
-    const Bx = a, By = 0;     // unten rechts
-    const Cx = 0, Cy = 0;     // unten links (rechter Winkel)
+    // Koordinaten im mathematischen System:
+    // C = (0,0) links unten
+    // A = (b,0) rechts unten
+    // B = (0,a) oben links
+    const Cx = 0,   Cy = 0;
+    const Ax = b,   Ay = 0;
+    const Bx = 0,   By = a;
 
-    const minX = 0;
-    const maxX = a;
-    const minY = 0;
-    const maxY = b;
+    const minX = Math.min(Ax, Bx, Cx);
+    const maxX = Math.max(Ax, Bx, Cx);
+    const minY = Math.min(Ay, By, Cy);
+    const maxY = Math.max(Ay, By, Cy);
 
     const padding = 24;
     const rawScaleX = (w - 2 * padding) / Math.max(maxX - minX, 1e-6);
     const rawScaleY = (h - 2 * padding) / Math.max(maxY - minY, 1e-6);
-    const s = Math.min(rawScaleX, rawScaleY) * 0.8;  // 20% kleiner, damit Platz für Texte
+    const s = Math.min(rawScaleX, rawScaleY) * 0.8;  // 20% kleiner, Platz für Text
 
-    const offsetX = (w - (maxX - minX) * s) / 2 - minX * s;
-    const offsetY = (h - (maxY - minY) * s) / 2 + maxY * s;
+    const midX = (minX + maxX) / 2;
+    const midY = (minY + maxY) / 2;
+    const cx = w / 2;
+    const cy = h / 2;
 
-    function X(x) { return offsetX + x * s; }
-    function Y(y) { return offsetY - y * s; }
+    function X(x) { return cx + (x - midX) * s; }
+    function Y(y) { return cy - (y - midY) * s; }
 
     // Dreieck
     ctx.strokeStyle = "#22d3ee";
@@ -383,12 +389,12 @@
     ctx.fillStyle = "rgba(34,211,238,0.16)";
     ctx.fill();
 
-    // Eckpunkte
+    // Eckpunkte: A unten rechts, B oben, C unten links
     ctx.fillStyle = "#f9fafb";
     ctx.font = "bold 14px sans-serif";
-    ctx.fillText("A", X(Ax) - 12, Y(Ay) - 4);
-    ctx.fillText("B", X(Bx) + 4,  Y(By) + 14);
-    ctx.fillText("C", X(Cx) - 14, Y(Cy) + 14);
+    ctx.fillText("A", X(Ax) + 6,  Y(Ay) + 16);
+    ctx.fillText("B", X(Bx) - 14, Y(By) - 8);
+    ctx.fillText("C", X(Cx) - 14, Y(Cy) + 16);
 
     // Seitenmitten
     const midABx = (Ax + Bx) / 2;
@@ -400,18 +406,21 @@
 
     ctx.fillStyle = "#4ade80";
     ctx.font = "15px sans-serif";
-    ctx.fillText("c=" + format2(c), X(midABx) - 20, Y(midABy) - 6);
-    ctx.fillText("b=" + format2(b), X(midACx) - 40, Y(midACy) - 8);
-    ctx.fillText("a=" + format2(a), X(midBCx) + 6,  Y(midBCy) + 16);
+    // c gegenüber C auf AB
+    ctx.fillText("c=" + format2(c), X(midABx) - 20, Y(midABy) - 8);
+    // b gegenüber B auf AC (unten)
+    ctx.fillText("b=" + format2(b), X(midACx) - 16, Y(midACy) + 18);
+    // a gegenüber A auf BC (links)
+    ctx.fillText("a=" + format2(a), X(midBCx) + 8,  Y(midBCy));
 
     // Winkel
     ctx.fillStyle = "#bef264";
     ctx.font = "15px sans-serif";
-    ctx.fillText("α=" + format2(alpha) + "°", X(Ax) + 6,  Y(Ay) - 22);
-    ctx.fillText("β=" + format2(beta)  + "°", X(Bx) - 54, Y(By) - 10);
-    ctx.fillText("γ=90,00°",             X(Cx) + 4,  Y(Cy) + 28);
+    ctx.fillText("α=" + format2(alpha) + "°", X(Ax) - 56, Y(Ay) - 8);
+    ctx.fillText("β=" + format2(beta)  + "°", X(Bx) + 6,  Y(By) - 10);
+    ctx.fillText("γ=90,00°",               X(Cx) + 4,  Y(Cy) + 28);
 
-    // Fläche in der Mitte (Schwerpunkt)
+    // Fläche im Schwerpunkt
     const Gx = (Ax + Bx + Cx) / 3;
     const Gy = (Ay + By + Cy) / 3;
     ctx.fillStyle = "#e5e7eb";
@@ -423,8 +432,7 @@
   function drawSSSTriangle(canvasId, a, b, c, Adeg, Bdeg, Gdeg, area) {
     const {ctx, w, h} = prepareCanvas(canvasId);
 
-    // Geometrie wie beim Dreiecks-Konstruktor:
-    // A = (0,0) rechts unten, C = (-b,0) links unten, B wird berechnet
+    // A = (0,0) rechts unten, C = (-b,0) links unten, B oben
     const Ax = 0,   Ay = 0;
     const Cx = -b,  Cy = 0;
 
@@ -442,7 +450,7 @@
     const padding = 24;
     const rawScaleX = (w - 2 * padding) / Math.max(maxX - minX, 1e-6);
     const rawScaleY = (h - 2 * padding) / Math.max(maxY - minY, 1e-6);
-    const s = Math.min(rawScaleX, rawScaleY) * 0.8;  // 20% kleiner, damit Platz für Texte
+    const s = Math.min(rawScaleX, rawScaleY) * 0.8;  // etwas kleiner
 
     const midX = (minX + maxX) / 2;
     const midY = (minY + maxY) / 2;
@@ -468,7 +476,7 @@
     ctx.fillStyle = "rgba(34,211,238,0.16)";
     ctx.fill();
 
-    // Eckpunkte
+    // Eckpunkte: A unten rechts, B oben, C unten links
     ctx.fillStyle = "#f9fafb";
     ctx.font = "bold 14px sans-serif";
     ctx.fillText("A", X(Ax) + 8,  Y(Ay) + 18);
@@ -519,7 +527,7 @@
     }
 
     const c = Math.sqrt(a * a + b * b);
-    const alpha = toDeg(Math.asin(a / c));
+    const alpha = toDeg(Math.asin(a / c)); // a = BC, gegenüber A
     const beta  = 90 - alpha;
     const area  = 0.5 * a * b;
 
@@ -569,7 +577,7 @@
     }
 
     const b = Math.sqrt(c * c - a * a);
-    const alpha = toDeg(Math.asin(a / c));
+    const alpha = toDeg(Math.asin(a / c)); // a = BC, gegenüber A
     const beta  = 90 - alpha;
     const area  = 0.5 * a * b;
 
@@ -578,7 +586,6 @@
     document.getElementById("out_kat_beta").textContent  = format2(beta);
     document.getElementById("out_kat_area").textContent  = format2(area);
 
-    // Für die Zeichnung verwenden wir a und b als Katheten
     drawRightTriangle("canvas_kat", a, b, c, alpha, beta, area);
   }
 
@@ -614,7 +621,6 @@
       return;
     }
 
-    // Dreiecksungleichung mit didaktischer Formulierung
     if (a + b <= c || a + c <= b || b + c <= a) {
       errEl.textContent =
         "Kein Dreieck möglich: Die Summe der beiden kürzeren Seiten muss größer sein als die längste Seite.";
@@ -654,14 +660,14 @@
     resetSSSOutputs(true);
   }
 
-  // Erstes leeres Zeichnen beim Laden, damit die Canvases korrekt skaliert sind
+  // Erstes leeres Zeichnen beim Laden
   window.addEventListener("load", () => {
     prepareCanvas("canvas_hyp");
     prepareCanvas("canvas_kat");
     prepareCanvas("canvas_sss");
   });
 
-  // Bei Fenstergröße neu zeichnen, wenn schon Werte vorhanden sind
+  // Bei Fenstergröße neu zeichnen, falls Werte vorhanden
   window.addEventListener("resize", () => {
     const hypC = parseInput("hyp_a") && parseInput("hyp_b");
     const katC = parseInput("kat_c") && parseInput("kat_a");
