@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Waldsee-Puzzle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 16px 0;
+      font-size: 2rem;
+      color: #22d3ee;
+      text-shadow: 0 0 16px rgba(34, 211, 238, 0.7);
+    }
+
+    h2 {
+      margin: 0 0 4px 0;
+      font-size: 1.15rem;
+      color: #a5b4fc;
+    }
+
+    .section {
+      background: #020617;
+      border-radius: 16px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 18px 35px rgba(0, 0, 0, 0.6);
+      padding: 14px 14px 16px 14px;
+      margin-bottom: 18px;
+    }
+
+    .section-desc {
+      margin: 0 0 10px 0;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+
+    .puzzle-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    @media (min-width: 900px) {
+      .puzzle-layout {
+        flex-direction: row;
+      }
+    }
+
+    .puzzle-area {
+      flex: 1.4;
+      position: relative;
+      min-height: 420px;
+    }
+
+    .puzzle-board {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 */
+      border-radius: 14px;
+      border: 1px solid #475569;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(15, 23, 42, 0.9) inset;
+      background-color: #020617;
+      background-position: center;
+      background-size: cover;
+      opacity: 0.4; /* schwach als Vorlage */
+    }
+
+    .puzzle-tray {
+      margin-top: 10px;
+      height: 150px;
+      border-radius: 14px;
+      border: 1px dashed #475569;
+      background: #020617;
+      padding: 8px;
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+
+    .puzzle-tray-text {
+      opacity: 0.8;
+    }
+
+    .puzzle-side {
+      flex: 0.9;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 0.9rem;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #022c22;
+    }
+
+    .btn-secondary {
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #374151;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    #puzzleStatus {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      margin-top: 4px;
+    }
+
+    .puzzle-area,
+    .puzzle-board,
+    .puzzle-tray {
+      touch-action: none;
+    }
+
+    .puzzle-piece {
+      position: absolute;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      cursor: grab;
+      border: 1px solid #0f172a;
+      background: #020617;
+      z-index: 5;
+      touch-action: none;
+    }
+
+    .puzzle-piece.dragging {
+      cursor: grabbing;
+      box-shadow: 0 16px 30px rgba(0, 0, 0, 0.9);
+    }
+
+    .puzzle-piece img {
+      position: absolute;
+      user-select: none;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Waldsee-Puzzle</h1>
+
+    <section class="section">
+      <h2>Zieh die 8 großen Puzzleteile an die richtige Stelle</h2>
+      <p class="section-desc">
+        Für Kinder ab ca. 6 Jahren gedacht: Das Bild ist in 8 große Teile
+        (4 × 2) aufgeteilt. Zieh die Teile mit dem Finger oder der Maus auf das
+        Bild. Wenn alle Teile richtig liegen, ist das Puzzle gelöst.
+      </p>
+
+      <div class="puzzle-layout">
+        <div class="puzzle-area" id="puzzleArea">
+          <div class="puzzle-board" id="puzzleBoard"></div>
+          <div class="puzzle-tray" id="puzzleTray">
+            <div class="puzzle-tray-text">
+              Hier starten die Puzzleteile. Zieh sie nach oben ins Bild.
+            </div>
+          </div>
+          <!-- Puzzleteile werden per Script hinzugefügt -->
+        </div>
+
+        <div class="puzzle-side">
+          <p>
+            A ist immer die rechte untere Ecke, B oben, C links unten.
+            Die Seiten a, b, c liegen gegenüber der jeweiligen Eckpunkte,
+            genau wie in deinen anderen Dreiecks-Apps.
+          </p>
+          <div class="btn-row">
+            <button class="btn-primary" type="button" onclick="shufflePieces()">
+              Neu mischen
+            </button>
+            <button class="btn-secondary" type="button" onclick="resetSolved()">
+              Komplett zurücksetzen
+            </button>
+          </div>
+          <div id="puzzleStatus">
+            Zieh die acht großen Teile ins Bild.
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // WICHTIG: Bilddatei im gleichen Ordner speichern
+    // und ggf. Dateinamen hier anpassen:
+    const IMAGE_SRC = "waldsee_puzzle.jpg";
+
+    const COLS = 4;
+    const ROWS = 2;
+    const TOTAL = COLS * ROWS;
+
+    let puzzleArea, boardEl, trayEl, pieces = [];
+    let areaRect, boardRect, trayRect;
+    let pieceW, pieceH;
+
+    let activePiece = null;
+    let activePointerId = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    let zCounter = 10;
+
+    document.addEventListener("DOMContentLoaded", initPuzzle);
+
+    function initPuzzle() {
+      puzzleArea = document.getElementById("puzzleArea");
+      boardEl = document.getElementById("puzzleBoard");
+      trayEl = document.getElementById("puzzleTray");
+
+      boardEl.style.backgroundImage = "url('" + IMAGE_SRC + "')";
+
+      // 8 Puzzleteile erzeugen
+      for (let i = 0; i < TOTAL; i++) {
+        const piece = document.createElement("div");
+        piece.className = "puzzle-piece";
+        piece.dataset.index = String(i);
+
+        const img = document.createElement("img");
+        img.src = IMAGE_SRC;
+        img.draggable = false;
+
+        piece.appendChild(img);
+        puzzleArea.appendChild(piece);
+        pieces.push(piece);
+
+        makeDraggable(piece);
+      }
+
+      layoutPuzzle(true);
+
+      window.addEventListener("resize", () => layoutPuzzle(false));
+    }
+
+    function updateGeometry() {
+      areaRect = puzzleArea.getBoundingClientRect();
+      boardRect = boardEl.getBoundingClientRect();
+      trayRect = trayEl.getBoundingClientRect();
+
+      const bw = boardRect.width;
+      const bh = boardRect.height;
+      pieceW = bw / COLS;
+      pieceH = bh / ROWS;
+    }
+
+    function layoutPuzzle(resetToTray) {
+      updateGeometry();
+
+      const bw = boardRect.width;
+      const bh = boardRect.height;
+
+      pieces.forEach((piece) => {
+        const idx = parseInt(piece.dataset.index, 10);
+        const row = Math.floor(idx / COLS);
+        const col = idx % COLS;
+        piece.dataset.row = String(row);
+        piece.dataset.col = String(col);
+
+        piece.style.width = pieceW + "px";
+        piece.style.height = pieceH + "px";
+
+        const img = piece.querySelector("img");
+        img.style.width = bw + "px";
+        img.style.height = bh + "px";
+        img.style.left = -col * pieceW + "px";
+        img.style.top = -row * pieceH + "px";
+
+        if (
+          resetToTray ||
+          piece.dataset.slot === undefined ||
+          piece.dataset.slot === "tray"
+        ) {
+          putPieceInTray(piece);
+        } else if (piece.dataset.slot !== "tray") {
+          snapPieceToCell(piece, parseInt(piece.dataset.slot, 10));
+        }
+      });
+
+      updateStatus();
+    }
+
+    function putPieceInTray(piece) {
+      updateGeometry();
+
+      const margin = 6;
+      const xMin = trayRect.left - areaRect.left + margin;
+      const yMin = trayRect.top - areaRect.top + margin;
+      const xMax = xMin + Math.max(trayRect.width - pieceW - 2 * margin, 0);
+      const yMax = yMin + Math.max(trayRect.height - pieceH - 2 * margin, 0);
+
+      const x = xMin + Math.random() * (xMax - xMin);
+      const y = yMin + Math.random() * (yMax - yMin);
+
+      piece.style.left = x + "px";
+      piece.style.top = y + "px";
+      piece.dataset.slot = "tray";
+    }
+
+    function snapPieceToCell(piece, slotIndex) {
+      updateGeometry();
+
+      const row = Math.floor(slotIndex / COLS);
+      const col = slotIndex % COLS;
+
+      const left =
+        boardRect.left - areaRect.left + col * pieceW;
+      const top =
+        boardRect.top - areaRect.top + row * pieceH;
+
+      piece.style.left = left + "px";
+      piece.style.top = top + "px";
+    }
+
+    // Drag & Drop (Pointer-Events)
+
+    function makeDraggable(piece) {
+      piece.addEventListener("pointerdown", onPieceDown);
+    }
+
+    function onPieceDown(e) {
+      e.preventDefault();
+      const piece = e.currentTarget;
+
+      activePiece = piece;
+      activePointerId = e.pointerId;
+
+      piece.classList.add("dragging");
+      piece.setPointerCapture(activePointerId);
+      piece.style.zIndex = String(++zCounter);
+
+      updateGeometry();
+      const rect = piece.getBoundingClientRect();
+      dragOffsetX = e.clientX - rect.left;
+      dragOffsetY = e.clientY - rect.top;
+
+      piece.addEventListener("pointermove", onPieceMove);
+      piece.addEventListener("pointerup", onPieceUp);
+    }
+
+    function onPieceMove(e) {
+      if (!activePiece || e.pointerId !== activePointerId) return;
+
+      const x = e.clientX - areaRect.left - dragOffsetX;
+      const y = e.clientY - areaRect.top - dragOffsetY;
+
+      activePiece.style.left = x + "px";
+      activePiece.style.top = y + "px";
+    }
+
+    function onPieceUp(e) {
+      if (!activePiece || e.pointerId !== activePointerId) return;
+
+      activePiece.classList.remove("dragging");
+      activePiece.releasePointerCapture(activePointerId);
+
+      activePiece.removeEventListener("pointermove", onPieceMove);
+      activePiece.removeEventListener("pointerup", onPieceUp);
+
+      snapAfterDrop(activePiece);
+
+      activePiece = null;
+      activePointerId = null;
+    }
+
+    function snapAfterDrop(piece) {
+      updateGeometry();
+
+      const rect = piece.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      // Liegt die Mitte außerhalb des Boards? -> zurück in die Ablage
+      if (
+        centerX < boardRect.left ||
+        centerX > boardRect.right ||
+        centerY < boardRect.top ||
+        centerY > boardRect.bottom
+      ) {
+        putPieceInTray(piece);
+        updateStatus();
+        return;
+      }
+
+      // nächste Zelle bestimmen
+      let col = Math.floor((centerX - boardRect.left) / pieceW);
+      let row = Math.floor((centerY - boardRect.top) / pieceH);
+      col = Math.max(0, Math.min(COLS - 1, col));
+      row = Math.max(0, Math.min(ROWS - 1, row));
+
+      const slot = row * COLS + col;
+
+      // Falls schon ein anderes Teil in diesem Slot liegt, dieses zurück in die Ablage
+      pieces.forEach((p) => {
+        if (p !== piece && p.dataset.slot === String(slot)) {
+          putPieceInTray(p);
+        }
+      });
+
+      snapPieceToCell(piece, slot);
+      piece.dataset.slot = String(slot);
+
+      updateStatus();
+    }
+
+    function updateStatus() {
+      const statusEl = document.getElementById("puzzleStatus");
+      let correct = 0;
+
+      pieces.forEach((p) => {
+        if (p.dataset.slot === p.dataset.index) correct++;
+      });
+
+      if (correct === pieces.length) {
+        statusEl.textContent = "Super gemacht! Das Bild ist vollständig.";
+      } else {
+        statusEl.textContent =
+          "Teile richtig platziert: " +
+          correct +
+          " von " +
+          pieces.length +
+          ".";
+      }
+    }
+
+    function shufflePieces() {
+      layoutPuzzle(true);
+      document.getElementById("puzzleStatus").textContent =
+        "Zieh die acht großen Teile ins Bild.";
+    }
+
+    function resetSolved() {
+      pieces.forEach((p) => {
+        p.dataset.slot = "tray";
+      });
+      layoutPuzzle(true);
+      document.getElementById("puzzleStatus").textContent =
+        "Puzzle zurückgesetzt. Viel Spaß beim neu zusammensetzen!";
+    }
+  </script>
+</body>
+</html>
