@@ -381,16 +381,65 @@ const ctx = canvas.getContext('2d');
 const DESIGN_WIDTH  = 900;
 const DESIGN_HEIGHT = 720;
 
-// Zahl -> String mit 2 Nachkommastellen, Punkt als Dezimaltrenner
+// Zahl -> String mit 2 Nachkommastellen (Punkt als Dezimaltrenner)
 function format2(val) {
   const n = Number(val);
   if (!isFinite(n)) return '';
   return n.toFixed(2);
 }
 
-// Anzahl fixierter (mit Wert)
+// Anzahl fixierter (mit Wert > 0)
 function getLockedKeys() {
   return keys.filter(k => locked[k] && values[k] > 0);
+}
+
+// Kombinations-Typ bestimmen: SSS, SAS, ASA, SSA, AAA, invalid
+function classifyTriple(lockedKeys) {
+  const sideSet  = ['a','b','c'];
+  const angleSet = ['alpha','beta','gamma'];
+
+  const sides  = lockedKeys.filter(k => sideSet.includes(k));
+  const angles = lockedKeys.filter(k => angleSet.includes(k));
+
+  const sideCount  = sides.length;
+  const angleCount = angles.length;
+
+  if (sideCount === 3 && angleCount === 0) {
+    return 'SSS';
+  }
+
+  if (angleCount === 2 && sideCount === 1) {
+    // 2 Winkel + 1 Seite -> ASA/AAS
+    return 'ASA';
+  }
+
+  if (angleCount === 3 && sideCount === 0) {
+    return 'AAA';
+  }
+
+  if (sideCount === 2 && angleCount === 1) {
+    const s1 = sides[0];
+    const s2 = sides[1];
+    const ang = angles[0];
+
+    // Eingeschlossene Winkel:
+    // a & b -> gamma
+    // b & c -> alpha
+    // a & c -> beta
+    const isSAS =
+      (( (s1 === 'a' && s2 === 'b') || (s1 === 'b' && s2 === 'a') ) && ang === 'gamma') ||
+      (( (s1 === 'b' && s2 === 'c') || (s1 === 'c' && s2 === 'b') ) && ang === 'alpha') ||
+      (( (s1 === 'a' && s2 === 'c') || (s1 === 'c' && s2 === 'a') ) && ang === 'beta');
+
+    if (isSAS) {
+      return 'SAS';
+    } else {
+      // 2 Seiten + "zugehöriger" Winkel -> SSA (mehrdeutig)
+      return 'SSA';
+    }
+  }
+
+  return 'invalid';
 }
 
 // gesamte App an Fenstergröße anpassen
@@ -428,7 +477,6 @@ function toggleLock(key) {
   if (newState) {
     const currentLocked = keys.filter(k => locked[k]).length;
     if (currentLocked >= 3) {
-      // nicht zulassen, wieder zurück
       chk.checked = false;
       errEl.textContent = "Es können maximal 3 Werte fixiert werden.";
       return;
@@ -482,8 +530,7 @@ function handleInput(key, doFormat) {
   const slider = document.getElementById('sl_' + key);
 
   let text = (input.value || '').trim();
-  // Komma als Dezimaltrennzeichen erlauben
-  text = text.replace(',', '.');
+  text = text.replace(',', '.');  // Komma zulassen
 
   let val = parseFloat(text);
 
@@ -551,12 +598,39 @@ function trySolve() {
   if (lockedKeys.length !== 3) {
     msgEl.style.display = 'block';
     msgEl.textContent = "Bitte genau 3 Werte mit Checkbox fixieren.";
-    return; // alte Zeichnung bleibt stehen
+    return;
   }
 
+  const pattern = classifyTriple(lockedKeys);
+
+  // ungünstige / unzulässige Kombinationen abfangen
+  if (pattern === 'AAA') {
+    errEl.textContent =
+      "Drei Winkel allein bestimmen nur die Form, aber nicht die Größe des Dreiecks. " +
+      "Bitte zusätzlich mindestens eine Seitenlänge fixieren.";
+    return;
+  }
+
+  if (pattern === 'SSA') {
+    errEl.textContent =
+      "Diese Kombination (2 Seiten + zugehöriger Winkel) ist der SSA-Fall und kann 0, 1 oder 2 Dreiecke ergeben. " +
+      "Bitte stattdessen den eingeschlossenen Winkel zwischen den beiden Seiten wählen " +
+      "oder einen zweiten Winkel fixieren (2 Winkel + 1 Seite).";
+    return;
+  }
+
+  if (pattern === 'invalid') {
+    errEl.textContent =
+      "Mit dieser Kombination kann kein Dreieck eindeutig bestimmt werden. " +
+      "Erlaubt sind: 3 Seiten (SSS), 2 Seiten + eingeschlossener Winkel (SAS) " +
+      "oder 2 Winkel + 1 Seite (ASA/AAS).";
+    return;
+  }
+
+  // ab hier: SSS, SAS oder ASA -> gültig
   msgEl.style.display = 'none';
 
-  // lokale Kopie der vorgegebenen Werte
+  // lokale Kopie der vorgegebenen Werte (nur die 3 fixierten)
   const given = {};
   lockedKeys.forEach(k => { given[k] = values[k]; });
 
@@ -575,11 +649,7 @@ function trySolve() {
       res.G = 180 - res.A - res.B;
       solved = true;
     }
-    // nur Winkel -> nicht erlaubt
-    else if (!a && !b && !c) {
-      throw "Mindestens eine Seite wird benötigt!";
-    }
-    // 1 Seite + 2 Winkel (WSW)
+    // ASA / AAS (2 Winkel + 1 Seite)
     else if ((A && B) || (A && G) || (B && G)) {
       if (!res.A) res.A = 180 - (res.B || 0) - (res.G || 0);
       if (!res.B) res.B = 180 - res.A - (res.G || 0);
@@ -597,7 +667,7 @@ function trySolve() {
       res.c = ratio * Math.sin(toRad(res.G));
       solved = true;
     }
-    // SWS (2 Seiten + eingeschlossener Winkel)
+    // SAS (2 Seiten + eingeschlossener Winkel)
     else if ((a && b && G) || (b && c && A) || (a && c && B)) {
       if (a && b && G) {
         res.c = Math.sqrt(a*a + b*b - 2*a*b*Math.cos(toRad(G)));
@@ -613,32 +683,8 @@ function trySolve() {
         res.G = 180 - res.A - B;
       }
       solved = true;
-    }
-    // SSW
-    else {
-      let val1, val2, ang1; 
-      let targetKey; 
-      
-      if (a && b && A)      { val1 = a; ang1 = A; val2 = b; targetKey = 'B'; }
-      else if (a && b && B) { val1 = b; ang1 = B; val2 = a; targetKey = 'A'; }
-      else if (b && c && B) { val1 = b; ang1 = B; val2 = c; targetKey = 'G'; }
-      else if (b && c && G) { val1 = c; ang1 = G; val2 = b; targetKey = 'B'; }
-      else if (a && c && A) { val1 = a; ang1 = A; val2 = c; targetKey = 'G'; }
-      else if (a && c && G) { val1 = c; ang1 = G; val2 = a; targetKey = 'A'; }
-      
-      if (val1) {
-        const sinVal = (val2 * Math.sin(toRad(ang1))) / val1;
-        if (sinVal > 1) throw "Kein Dreieck möglich (Seite zu kurz)";
-        const foundAng = toDeg(Math.asin(sinVal));
-        res[targetKey] = foundAng;
-        const k3   = ['A','B','G'].find(k => res[k] === undefined);
-        res[k3]    = 180 - res[targetKey] - ang1;
-        const kSide3 = k3.toLowerCase();
-        res[kSide3] = (val1 / Math.sin(toRad(ang1))) * Math.sin(toRad(res[k3]));
-        solved = true;
-      } else {
-        throw "Kombination nicht unterstützbar / unvollständig.";
-      }
+    } else {
+      throw "Interne Kombination nicht erkannt.";
     }
 
     if (solved) {
@@ -647,7 +693,7 @@ function trySolve() {
 
   } catch (e) {
     errEl.textContent = e;
-    // alte Zeichnung bleibt stehen, damit man sieht, was vorher war
+    // alte Zeichnung bleibt stehen
   }
 }
 
@@ -808,7 +854,6 @@ function drawTriangle(res) {
 }
 
 function redraw() {
-  // nur neu rechnen, wenn 3 Werte fix
   if (getLockedKeys().length === 3) {
     trySolve();
   }
@@ -823,15 +868,11 @@ function setDefaultTriangle() {
     const inp = document.getElementById('in_' + k);
     const sl  = document.getElementById('sl_' + k);
     const chk = document.getElementById('chk_' + k);
-
-    const v = values[k];
+    const v   = values[k];
 
     if (inp) {
-      if (v > 0) {
-        inp.value = format2(v);
-      } else {
-        inp.value = '';
-      }
+      if (v > 0) inp.value = format2(v);
+      else       inp.value = '';
       inp.classList.remove('calculated');
     }
 
