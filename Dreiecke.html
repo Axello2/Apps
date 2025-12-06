@@ -258,25 +258,31 @@
       <div class="input-group">
         <div class="label-row">
           <label>Seite a</label>
-          <input type="number" id="in_a" placeholder="-" step="0.01" oninput="handleInput('a')">
+          <input type="number" id="in_a" placeholder="-" step="0.01"
+                 oninput="handleInput('a', false)" onblur="handleInput('a', true)">
         </div>
-        <input type="range" id="sl_a" min="1" max="200" step="0.01" value="0" oninput="handleSlider('a')">
+        <input type="range" id="sl_a" min="1" max="200" step="0.01" value="0"
+               oninput="handleSlider('a')">
       </div>
 
       <div class="input-group">
         <div class="label-row">
           <label>Seite b</label>
-          <input type="number" id="in_b" placeholder="-" step="0.01" oninput="handleInput('b')">
+          <input type="number" id="in_b" placeholder="-" step="0.01"
+                 oninput="handleInput('b', false)" onblur="handleInput('b', true)">
         </div>
-        <input type="range" id="sl_b" min="1" max="200" step="0.01" value="0" oninput="handleSlider('b')">
+        <input type="range" id="sl_b" min="1" max="200" step="0.01" value="0"
+               oninput="handleSlider('b')">
       </div>
 
       <div class="input-group">
         <div class="label-row">
           <label>Seite c</label>
-          <input type="number" id="in_c" placeholder="-" step="0.01" oninput="handleInput('c')">
+          <input type="number" id="in_c" placeholder="-" step="0.01"
+                 oninput="handleInput('c', false)" onblur="handleInput('c', true)">
         </div>
-        <input type="range" id="sl_c" min="1" max="200" step="0.01" value="0" oninput="handleSlider('c')">
+        <input type="range" id="sl_c" min="1" max="200" step="0.01" value="0"
+               oninput="handleSlider('c')">
       </div>
     </div>
 
@@ -286,25 +292,31 @@
       <div class="input-group">
         <div class="label-row">
           <label>α (Alpha)</label>
-          <input type="number" id="in_alpha" placeholder="-" step="0.01" oninput="handleInput('alpha')">
+          <input type="number" id="in_alpha" placeholder="-" step="0.01"
+                 oninput="handleInput('alpha', false)" onblur="handleInput('alpha', true)">
         </div>
-        <input type="range" id="sl_alpha" min="1" max="178" step="0.01" value="0" oninput="handleSlider('alpha')">
+        <input type="range" id="sl_alpha" min="1" max="178" step="0.01" value="0"
+               oninput="handleSlider('alpha')">
       </div>
 
       <div class="input-group">
         <div class="label-row">
           <label>β (Beta)</label>
-          <input type="number" id="in_beta" placeholder="-" step="0.01" oninput="handleInput('beta')">
+          <input type="number" id="in_beta" placeholder="-" step="0.01"
+                 oninput="handleInput('beta', false)" onblur="handleInput('beta', true)">
         </div>
-        <input type="range" id="sl_beta" min="1" max="178" step="0.01" value="0" oninput="handleSlider('beta')">
+        <input type="range" id="sl_beta" min="1" max="178" step="0.01" value="0"
+               oninput="handleSlider('beta')">
       </div>
 
       <div class="input-group">
         <div class="label-row">
           <label>γ (Gamma)</label>
-          <input type="number" id="in_gamma" placeholder="-" step="0.01" oninput="handleInput('gamma')">
+          <input type="number" id="in_gamma" placeholder="-" step="0.01"
+                 oninput="handleInput('gamma', false)" onblur="handleInput('gamma', true)">
         </div>
-        <input type="range" id="sl_gamma" min="1" max="178" step="0.01" value="0" oninput="handleSlider('gamma')">
+        <input type="range" id="sl_gamma" min="1" max="178" step="0.01" value="0"
+               oninput="handleSlider('gamma')">
       </div>
     </div>
   </div>
@@ -320,7 +332,7 @@
 
   <div id="info-box">
     <div id="triangle-type">Beliebiges Dreieck</div>
-    <div id="area-display">Fläche: <span class="highlight">0.00</span></div>
+    <div id="area-display">Fläche: <span class="highlight">0,00</span></div>
   </div>
 
   <button class="reset-btn" onclick="resetAll()">Alles Zurücksetzen</button>
@@ -337,10 +349,11 @@ const ctx = canvas.getContext('2d');
 const DESIGN_WIDTH  = 900;
 const DESIGN_HEIGHT = 720;
 
+// Zahl -> String mit 2 Nachkommastellen, Komma
 function format2(val) {
   const n = Number(val);
   if (!isFinite(n)) return '';
-  return n.toFixed(2);
+  return n.toFixed(2).replace('.', ',');
 }
 
 // gesamte App an Fenstergröße anpassen
@@ -371,28 +384,43 @@ window.addEventListener('resize', function() {
 
 // --- INPUT HANDLING ---
 
+// Slider -> Wert sofort in Feld (2 Nachkommastellen) + Model
 function handleSlider(key) {
   const slider = document.getElementById('sl_' + key);
-  const input = document.getElementById('in_' + key);
+  const input  = document.getElementById('in_' + key);
   let v = parseFloat(slider.value);
-  if (isNaN(v)) v = 0;
-  if (v > 0) {
-    input.value = format2(v);
-  } else {
+  if (isNaN(v) || v <= 0) {
+    v = 0;
     input.value = '';
+    updateValue(key, 0);
+  } else {
+    input.value = format2(v);
+    updateValue(key, v);
   }
-  updateValue(key, v);
 }
 
-function handleInput(key) {
+// Tastatureingabe im Feld
+// doFormat = false: während Eingabe -> NICHT formatieren
+// doFormat = true: beim Verlassen (blur) -> formatieren auf 2 Nachkommastellen
+function handleInput(key, doFormat) {
   const input  = document.getElementById('in_' + key);
   const slider = document.getElementById('sl_' + key);
-  let val = parseFloat(input.value);
+
+  let text = (input.value || '').trim();
+  // Komma als Dezimaltrennzeichen erlauben
+  text = text.replace(',', '.');
+
+  let val = parseFloat(text);
 
   if (isNaN(val) || val <= 0) {
-    val = 0;
-    input.value = '';
-  } else {
+    if (doFormat) {
+      input.value = '';
+    }
+    updateValue(key, 0);
+    return;
+  }
+
+  if (doFormat) {
     input.value = format2(val);
   }
 
@@ -403,6 +431,7 @@ function handleInput(key) {
   updateValue(key, val);
 }
 
+// Änderung eines Werts im Model
 function updateValue(key, value) {
   const inputEl   = document.getElementById('in_' + key);
   const wasGiven  = (givenValues[key] !== undefined);
@@ -605,7 +634,7 @@ function trySolve() {
 }
 
 function displayResults(res) {
-  // berechnete Felder füllen (2 Nachkommastellen)
+  // berechnete Felder füllen (2 Nachkommastellen, Komma)
   keys.forEach(k => {
     if (!givenValues[k]) {
       let val;
@@ -627,6 +656,7 @@ function displayResults(res) {
   });
 
   const area = 0.5 * res.a * res.b * Math.sin(toRad(res.G));
+  const areaStr = format2(area);
   
   let type    = [];
   const sides = [res.a, res.b, res.c].sort((x,y)=>x-y);
@@ -651,7 +681,7 @@ function displayResults(res) {
   document.getElementById('info-box').style.display = 'block';
   document.getElementById('triangle-type').textContent = type.join(", ");
   document.getElementById('area-display').innerHTML =
-    `Fläche: <span class="highlight">${area.toFixed(2)}</span>`;
+    `Fläche: <span class="highlight">${areaStr}</span>`;
 
   drawTriangle(res);
 }
