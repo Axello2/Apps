@@ -200,6 +200,9 @@
   #overlay-msg {
     font-size: 0.85rem;
     text-align: center;
+    padding: 4px 8px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 8px;
   }
 
   #combo-help {
@@ -208,6 +211,7 @@
     color: #9ca3af;
     text-align: center;
     margin-bottom: 6px;
+    line-height: 1.4;
   }
 
   #info-box {
@@ -258,9 +262,9 @@
   .error-msg {
     color: #ff3300;
     font-weight: bold;
-    margin-top: 2px;
-    margin-bottom: 4px;
-    min-height: 18px;
+    margin-top: 10px;
+    margin-bottom: 8px;
+    min-height: 20px;
     font-size: 0.85rem;
     text-align: center;
   }
@@ -360,15 +364,15 @@
   </div>
 
   <div id="combo-help">
-    Gültige Kombinationen für eine eindeutige Konstruktion:
+    Gültige Kombinationen für eine eindeutige Konstruktion:<br>
     3 Seiten (SSS) · 2 Seiten + eingeschlossener Winkel (SAS) ·
     2 Winkel + 1 Seite (ASA/AAS) · 3 Winkel + 1 Seite (AAA+S).
   </div>
 
   <div id="canvas-container">
     <canvas id="triCanvas"></canvas>
-    <div id="overlay-msg" style="position:absolute; color:#555; pointer-events:none;">
-      Bitte 3 Werte (oder 3 Winkel + 1 Seite) mit Checkbox fixieren
+    <div id="overlay-msg" style="position:absolute; color:#ccc; pointer-events:none;">
+      Bitte mindestens 3 Werte (oder 3 Winkel + 1 Seite) mit Checkbox fixieren
     </div>
   </div>
 
@@ -383,7 +387,6 @@
 </div>
 
 <script>
-// --- GLOBALE VARIABLEN ---
 const keys = ['a', 'b', 'c', 'alpha', 'beta', 'gamma'];
 
 let values = { a:0, b:0, c:0, alpha:0, beta:0, gamma:0 };
@@ -395,19 +398,16 @@ const ctx = canvas.getContext('2d');
 const DESIGN_WIDTH  = 900;
 const DESIGN_HEIGHT = 720;
 
-// Zahl -> String mit 2 Nachkommastellen
 function format2(val) {
   const n = Number(val);
   if (!isFinite(n)) return '';
   return n.toFixed(2);
 }
 
-// fixierte Werte mit Wert > 0
 function getLockedKeys() {
   return keys.filter(k => locked[k] && values[k] > 0);
 }
 
-// Kombinations-Typ bestimmen: SSS, SAS, ASA, SSA, AAA, AAA+S, invalid
 function classifyCombo(lockedKeys) {
   const sideSet  = ['a','b','c'];
   const angleSet = ['alpha','beta','gamma'];
@@ -418,18 +418,11 @@ function classifyCombo(lockedKeys) {
   const sideCount  = sides.length;
   const angleCount = angles.length;
 
-  if (sideCount === 1 && angleCount === 3) {
-    return 'AAA+S';
-  }
-  if (sideCount === 3 && angleCount === 0) {
-    return 'SSS';
-  }
-  if (angleCount === 2 && sideCount === 1) {
-    return 'ASA';
-  }
-  if (angleCount === 3 && sideCount === 0) {
-    return 'AAA';
-  }
+  if (sideCount === 1 && angleCount === 3) return 'AAA+S';
+  if (sideCount === 3 && angleCount === 0) return 'SSS';
+  if (angleCount === 2 && sideCount === 1) return 'ASA';
+  if (angleCount === 3 && sideCount === 0) return 'AAA';
+
   if (sideCount === 2 && angleCount === 1) {
     const s1 = sides[0];
     const s2 = sides[1];
@@ -447,7 +440,6 @@ function classifyCombo(lockedKeys) {
   return 'invalid';
 }
 
-// App skalieren
 function applyScale() {
   const app = document.getElementById('app-root');
   const w = window.innerWidth;
@@ -461,7 +453,6 @@ function applyScale() {
   app.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
 }
 
-// Canvas an Container anpassen
 function resizeCanvas() {
   const container = document.getElementById('canvas-container');
   canvas.width  = container.clientWidth;
@@ -473,7 +464,6 @@ window.addEventListener('resize', function() {
   applyScale();
 });
 
-// Checkbox toggeln – max. 4 fixiert (für AAA+S)
 function toggleLock(key) {
   const chk = document.getElementById('chk_' + key);
   const newState = chk.checked;
@@ -499,7 +489,6 @@ function toggleLock(key) {
   trySolve();
 }
 
-// Stil für fixierte vs. berechnete Felder
 function updateLockStyles() {
   keys.forEach(k => {
     const inp = document.getElementById('in_' + k);
@@ -515,7 +504,6 @@ function updateLockStyles() {
   });
 }
 
-// Slider: live, wie gehabt
 function handleSlider(key) {
   const slider = document.getElementById('sl_' + key);
   const input  = document.getElementById('in_' + key);
@@ -531,7 +519,6 @@ function handleSlider(key) {
   trySolve();
 }
 
-// Tastatur: während Eingabe keine Berechnung, erst beim Verlassen
 function handleInput(key, doFormat) {
   const input  = document.getElementById('in_' + key);
   const slider = document.getElementById('sl_' + key);
@@ -564,7 +551,6 @@ function handleInput(key, doFormat) {
   }
 }
 
-// Reset
 function resetAll() {
   values = { a:0, b:0, c:0, alpha:0, beta:0, gamma:0 };
   locked = { a:false, b:false, c:false, alpha:false, beta:false, gamma:false };
@@ -587,12 +573,10 @@ function resetAll() {
   document.getElementById('error-msg').textContent = '';
   const msgEl = document.getElementById('overlay-msg');
   msgEl.style.display = 'block';
-  msgEl.textContent = "Bitte 3 Werte (oder 3 Winkel + 1 Seite) mit Checkbox fixieren";
+  msgEl.textContent = "Bitte mindestens 3 Werte (oder 3 Winkel + 1 Seite) mit Checkbox fixieren";
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
-
-// --- Solver ---
 
 function toRad(deg) { return deg * (Math.PI / 180); }
 function toDeg(rad) { return rad * (180 / Math.PI); }
@@ -600,13 +584,17 @@ function toDeg(rad) { return rad * (180 / Math.PI); }
 function trySolve() {
   const msgEl  = document.getElementById('overlay-msg');
   const errEl  = document.getElementById('error-msg');
+
   errEl.textContent = "";
+  msgEl.style.display = 'none';
+  msgEl.textContent = "";
 
   const lockedKeys = getLockedKeys();
 
   if (lockedKeys.length < 3) {
     msgEl.style.display = 'block';
-    msgEl.textContent = "Bitte mindestens 3 Werte (oder 3 Winkel + 1 Seite) mit Checkbox fixieren.";
+    msgEl.textContent =
+      "Bitte mindestens 3 Werte (oder 3 Winkel + 1 Seite) mit Checkbox fixieren.";
     return;
   }
   if (lockedKeys.length > 4) {
@@ -639,8 +627,6 @@ function trySolve() {
     return;
   }
 
-  msgEl.style.display = 'none';
-
   const given = {};
   lockedKeys.forEach(k => { given[k] = values[k]; });
 
@@ -651,7 +637,6 @@ function trySolve() {
   let solved = false;
 
   try {
-    // SSS
     if (a && b && c) {
       if (a + b <= c || a + c <= b || b + c <= a) throw "Kein Dreieck möglich (Ungleichung)";
       res.A = toDeg(Math.acos((b*b + c*c - a*a) / (2*b*c)));
@@ -659,7 +644,6 @@ function trySolve() {
       res.G = 180 - res.A - res.B;
       solved = true;
     }
-    // ASA / AAS / AAA+S (2 oder 3 Winkel + 1 Seite)
     else if ((A && B) || (A && G) || (B && G)) {
       if (!res.A) res.A = 180 - (res.B || 0) - (res.G || 0);
       if (!res.B) res.B = 180 - res.A - (res.G || 0);
@@ -677,7 +661,6 @@ function trySolve() {
       res.c = ratio * Math.sin(toRad(res.G));
       solved = true;
     }
-    // SAS (2 Seiten + eingeschlossener Winkel)
     else if ((a && b && G) || (b && c && A) || (a && c && B)) {
       if (a && b && G) {
         res.c = Math.sqrt(a*a + b*b - 2*a*b*Math.cos(toRad(G)));
@@ -769,7 +752,6 @@ function displayResults(res) {
   drawTriangle(values);
 }
 
-// --- Zeichnen ---
 function drawTriangle(res) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -824,14 +806,12 @@ function drawTriangle(res) {
   ctx.fillStyle = 'rgba(0, 204, 255, 0.12)';
   ctx.fill();
 
-  // Eckpunkte
   ctx.fillStyle = '#fff';
   ctx.font      = 'bold 14px sans-serif';
   ctx.fillText("A", trX(Ax) + 8,  trY(Ay) + 18);
   ctx.fillText("B", trX(Bx) - 8,  trY(By) - 10);
   ctx.fillText("C", trX(Cx) - 16, trY(Cy) + 18);
   
-  // Seitenmitten
   const midBCx = (Bx + Cx) / 2;
   const midBCy = (By + Cy) / 2;
   const midACx = (Ax + Cx) / 2;
@@ -845,7 +825,6 @@ function drawTriangle(res) {
   ctx.fillText("b=" + format2(b), trX(midACx) - 18, trY(midACy) - 6);
   ctx.fillText("c=" + format2(c), trX(midABx) + 10, trY(midABy));
 
-  // Winkel (α bei A, β bei B, γ bei C)
   if (res.alpha && res.beta && res.gamma) {
     const alphaText = "α=" + format2(res.alpha) + "°";
     const betaText  = "β=" + format2(res.beta) + "°";
@@ -866,7 +845,6 @@ function redraw() {
   }
 }
 
-// Default-Dreieck
 function setDefaultTriangle() {
   values = { a:30, b:40, c:50, alpha:0, beta:0, gamma:0 };
   locked = { a:true, b:true, c:true, alpha:false, beta:false, gamma:false };
@@ -896,7 +874,6 @@ function setDefaultTriangle() {
   trySolve();
 }
 
-// Initial
 resizeCanvas();
 applyScale();
 setDefaultTriangle();
