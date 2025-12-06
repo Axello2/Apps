@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Pythagoras & Dreiecke</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 16px 0;
+      font-size: 2rem;
+      color: #22d3ee;
+      text-shadow: 0 0 16px rgba(34,211,238,0.7);
+    }
+
+    h2 {
+      margin: 0 0 4px 0;
+      font-size: 1.15rem;
+      color: #a5b4fc;
+    }
+
+    .section {
+      background: #020617;
+      border-radius: 16px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 18px 35px rgba(0,0,0,0.6);
+      padding: 14px 14px 16px 14px;
+      margin-bottom: 18px;
+    }
+
+    .section-desc {
+      margin: 0 0 10px 0;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+
+    .layout {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    @media (min-width: 850px) {
+      .layout {
+        flex-direction: row;
+      }
+    }
+
+    .controls {
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .canvas-box {
+      flex: 1;
+      min-width: 260px;
+      height: 260px;
+      border-radius: 14px;
+      border: 1px dashed #374151;
+      background: radial-gradient(circle at top, #0b1120 0, #020617 55%, #000 100%);
+      display: flex;
+      align-items: stretch;
+      justify-content: stretch;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .field-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .field-row label {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+    }
+
+    .field-row input[type="number"] {
+      flex: 0 0 110px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #f9fafb;
+      font-size: 0.9rem;
+      text-align: center;
+      outline: none;
+    }
+
+    .field-row input[type="number"]:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.5);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 10px 0;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #022c22;
+    }
+
+    .btn-secondary {
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #374151;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .output {
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .output span.value {
+      color: #22c55e;
+      font-weight: 600;
+    }
+
+    .error {
+      min-height: 18px;
+      font-size: 0.8rem;
+      color: #f97373;
+      margin-top: 6px;
+    }
+
+    .divider {
+      margin: 12px auto 18px auto;
+      max-width: 840px;
+      border: 0;
+      border-top: 1px solid #1f2937;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>Pythagoras &amp; Dreiecke</h1>
+
+  <!-- Abschnitt 1: rechtwinklig – Hypotenuse gesucht -->
+  <section class="section" id="sec-hyp">
+    <h2>Rechtwinkliges Dreieck – Hypotenuse gesucht</h2>
+    <p class="section-desc">
+      Gib die beiden Katheten <b>a</b> und <b>b</b> eines rechtwinkligen Dreiecks ein.
+      Es werden die Hypotenuse <b>c</b>, alle Winkel und der Flächeninhalt berechnet.
+    </p>
+
+    <div class="layout">
+      <div class="controls">
+        <div class="field-row">
+          <label for="hyp_a">Kathete a</label>
+          <input id="hyp_a" type="number" step="0.01" placeholder="z. B. 3,5">
+        </div>
+        <div class="field-row">
+          <label for="hyp_b">Kathete b</label>
+          <input id="hyp_b" type="number" step="0.01" placeholder="z. B. 4">
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-primary" type="button" onclick="calcHyp()">Berechnen</button>
+          <button class="btn-secondary" type="button" onclick="resetHyp()">Zurücksetzen</button>
+        </div>
+
+        <div class="output">
+          Hypotenuse c: <span class="value" id="out_hyp_c">–</span><br>
+          Winkel α (bei A): <span class="value" id="out_hyp_alpha">–</span>°<br>
+          Winkel β (bei B): <span class="value" id="out_hyp_beta">–</span>°<br>
+          Winkel γ (bei C): <span class="value">90,00</span>°<br>
+          Fläche: <span class="value" id="out_hyp_area">–</span>
+        </div>
+        <div class="error" id="err_hyp"></div>
+      </div>
+
+      <div class="canvas-box">
+        <canvas id="canvas_hyp"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Abschnitt 2: rechtwinklig – Kathete gesucht -->
+  <section class="section" id="sec-kat">
+    <h2>Rechtwinkliges Dreieck – Kathete gesucht</h2>
+    <p class="section-desc">
+      Gib die Hypotenuse <b>c</b> und eine Kathete <b>a</b> ein.
+      Die zweite Kathete <b>b</b>, alle Winkel und der Flächeninhalt werden berechnet.
+    </p>
+
+    <div class="layout">
+      <div class="controls">
+        <div class="field-row">
+          <label for="kat_c">Hypotenuse c</label>
+          <input id="kat_c" type="number" step="0.01" placeholder="z. B. 5">
+        </div>
+        <div class="field-row">
+          <label for="kat_a">Kathete a</label>
+          <input id="kat_a" type="number" step="0.01" placeholder="z. B. 3">
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-primary" type="button" onclick="calcKat()">Berechnen</button>
+          <button class="btn-secondary" type="button" onclick="resetKat()">Zurücksetzen</button>
+        </div>
+
+        <div class="output">
+          Kathete b: <span class="value" id="out_kat_b">–</span><br>
+          Winkel α (bei A): <span class="value" id="out_kat_alpha">–</span>°<br>
+          Winkel β (bei B): <span class="value" id="out_kat_beta">–</span>°<br>
+          Winkel γ (bei C): <span class="value">90,00</span>°<br>
+          Fläche: <span class="value" id="out_kat_area">–</span>
+        </div>
+        <div class="error" id="err_kat"></div>
+      </div>
+
+      <div class="canvas-box">
+        <canvas id="canvas_kat"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Abschnitt 3: allgemeines Dreieck – 3 Seiten -->
+  <section class="section" id="sec-sss">
+    <h2>Allgemeines Dreieck – 3 Seiten gegeben (SSS)</h2>
+    <p class="section-desc">
+      Gib die drei Seitenlängen <b>a</b>, <b>b</b> und <b>c</b> eines Dreiecks ein.
+      Es werden Fläche und alle Winkel berechnet.
+    </p>
+
+    <div class="layout">
+      <div class="controls">
+        <div class="field-row">
+          <label for="sss_a">Seite a</label>
+          <input id="sss_a" type="number" step="0.01" placeholder="z. B. 5">
+        </div>
+        <div class="field-row">
+          <label for="sss_b">Seite b</label>
+          <input id="sss_b" type="number" step="0.01" placeholder="z. B. 6">
+        </div>
+        <div class="field-row">
+          <label for="sss_c">Seite c</label>
+          <input id="sss_c" type="number" step="0.01" placeholder="z. B. 7">
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-primary" type="button" onclick="calcSSS()">Berechnen</button>
+          <button class="btn-secondary" type="button" onclick="resetSSS()">Zurücksetzen</button>
+        </div>
+
+        <div class="output">
+          Winkel α (bei A): <span class="value" id="out_sss_A">–</span>°<br>
+          Winkel β (bei B): <span class="value" id="out_sss_B">–</span>°<br>
+          Winkel γ (bei C): <span class="value" id="out_sss_G">–</span>°<br>
+          Fläche: <span class="value" id="out_sss_area">–</span>
+        </div>
+        <div class="error" id="err_sss"></div>
+      </div>
+
+      <div class="canvas-box">
+        <canvas id="canvas_sss"></canvas>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  // --- Hilfsfunktionen ---
+  function format2(val) {
+    const n = Number(val);
+    if (!isFinite(n)) return "–";
+    return n.toFixed(2).replace(".", ",");
+  }
+
+  function parseInput(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    let txt = (el.value || "").trim();
+    txt = txt.replace(",", ".");
+    const v = parseFloat(txt);
+    if (!isFinite(v) || v <= 0) return null;
+    return v;
+  }
+
+  function toRad(deg) { return deg * (Math.PI / 180); }
+  function toDeg(rad) { return rad * (180 / Math.PI); }
+
+  // Canvasgröße an Parent anpassen und Context holen
+  function prepareCanvas(canvasId) {
+    const c = document.getElementById(canvasId);
+    const box = c.parentElement;
+    const w = box.clientWidth || 360;
+    const h = box.clientHeight || 260;
+    c.width  = w;
+    c.height = h;
+    const ctx = c.getContext("2d");
+    ctx.clearRect(0, 0, w, h);
+    return {canvas: c, ctx, w, h};
+  }
+
+  // --- Zeichnen: rechtwinkliges Dreieck ---
+  // a, b = Katheten, c = Hypotenuse, alpha/beta in Grad, area = Fläche
+  function drawRightTriangle(canvasId, a, b, c, alpha, beta, area) {
+    const {ctx, w, h} = prepareCanvas(canvasId);
+
+    // Koordinaten im mathematischen System
+    const Ax = 0, Ay = b;     // oben links
+    const Bx = a, By = 0;     // unten rechts
+    const Cx = 0, Cy = 0;     // unten links (rechter Winkel)
+
+    const minX = 0;
+    const maxX = a;
+    const minY = 0;
+    const maxY = b;
+
+    const padding = 24;
+    const rawScaleX = (w - 2 * padding) / Math.max(maxX - minX, 1e-6);
+    const rawScaleY = (h - 2 * padding) / Math.max(maxY - minY, 1e-6);
+    const s = Math.min(rawScaleX, rawScaleY) * 0.8;  // 20% kleiner, damit Platz für Texte
+
+    const offsetX = (w - (maxX - minX) * s) / 2 - minX * s;
+    const offsetY = (h - (maxY - minY) * s) / 2 + maxY * s;
+
+    function X(x) { return offsetX + x * s; }
+    function Y(y) { return offsetY - y * s; }
+
+    // Dreieck
+    ctx.strokeStyle = "#22d3ee";
+    ctx.lineWidth = 2.2;
+    ctx.lineJoin = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(X(Ax), Y(Ay));
+    ctx.lineTo(X(Bx), Y(By));
+    ctx.lineTo(X(Cx), Y(Cy));
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(34,211,238,0.16)";
+    ctx.fill();
+
+    // Eckpunkte
+    ctx.fillStyle = "#f9fafb";
+    ctx.font = "bold 14px sans-serif";
+    ctx.fillText("A", X(Ax) - 12, Y(Ay) - 4);
+    ctx.fillText("B", X(Bx) + 4,  Y(By) + 14);
+    ctx.fillText("C", X(Cx) - 14, Y(Cy) + 14);
+
+    // Seitenmitten
+    const midABx = (Ax + Bx) / 2;
+    const midABy = (Ay + By) / 2;
+    const midACx = (Ax + Cx) / 2;
+    const midACy = (Ay + Cy) / 2;
+    const midBCx = (Bx + Cx) / 2;
+    const midBCy = (By + Cy) / 2;
+
+    ctx.fillStyle = "#4ade80";
+    ctx.font = "15px sans-serif";
+    ctx.fillText("c=" + format2(c), X(midABx) - 20, Y(midABy) - 6);
+    ctx.fillText("b=" + format2(b), X(midACx) - 40, Y(midACy) - 8);
+    ctx.fillText("a=" + format2(a), X(midBCx) + 6,  Y(midBCy) + 16);
+
+    // Winkel
+    ctx.fillStyle = "#bef264";
+    ctx.font = "15px sans-serif";
+    ctx.fillText("α=" + format2(alpha) + "°", X(Ax) + 6,  Y(Ay) - 22);
+    ctx.fillText("β=" + format2(beta)  + "°", X(Bx) - 54, Y(By) - 10);
+    ctx.fillText("γ=90,00°",             X(Cx) + 4,  Y(Cy) + 28);
+
+    // Fläche in der Mitte (Schwerpunkt)
+    const Gx = (Ax + Bx + Cx) / 3;
+    const Gy = (Ay + By + Cy) / 3;
+    ctx.fillStyle = "#e5e7eb";
+    ctx.font = "bold 15px sans-serif";
+    ctx.fillText("A=" + format2(area), X(Gx) - 30, Y(Gy) + 4);
+  }
+
+  // --- Zeichnen: allgemeines Dreieck SSS ---
+  function drawSSSTriangle(canvasId, a, b, c, Adeg, Bdeg, Gdeg, area) {
+    const {ctx, w, h} = prepareCanvas(canvasId);
+
+    // Geometrie wie beim Dreiecks-Konstruktor:
+    // A = (0,0) rechts unten, C = (-b,0) links unten, B wird berechnet
+    const Ax = 0,   Ay = 0;
+    const Cx = -b,  Cy = 0;
+
+    let xB = (a*a - c*c - b*b) / (2*b);
+    let y2 = c*c - xB*xB;
+    if (y2 < 0) y2 = 0;
+    const Bx = xB;
+    const By = Math.sqrt(y2);
+
+    const minX = Math.min(Ax, Bx, Cx);
+    const maxX = Math.max(Ax, Bx, Cx);
+    const minY = Math.min(Ay, By, Cy);
+    const maxY = Math.max(Ay, By, Cy);
+
+    const padding = 24;
+    const rawScaleX = (w - 2 * padding) / Math.max(maxX - minX, 1e-6);
+    const rawScaleY = (h - 2 * padding) / Math.max(maxY - minY, 1e-6);
+    const s = Math.min(rawScaleX, rawScaleY) * 0.8;  // 20% kleiner, damit Platz für Texte
+
+    const midX = (minX + maxX) / 2;
+    const midY = (minY + maxY) / 2;
+
+    const cx = w / 2;
+    const cy = h / 2;
+
+    function X(x) { return cx + (x - midX) * s; }
+    function Y(y) { return cy - (y - midY) * s; }
+
+    // Dreieck
+    ctx.strokeStyle = "#22d3ee";
+    ctx.lineWidth = 2.2;
+    ctx.lineJoin = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(X(Ax), Y(Ay));
+    ctx.lineTo(X(Bx), Y(By));
+    ctx.lineTo(X(Cx), Y(Cy));
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(34,211,238,0.16)";
+    ctx.fill();
+
+    // Eckpunkte
+    ctx.fillStyle = "#f9fafb";
+    ctx.font = "bold 14px sans-serif";
+    ctx.fillText("A", X(Ax) + 8,  Y(Ay) + 18);
+    ctx.fillText("B", X(Bx) - 8,  Y(By) - 10);
+    ctx.fillText("C", X(Cx) - 18, Y(Cy) + 18);
+
+    // Seitenmitten
+    const midBCx = (Bx + Cx) / 2;
+    const midBCy = (By + Cy) / 2;
+    const midACx = (Ax + Cx) / 2;
+    const midACy = (Ay + Cy) / 2;
+    const midABx = (Ax + Bx) / 2;
+    const midABy = (Ay + By) / 2;
+
+    ctx.fillStyle = "#4ade80";
+    ctx.font = "15px sans-serif";
+    ctx.fillText("a=" + format2(a), X(midBCx) - 18, Y(midBCy));
+    ctx.fillText("b=" + format2(b), X(midACx) - 36, Y(midACy) - 6);
+    ctx.fillText("c=" + format2(c), X(midABx) + 10, Y(midABy));
+
+    // Winkel
+    ctx.fillStyle = "#bef264";
+    ctx.font = "15px sans-serif";
+    ctx.fillText("α=" + format2(Adeg) + "°", X(Ax) - 60, Y(Ay) - 8);
+    ctx.fillText("β=" + format2(Bdeg) + "°", X(Bx) + 10, Y(By) - 10);
+    ctx.fillText("γ=" + format2(Gdeg) + "°", X(Cx) + 10, Y(Cy) - 8);
+
+    // Fläche (Schwerpunkt)
+    const Gx = (Ax + Bx + Cx) / 3;
+    const Gy = (Ay + By + Cy) / 3;
+    ctx.fillStyle = "#e5e7eb";
+    ctx.font = "bold 15px sans-serif";
+    ctx.fillText("A=" + format2(area), X(Gx) - 30, Y(Gy) + 4);
+  }
+
+  // --- Abschnitt 1: Hypotenuse ---
+  function calcHyp() {
+    const errEl = document.getElementById("err_hyp");
+    errEl.textContent = "";
+
+    const a = parseInput("hyp_a");
+    const b = parseInput("hyp_b");
+
+    if (a === null || b === null) {
+      errEl.textContent = "Bitte beide Katheten a und b als positive Zahlen eingeben.";
+      resetHypOutputs(false);
+      return;
+    }
+
+    const c = Math.sqrt(a * a + b * b);
+    const alpha = toDeg(Math.asin(a / c));
+    const beta  = 90 - alpha;
+    const area  = 0.5 * a * b;
+
+    document.getElementById("out_hyp_c").textContent     = format2(c);
+    document.getElementById("out_hyp_alpha").textContent = format2(alpha);
+    document.getElementById("out_hyp_beta").textContent  = format2(beta);
+    document.getElementById("out_hyp_area").textContent  = format2(area);
+
+    drawRightTriangle("canvas_hyp", a, b, c, alpha, beta, area);
+  }
+
+  function resetHypOutputs(clearText = true) {
+    if (clearText) {
+      document.getElementById("hyp_a").value = "";
+      document.getElementById("hyp_b").value = "";
+    }
+    document.getElementById("out_hyp_c").textContent     = "–";
+    document.getElementById("out_hyp_alpha").textContent = "–";
+    document.getElementById("out_hyp_beta").textContent  = "–";
+    document.getElementById("out_hyp_area").textContent  = "–";
+    prepareCanvas("canvas_hyp"); // nur leeren
+  }
+
+  function resetHyp() {
+    document.getElementById("err_hyp").textContent = "";
+    resetHypOutputs(true);
+  }
+
+  // --- Abschnitt 2: Kathete ---
+  function calcKat() {
+    const errEl = document.getElementById("err_kat");
+    errEl.textContent = "";
+
+    const c = parseInput("kat_c");
+    const a = parseInput("kat_a");
+
+    if (c === null || a === null) {
+      errEl.textContent = "Bitte Hypotenuse c und Kathete a als positive Zahlen eingeben.";
+      resetKatOutputs(false);
+      return;
+    }
+    if (a >= c) {
+      errEl.textContent =
+        "Ungültig: Die Hypotenuse c muss länger sein als die Kathete a.";
+      resetKatOutputs(false);
+      return;
+    }
+
+    const b = Math.sqrt(c * c - a * a);
+    const alpha = toDeg(Math.asin(a / c));
+    const beta  = 90 - alpha;
+    const area  = 0.5 * a * b;
+
+    document.getElementById("out_kat_b").textContent     = format2(b);
+    document.getElementById("out_kat_alpha").textContent = format2(alpha);
+    document.getElementById("out_kat_beta").textContent  = format2(beta);
+    document.getElementById("out_kat_area").textContent  = format2(area);
+
+    // Für die Zeichnung verwenden wir a und b als Katheten
+    drawRightTriangle("canvas_kat", a, b, c, alpha, beta, area);
+  }
+
+  function resetKatOutputs(clearText = true) {
+    if (clearText) {
+      document.getElementById("kat_c").value = "";
+      document.getElementById("kat_a").value = "";
+    }
+    document.getElementById("out_kat_b").textContent     = "–";
+    document.getElementById("out_kat_alpha").textContent = "–";
+    document.getElementById("out_kat_beta").textContent  = "–";
+    document.getElementById("out_kat_area").textContent  = "–";
+    prepareCanvas("canvas_kat");
+  }
+
+  function resetKat() {
+    document.getElementById("err_kat").textContent = "";
+    resetKatOutputs(true);
+  }
+
+  // --- Abschnitt 3: allgemeines Dreieck SSS ---
+  function calcSSS() {
+    const errEl = document.getElementById("err_sss");
+    errEl.textContent = "";
+
+    const a = parseInput("sss_a");
+    const b = parseInput("sss_b");
+    const c = parseInput("sss_c");
+
+    if (a === null || b === null || c === null) {
+      errEl.textContent = "Bitte alle drei Seiten a, b und c als positive Zahlen eingeben.";
+      resetSSSOutputs(false);
+      return;
+    }
+
+    // Dreiecksungleichung mit didaktischer Formulierung
+    if (a + b <= c || a + c <= b || b + c <= a) {
+      errEl.textContent =
+        "Kein Dreieck möglich: Die Summe der beiden kürzeren Seiten muss größer sein als die längste Seite.";
+      resetSSSOutputs(false);
+      return;
+    }
+
+    const A = toDeg(Math.acos((b*b + c*c - a*a) / (2*b*c)));
+    const B = toDeg(Math.acos((a*a + c*c - b*b) / (2*a*c)));
+    const G = 180 - A - B;
+
+    const area = 0.5 * a * b * Math.sin(toRad(G)); // G eingeschlossen zwischen a und b
+
+    document.getElementById("out_sss_A").textContent    = format2(A);
+    document.getElementById("out_sss_B").textContent    = format2(B);
+    document.getElementById("out_sss_G").textContent    = format2(G);
+    document.getElementById("out_sss_area").textContent = format2(area);
+
+    drawSSSTriangle("canvas_sss", a, b, c, A, B, G, area);
+  }
+
+  function resetSSSOutputs(clearText = true) {
+    if (clearText) {
+      document.getElementById("sss_a").value = "";
+      document.getElementById("sss_b").value = "";
+      document.getElementById("sss_c").value = "";
+    }
+    document.getElementById("out_sss_A").textContent    = "–";
+    document.getElementById("out_sss_B").textContent    = "–";
+    document.getElementById("out_sss_G").textContent    = "–";
+    document.getElementById("out_sss_area").textContent = "–";
+    prepareCanvas("canvas_sss");
+  }
+
+  function resetSSS() {
+    document.getElementById("err_sss").textContent = "";
+    resetSSSOutputs(true);
+  }
+
+  // Erstes leeres Zeichnen beim Laden, damit die Canvases korrekt skaliert sind
+  window.addEventListener("load", () => {
+    prepareCanvas("canvas_hyp");
+    prepareCanvas("canvas_kat");
+    prepareCanvas("canvas_sss");
+  });
+
+  // Bei Fenstergröße neu zeichnen, wenn schon Werte vorhanden sind
+  window.addEventListener("resize", () => {
+    const hypC = parseInput("hyp_a") && parseInput("hyp_b");
+    const katC = parseInput("kat_c") && parseInput("kat_a");
+    const sssC = parseInput("sss_a") && parseInput("sss_b") && parseInput("sss_c");
+
+    if (hypC) calcHyp();
+    else prepareCanvas("canvas_hyp");
+
+    if (katC) calcKat();
+    else prepareCanvas("canvas_kat");
+
+    if (sssC) calcSSS();
+    else prepareCanvas("canvas_sss");
+  });
+</script>
+</body>
+</html>
