@@ -29,7 +29,7 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
       padding: 24px 20px;
       width: 100%;
-      max-width: 700px; /* mehr Breite nutzbar */
+      max-width: 700px;
     }
 
     h1 {
@@ -52,7 +52,7 @@
 
     .row {
       display: flex;
-      flex-wrap: wrap;       /* bricht um, wenn es eng wird */
+      flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 0.75rem;
     }
@@ -102,8 +102,8 @@
       background: #020617;
       border: 1px dashed #374151;
       font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 1.8rem;       /* deutlich größer */
-      text-align: center;       /* zentriert */
+      font-size: 1.8rem;
+      text-align: center;
       word-break: break-all;
     }
   </style>
@@ -125,15 +125,16 @@
       const d = Number(input[3]);
 
       // 11 Ausgabestellen, nur mit + und mod 10
-      const D1  = (a + 6) % 10;
-      const D2  = (b + 1) % 10;
-      const D3  = (c + 2) % 10;
-      const D4  = (d + 0) % 10;
-      const D5  = (a + b + 3) % 10;
-      const D6  = (b + c + 0) % 10;
-      const D7  = (c + d + 1) % 10;
-      const D8  = (a + d + 5) % 10;
-      const D9  = (a + 4) % 10;
+      // Konstanten so gewählt, dass bei 2580 -> 20352036551 entsteht
+      const D1  = (a + 0) % 10;
+      const D2  = (b + 5) % 10;
+      const D3  = (c + 5) % 10;
+      const D4  = (d + 5) % 10;
+      const D5  = (a + b + 5) % 10;
+      const D6  = (b + c + 7) % 10;
+      const D7  = (c + d + 5) % 10;
+      const D8  = (a + d + 4) % 10;
+      const D9  = (a + 3) % 10;
       const D10 = (b + 0) % 10;
       const D11 = (c + 3) % 10;
 
