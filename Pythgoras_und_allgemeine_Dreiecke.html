@@ -174,6 +174,35 @@
       border: 0;
       border-top: 1px solid #1f2937;
     }
+
+    /* --- Mobile-Optimierung --- */
+    @media (max-width: 600px) {
+      .page {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      h2 {
+        font-size: 1rem;
+      }
+
+      .field-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .field-row input[type="number"] {
+        flex: 0 0 auto;
+        width: 100%;
+      }
+
+      .canvas-box {
+        height: 220px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -343,15 +372,10 @@
   }
 
   // --- Zeichnen: rechtwinkliges Dreieck ---
-  // a, b = Katheten (a = BC, b = AC), c = Hypotenuse (AB),
-  // A unten rechts, B oben, C unten links (γ = 90°)
   function drawRightTriangle(canvasId, a, b, c, alpha, beta, area) {
     const {ctx, w, h} = prepareCanvas(canvasId);
 
-    // Koordinaten im mathematischen System:
-    // C = (0,0) links unten
-    // A = (b,0) rechts unten
-    // B = (0,a) oben links
+    // C = (0,0), A = (b,0), B = (0,a)
     const Cx = 0,   Cy = 0;
     const Ax = b,   Ay = 0;
     const Bx = 0,   By = a;
@@ -364,7 +388,7 @@
     const padding = 24;
     const rawScaleX = (w - 2 * padding) / Math.max(maxX - minX, 1e-6);
     const rawScaleY = (h - 2 * padding) / Math.max(maxY - minY, 1e-6);
-    const s = Math.min(rawScaleX, rawScaleY) * 0.8;  // 20% kleiner, Platz für Text
+    const s = Math.min(rawScaleX, rawScaleY) * 0.8;
 
     const midX = (minX + maxX) / 2;
     const midY = (minY + maxY) / 2;
@@ -374,7 +398,6 @@
     function X(x) { return cx + (x - midX) * s; }
     function Y(y) { return cy - (y - midY) * s; }
 
-    // Dreieck
     ctx.strokeStyle = "#22d3ee";
     ctx.lineWidth = 2.2;
     ctx.lineJoin = "round";
@@ -389,14 +412,12 @@
     ctx.fillStyle = "rgba(34,211,238,0.16)";
     ctx.fill();
 
-    // Eckpunkte: A unten rechts, B oben, C unten links
     ctx.fillStyle = "#f9fafb";
     ctx.font = "bold 14px sans-serif";
     ctx.fillText("A", X(Ax) + 6,  Y(Ay) + 16);
     ctx.fillText("B", X(Bx) - 14, Y(By) - 8);
     ctx.fillText("C", X(Cx) - 14, Y(Cy) + 16);
 
-    // Seitenmitten
     const midABx = (Ax + Bx) / 2;
     const midABy = (Ay + By) / 2;
     const midACx = (Ax + Cx) / 2;
@@ -406,21 +427,16 @@
 
     ctx.fillStyle = "#4ade80";
     ctx.font = "15px sans-serif";
-    // c gegenüber C auf AB
     ctx.fillText("c=" + format2(c), X(midABx) - 20, Y(midABy) - 8);
-    // b gegenüber B auf AC (unten)
     ctx.fillText("b=" + format2(b), X(midACx) - 16, Y(midACy) + 18);
-    // a gegenüber A auf BC (links)
     ctx.fillText("a=" + format2(a), X(midBCx) + 8,  Y(midBCy));
 
-    // Winkel
     ctx.fillStyle = "#bef264";
     ctx.font = "15px sans-serif";
     ctx.fillText("α=" + format2(alpha) + "°", X(Ax) - 56, Y(Ay) - 8);
     ctx.fillText("β=" + format2(beta)  + "°", X(Bx) + 6,  Y(By) - 10);
     ctx.fillText("γ=90,00°",               X(Cx) + 4,  Y(Cy) + 28);
 
-    // Fläche im Schwerpunkt
     const Gx = (Ax + Bx + Cx) / 3;
     const Gy = (Ay + By + Cy) / 3;
     ctx.fillStyle = "#e5e7eb";
@@ -432,7 +448,7 @@
   function drawSSSTriangle(canvasId, a, b, c, Adeg, Bdeg, Gdeg, area) {
     const {ctx, w, h} = prepareCanvas(canvasId);
 
-    // A = (0,0) rechts unten, C = (-b,0) links unten, B oben
+    // A = (0,0) rechts unten, C = (-b,0), B oben
     const Ax = 0,   Ay = 0;
     const Cx = -b,  Cy = 0;
 
@@ -450,18 +466,16 @@
     const padding = 24;
     const rawScaleX = (w - 2 * padding) / Math.max(maxX - minX, 1e-6);
     const rawScaleY = (h - 2 * padding) / Math.max(maxY - minY, 1e-6);
-    const s = Math.min(rawScaleX, rawScaleY) * 0.8;  // etwas kleiner
+    const s = Math.min(rawScaleX, rawScaleY) * 0.8;
 
     const midX = (minX + maxX) / 2;
     const midY = (minY + maxY) / 2;
-
     const cx = w / 2;
     const cy = h / 2;
 
     function X(x) { return cx + (x - midX) * s; }
     function Y(y) { return cy - (y - midY) * s; }
 
-    // Dreieck
     ctx.strokeStyle = "#22d3ee";
     ctx.lineWidth = 2.2;
     ctx.lineJoin = "round";
@@ -476,14 +490,12 @@
     ctx.fillStyle = "rgba(34,211,238,0.16)";
     ctx.fill();
 
-    // Eckpunkte: A unten rechts, B oben, C unten links
     ctx.fillStyle = "#f9fafb";
     ctx.font = "bold 14px sans-serif";
     ctx.fillText("A", X(Ax) + 8,  Y(Ay) + 18);
     ctx.fillText("B", X(Bx) - 8,  Y(By) - 10);
     ctx.fillText("C", X(Cx) - 18, Y(Cy) + 18);
 
-    // Seitenmitten
     const midBCx = (Bx + Cx) / 2;
     const midBCy = (By + Cy) / 2;
     const midACx = (Ax + Cx) / 2;
@@ -497,14 +509,12 @@
     ctx.fillText("b=" + format2(b), X(midACx) - 36, Y(midACy) - 6);
     ctx.fillText("c=" + format2(c), X(midABx) + 10, Y(midABy));
 
-    // Winkel
     ctx.fillStyle = "#bef264";
     ctx.font = "15px sans-serif";
     ctx.fillText("α=" + format2(Adeg) + "°", X(Ax) - 60, Y(Ay) - 8);
     ctx.fillText("β=" + format2(Bdeg) + "°", X(Bx) + 10, Y(By) - 10);
     ctx.fillText("γ=" + format2(Gdeg) + "°", X(Cx) + 10, Y(Cy) - 8);
 
-    // Fläche (Schwerpunkt)
     const Gx = (Ax + Bx + Cx) / 3;
     const Gy = (Ay + By + Cy) / 3;
     ctx.fillStyle = "#e5e7eb";
@@ -527,7 +537,7 @@
     }
 
     const c = Math.sqrt(a * a + b * b);
-    const alpha = toDeg(Math.asin(a / c)); // a = BC, gegenüber A
+    const alpha = toDeg(Math.asin(a / c));
     const beta  = 90 - alpha;
     const area  = 0.5 * a * b;
 
@@ -548,7 +558,7 @@
     document.getElementById("out_hyp_alpha").textContent = "–";
     document.getElementById("out_hyp_beta").textContent  = "–";
     document.getElementById("out_hyp_area").textContent  = "–";
-    prepareCanvas("canvas_hyp"); // nur leeren
+    prepareCanvas("canvas_hyp");
   }
 
   function resetHyp() {
@@ -577,7 +587,7 @@
     }
 
     const b = Math.sqrt(c * c - a * a);
-    const alpha = toDeg(Math.asin(a / c)); // a = BC, gegenüber A
+    const alpha = toDeg(Math.asin(a / c));
     const beta  = 90 - alpha;
     const area  = 0.5 * a * b;
 
@@ -632,7 +642,7 @@
     const B = toDeg(Math.acos((a*a + c*c - b*b) / (2*a*c)));
     const G = 180 - A - B;
 
-    const area = 0.5 * a * b * Math.sin(toRad(G)); // G eingeschlossen zwischen a und b
+    const area = 0.5 * a * b * Math.sin(toRad(G));
 
     document.getElementById("out_sss_A").textContent    = format2(A);
     document.getElementById("out_sss_B").textContent    = format2(B);
@@ -669,17 +679,20 @@
 
   // Bei Fenstergröße neu zeichnen, falls Werte vorhanden
   window.addEventListener("resize", () => {
-    const hypC = parseInput("hyp_a") && parseInput("hyp_b");
-    const katC = parseInput("kat_c") && parseInput("kat_a");
-    const sssC = parseInput("sss_a") && parseInput("sss_b") && parseInput("sss_c");
+    const hasHyp = parseInput("hyp_a") !== null && parseInput("hyp_b") !== null;
+    const hasKat = parseInput("kat_c") !== null && parseInput("kat_a") !== null;
+    const hasSSS =
+      parseInput("sss_a") !== null &&
+      parseInput("sss_b") !== null &&
+      parseInput("sss_c") !== null;
 
-    if (hypC) calcHyp();
+    if (hasHyp) calcHyp();
     else prepareCanvas("canvas_hyp");
 
-    if (katC) calcKat();
+    if (hasKat) calcKat();
     else prepareCanvas("canvas_kat");
 
-    if (sssC) calcSSS();
+    if (hasSSS) calcSSS();
     else prepareCanvas("canvas_sss");
   });
 </script>
