@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ImmoCalc Pro v2.0.10 (Standalone)</title>
+  <title>ImmoCalc Pro v2.0.11 (Standalone)</title>
   <meta name="description" content="ImmoCalc Pro v2.0.5 – Standalone Immobilien-Rendite-Rechner (offline-fähig, responsive, Sortierung, Backup/Restore, PNG-Export)." />
   <style>
     :root{
@@ -940,6 +940,61 @@
       }
     }
 
+
+    /* Mobile: "Meine Objekte" optimiert (v2.0.11) */
+    #cardsMobile{ display:none; }
+    .chartScroll{ width:100%; overflow:visible; }
+    @media (max-width: 520px){
+      .chartScroll{
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 6px;
+      }
+      #compareChart[data-scroll="1"]{
+        display: inline-flex;
+        width: max-content;
+        justify-content: flex-start;
+      }
+      #compareChart[data-scroll="1"] .barItem{
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+      }
+      #compareChart[data-scroll="1"] .xLabel{
+        max-width: 120px;
+      }
+
+      /* Tabelle auf sehr kleinen Screens durch Cards ersetzen */
+      #listHasData{ display:none !important; }
+      #cardsMobile.hidden{ display:none !important; }
+      #cardsMobile{ display:grid; gap:12px; }
+      .mCard{
+        background: #ffffff;
+        border: 1px solid rgba(226,232,240,.9);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 10px 18px rgba(15,23,42,.04);
+      }
+      .mTop{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+      .mName{ font-weight: 950; color: var(--text); font-size: 15px; line-height: 1.2; }
+      .mDate{ margin-top:4px; font-size: 12px; color: var(--muted); font-weight: 650; }
+      .mGrid{ margin-top: 12px; display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+      .mK{ font-size: 11px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: .03em; }
+      .mV{ margin-top:2px; font-size: 14px; color: var(--text); font-weight: 900; }
+      .mActions{ margin-top: 12px; display:flex; justify-content:flex-end; }
+      .mDelBtn{
+        display:inline-flex; align-items:center; gap:8px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(239,68,68,.25);
+        color: #b91c1c;
+        background: rgba(239,68,68,.06);
+        font-weight: 900;
+      }
+      .mDelBtn svg{ width:18px; height:18px; }
+    }
+
 </style>
 </head>
 <body>
@@ -1403,10 +1458,12 @@
                 <div style="font-size:20px; font-weight:1000; color:#1e293b;">Rendite-Vergleich</div>
               </div>
               <div style="height:320px;">
-                <div class="chart" id="compareChart" style="height:280px;" aria-label="Vergleichsdiagramm">
-                  <div class="gridline l1"></div>
-                  <div class="gridline l2"></div>
-                  <div class="gridline l3"></div>
+                <div class="chartScroll" aria-label="Vergleichsdiagramm (scrollbar)">
+                  <div class="chart" id="compareChart" data-scroll="1" style="height:280px;" aria-label="Vergleichsdiagramm">
+                    <div class="gridline l1"></div>
+                    <div class="gridline l2"></div>
+                    <div class="gridline l3"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1487,6 +1544,8 @@
             </div>
           </div>
 
+          <div id="cardsMobile" class="cardsMobile hidden" aria-label="Objekte als Karten (mobil)"></div>
+
           <div id="listEmpty" class="empty hidden">
             <div class="bubble" aria-hidden="true">
               <!-- Home -->
@@ -1510,7 +1569,7 @@
       "use strict";
 
       // --- State ---
-      const APP_VERSION = "2.0.10";
+      const APP_VERSION = "2.0.11";
       const CalcMode = { YIELD: "YIELD", PRICE: "PRICE", RENT: "RENT", LAND: "LAND", BASIC: "BASIC" };
       const RentInterval = { MONTHLY: "MONTHLY", YEARLY: "YEARLY" };
       const LS_KEY = "immo_saved_props";
@@ -2166,14 +2225,29 @@ const qm = Number(state.qm)||0;
           }));
           const compBW = computeBarWidth(el.compareChart, items.length, 26, 56);
           renderBars(el.compareChart, items, compBW);
+          // Mobile: fixe Gesamtbreite für horizontales Scrollen (wenn aktiviert)
+          if(el.compareChart && el.compareChart.dataset && el.compareChart.dataset.scroll === "1"){
+            const itemW = (compBW + 34);
+            const parentW = (el.compareChart.parentElement && el.compareChart.parentElement.clientWidth) ? el.compareChart.parentElement.clientWidth : 0;
+            const totalW = Math.max(parentW, (items.length * itemW) + ((items.length - 1) * 14) + 24);
+            el.compareChart.style.width = totalW + "px";
+          }else if(el.compareChart){
+            el.compareChart.style.width = "";
+          }
+
         }
 
         el.objCountBadge.textContent = state.savedProperties.length + " Objekte";
         el.listHasData.classList.toggle("hidden", !hasSaved);
+        if(el.cardsMobile) el.cardsMobile.classList.toggle("hidden", !hasSaved);
         el.listEmpty.classList.toggle("hidden", hasSaved);
 
         if(hasSaved){
           el.tbodyProps.innerHTML = "";
+          if(el.cardsMobile){
+            el.cardsMobile.innerHTML = "";
+          }
+
           sorted.forEach(prop => {
             const tr = document.createElement("tr");
 
@@ -2238,6 +2312,81 @@ const qm = Number(state.qm)||0;
             tr.appendChild(tdYield);
             tr.appendChild(tdAct);
             el.tbodyProps.appendChild(tr);
+            if(el.cardsMobile){
+              const card = document.createElement("div");
+              card.className = "mCard";
+
+              const top = document.createElement("div");
+              top.className = "mTop";
+
+              const left = document.createElement("div");
+              const nm = document.createElement("div");
+              nm.className = "mName";
+              nm.textContent = prop.name;
+
+              const dt = document.createElement("div");
+              dt.className = "mDate";
+              dt.textContent = todayDE(prop.timestamp);
+
+              left.appendChild(nm);
+              left.appendChild(dt);
+
+              const right = document.createElement("div");
+              right.appendChild(span.cloneNode(true));
+
+              top.appendChild(left);
+              top.appendChild(right);
+
+              const grid = document.createElement("div");
+              grid.className = "mGrid";
+
+              const mkv = (k, v) => {
+                const w = document.createElement("div");
+                const kk = document.createElement("div");
+                kk.className = "mK";
+                kk.textContent = k;
+                const vv = document.createElement("div");
+                vv.className = "mV";
+                vv.textContent = v;
+                w.appendChild(kk);
+                w.appendChild(vv);
+                return w;
+              };
+
+              grid.appendChild(mkv("Kaufpreis", fmtEuroPlain(Math.round(Number(prop.purchasePrice)||0))));
+              grid.appendChild(mkv("Miete/Monat", fmtEuroPlain(Math.round(Number(prop.rent)||0))));
+
+              const actions = document.createElement("div");
+              actions.className = "mActions";
+              const del = document.createElement("button");
+              del.className = "mDelBtn";
+              del.type = "button";
+              del.innerHTML = `
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                  <path d="M10 11v6"></path>
+                  <path d="M14 11v6"></path>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+                </svg>
+                Löschen
+              `;
+              del.addEventListener("click", () => {
+                if(confirm("Objekt wirklich löschen?")){
+                  state.savedProperties = state.savedProperties.filter(x => x.id !== prop.id);
+                  saveStorage();
+                  refresh();
+                }
+              });
+              actions.appendChild(del);
+
+              card.appendChild(top);
+              card.appendChild(grid);
+              card.appendChild(actions);
+
+              el.cardsMobile.appendChild(card);
+            }
+
           });
         }
 
