@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImmoCalc Pro v2.0.3 (Standalone)</title>
+  <meta name="description" content="ImmoCalc Pro v2.0.2 – Standalone Immobilien-Rendite-Rechner (offline-fähig, responsive, Sortierung, Backup/Restore, PNG-Export)." />
+  <style>
+    :root{
+      --bg: #f8fafc;             /* slate-50 */
+      --card: #ffffff;
+      --line: #e2e8f0;           /* slate-200 */
+      --line2:#f1f5f9;           /* slate-100 */
+      --text:#0f172a;            /* slate-900 */
+      --muted:#64748b;           /* slate-500 */
+      --muted2:#475569;          /* slate-600 */
+      --indigo-900:#312e81;
+      --indigo-700:#4338ca;
+      --indigo-600:#4f46e5;
+      --indigo-500:#6366f1;
+      --indigo-400:#818cf8;
+      --emerald-500:#10b981;
+      --red-500:#ef4444;
+      --amber-500:#f59e0b;
+      --shadow: 0 20px 45px rgba(15, 23, 42, .08);
+      --shadow2: 0 10px 25px rgba(15, 23, 42, .06);
+      --r-lg: 24px;
+      --r-md: 16px;
+      --r-sm: 12px;
+
+      --topbar-h: 56px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Layout */
+    .layout{min-height:100vh; display:flex; flex-direction:row;}
+    .sidebar{
+      width: 288px;
+      background: var(--indigo-900);
+      color:#fff;
+      border-right:1px solid rgba(99,102,241,.25);
+      box-shadow: var(--shadow2);
+      flex-shrink:0;
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      z-index:10;
+    }
+
+    main{
+      flex:1;
+      overflow:auto;
+      padding: 18px;
+    }
+
+    /* Mobile topbar + drawer behavior */
+    .topbar{
+      position: sticky;
+      top:0;
+      z-index: 30;
+      height: var(--topbar-h);
+      display:none;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 0 14px;
+      background: rgba(248,250,252,.92);
+      border-bottom: 1px solid var(--line2);
+      backdrop-filter: blur(10px);
+    }
+    .topbar .title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight: 950;
+      letter-spacing:-.02em;
+      color: var(--text);
+      font-size: 16px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .iconbtn{
+      border:0;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      width: 42px;
+      height: 42px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow: 0 8px 20px rgba(15,23,42,.06);
+      transition: transform .08s ease, background .15s ease;
+      user-select:none;
+    }
+    .iconbtn:active{ transform: scale(.99); }
+    .iconbtn:hover{ background:#f8fafc; }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      background: rgba(15,23,42,.45);
+      backdrop-filter: blur(2px);
+      z-index: 45;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease;
+    }
+    .overlay.show{
+      opacity:1;
+      pointer-events:auto;
+    }
+
+    .sidebarHeaderMobile{
+      display:none;
+      padding: 18px 16px 8px 16px;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .closebtn{
+      border:0;
+      background: rgba(15,23,42,.25);
+      border:1px solid rgba(99,102,241,.25);
+      color:#fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+    }
+    .closebtn:hover{ background: rgba(15,23,42,.35); }
+
+    @media (max-width: 767px){
+      .layout{ flex-direction:column; }
+      .topbar{ display:flex; }
+      main{ padding: 14px; }
+      .sidebar{
+        position:fixed;
+        top:0; left:0;
+        height:100vh;
+        transform: translateX(-102%);
+        transition: transform .20s ease;
+        z-index: 50;
+        width: 288px;
+        max-width: 86vw;
+      }
+      .sidebar.open{ transform: translateX(0); }
+      .sidebarHeaderMobile{ display:flex; }
+      .container{ padding-top: 8px; }
+    }
+
+    @media (min-width:768px){
+      main{ padding: 40px; }
+    }
+
+    /* Sidebar content */
+    .sidebar .brand{
+      padding:24px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color: rgba(129,140,248,.95);
+    }
+    .brand h1{
+      margin:0;
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:#fff;
+      line-height:1.1;
+    }
+    .brand .sub{
+      font-size:12px;
+      color: rgba(199,210,254,.8);
+      font-weight:600;
+      margin-top:2px;
+    }
+
+    .nav{
+      padding:0 16px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .navbtn{
+      width:100%;
+      border:0;
+      background: transparent;
+      color:#fff;
+      padding:12px 16px;
+      border-radius: 12px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      cursor:pointer;
+      transition: background .15s ease, transform .08s ease;
+      text-align:left;
+      font-weight:900;
+    }
+    .navbtn:hover{ background: rgba(55,48,163,.55); }
+    .navbtn:active{ transform: scale(.99); }
+    .navbtn.active{
+      background: rgba(79,70,229,.55);
+      box-shadow: inset 0 2px 8px rgba(15,23,42,.35);
+    }
+    .navbtn span{font-size:14px}
+
+    .sidebar-section{ margin-top: 22px; padding: 0 16px 18px; }
+
+    .helper{
+      background: rgba(55,48,163,.35);
+      border: 1px solid rgba(99,102,241,.22);
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .helper h3{
+      margin:0 0 12px 0;
+      font-size:11px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-weight:900;
+      color: rgba(224,231,255,.85);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .field{margin-top:10px}
+    label.small{
+      display:block;
+      font-size:10px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-weight:900;
+      color: rgba(199,210,254,.75);
+      margin-bottom:6px;
+    }
+    .hint{
+      font-size:10px;
+      color: rgba(165,180,252,.65);
+      margin:-2px 0 6px 0;
+      font-style:italic;
+      line-height:1.25;
+    }
+    .input{
+      width:100%;
+      border-radius: 10px;
+      border: 1px solid rgba(99,102,241,.35);
+      background: rgba(15,23,42,.25);
+      color:#fff;
+      padding: 9px 10px;
+      font-size:14px;
+      outline:none;
+      transition: border .15s ease;
+    }
+    .input:focus{ border-color: rgba(129,140,248,.95); }
+
+    .helper .summary{
+      margin-top:14px;
+      padding-top:14px;
+      border-top:1px solid rgba(99,102,241,.22);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .row-between{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .muted{color: rgba(199,210,254,.75); font-size:12px}
+    .strong{font-weight:900}
+
+    .btn{
+      border:0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      cursor:pointer;
+      font-weight:900;
+      transition: transform .08s ease, filter .15s ease, background .15s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      user-select:none;
+    }
+    .btn:active{ transform: scale(.99); }
+    .btn-primary{
+      background: var(--indigo-500);
+      color:#fff;
+      box-shadow: 0 14px 30px rgba(49,46,129,.25);
+    }
+    .btn-primary:hover{ filter: brightness(1.05); }
+
+    .sidebar-footer{
+      margin-top:auto;
+      padding:24px;
+      display:none;
+    }
+    @media (min-width:768px){ .sidebar-footer{display:block;} }
+    .infoBox{
+      background: rgba(55,48,163,.25);
+      border: 1px solid rgba(99,102,241,.22);
+      border-radius: 14px;
+      padding: 14px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color: rgba(224,231,255,.85);
+    }
+    .infoBox p{
+      margin:0;
+      font-size:12px;
+      line-height:1.35;
+      color: rgba(224,231,255,.85);
+    }
+
+    /* Main content */
+    .container{max-width: 896px; margin: 0 auto;}
+    .stack{display:flex; flex-direction:column; gap:24px;}
+    .card{
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-inner{ padding: 24px; }
+    @media (min-width:768px){ .card-inner{ padding: 32px; } }
+    @media (max-width:420px){ .card-inner{ padding: 18px; } }
+
+    .tabs{
+      display:flex;
+      border-bottom:1px solid var(--line2);
+      background: rgba(248,250,252,.55);
+    }
+    .tabbtn{
+      flex:1;
+      border:0;
+      background:transparent;
+      padding: 16px 10px;
+      cursor:pointer;
+      font-weight:950;
+      font-size:12px;
+      color: #94a3b8;
+      transition: background .15s ease, color .15s ease;
+    }
+    @media (min-width:768px){ .tabbtn{ font-size:13px; padding: 18px 10px; } }
+    .tabbtn:hover{ background: rgba(241,245,249,.9); color: #475569;}
+    .tabbtn.active{
+      background:#fff;
+      color: var(--indigo-600);
+      border-bottom: 2px solid var(--indigo-600);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    @media (min-width:768px){ .grid{ grid-template-columns: 1fr 1fr; gap: 24px; } }
+
+    .group{ display:flex; flex-direction:column; gap: 14px; }
+    .fieldlabel{
+      font-size:14px;
+      font-weight:900;
+      color: var(--muted2);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:6px;
+    }
+
+    .input2{
+      width:100%;
+      border-radius: 12px;
+      border:1px solid #cbd5e1;
+      background:#fff;
+      padding: 10px 12px;
+      font-size:14px;
+      box-shadow: 0 1px 2px rgba(15,23,42,.04);
+      outline:none;
+      transition: box-shadow .15s ease, border .15s ease;
+    }
+    .input2:focus{
+      border-color: rgba(79,70,229,.6);
+      box-shadow: 0 0 0 3px rgba(79,70,229,.18);
+    }
+
+    .toggleRow{ display:flex; gap:8px; margin: 0 0 8px 0; }
+    .tbtn{
+      flex:1;
+      border-radius: 10px;
+      border:1px solid #e2e8f0;
+      background:#fff;
+      color:#64748b;
+      font-weight:950;
+      font-size:12px;
+      padding: 6px 10px;
+      cursor:pointer;
+      transition: background .15s ease, border .15s ease, color .15s ease;
+    }
+    .tbtn:hover{ background: #f8fafc; }
+    .tbtn.active{
+      background: rgba(79,70,229,.06);
+      border-color: rgba(79,70,229,.22);
+      color: rgba(67,56,202,.95);
+    }
+
+    .slider{ width:100%; height: 24px; padding: 0; margin-top: 2px; }
+    .accent-indigo{ accent-color: var(--indigo-600); }
+    .accent-emerald{ accent-color: var(--emerald-500); }
+    .accent-amber{ accent-color: var(--amber-500); }
+
+    .preview{
+      background: #f8fafc;
+      border:1px solid var(--line2);
+      border-radius: 16px;
+      padding: 20px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      min-height: 220px;
+    }
+    @media (max-width:420px){ .preview{ padding: 16px; min-height: 200px; } }
+    .kicker{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:#94a3b8;
+      font-weight:950;
+      margin-bottom:14px;
+    }
+    .kv{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+    .kv span{ color: var(--muted2); font-weight:750; }
+    .kv .big{
+      font-size:18px;
+      font-weight:950;
+      color: var(--text);
+    }
+    @media (min-width:768px){ .kv .big{ font-size:20px; } }
+    .yield{
+      font-size:26px;
+      font-weight:1000;
+      letter-spacing:-.02em;
+    }
+    @media (min-width:768px){ .yield{ font-size:28px; } }
+    .yield.good{ color: var(--emerald-500); }
+    .yield.bad{ color: var(--red-500); }
+
+    .warn{
+      margin-top:16px;
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.15);
+      border-radius: 12px;
+      padding: 12px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color: #7f1d1d;
+      font-size:12px;
+      line-height:1.35;
+    }
+    .warn b{color:#b91c1c}
+
+    .saveRow{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line2);
+    }
+    @media (min-width:768px){
+      .saveRow{ flex-direction:row; align-items:center; }
+    }
+    .btn-save{
+      background: var(--indigo-600);
+      color:#fff;
+      border-radius: 14px;
+      padding: 12px 18px;
+      box-shadow: 0 14px 30px rgba(79,70,229,.18);
+      font-weight:950;
+    }
+    .btn-save:hover{ background: var(--indigo-700); }
+    .btn-save svg{ width:18px; height:18px; }
+
+    /* Charts */
+    .chartWrap{
+      border-top:1px solid var(--line2);
+      padding-top: 22px;
+      height: 230px;
+    }
+    .chart{
+      height: 200px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 14px;
+      padding: 16px 8px 10px 8px;
+      position:relative;
+    }
+    @media (min-width:768px){ .chart{ gap:18px; padding: 16px 10px 10px 10px; } }
+
+    .barItem{ flex:1; min-width: 0; text-align:center; position:relative; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
+    .bar{
+      margin: 0 auto;
+      height: 0;
+      border-radius: 10px 10px 0 0;
+      background: var(--indigo-600);
+      box-shadow: 0 10px 18px rgba(15,23,42,.06);
+      transition: height .18s ease, width .18s ease;
+    }
+    .barLabel{
+      position:absolute;
+      left:50%;
+      transform: translateX(-50%);
+      top: -2px;
+      translate: 0 -100%;
+      font-size: 12px;
+      font-weight: 950;
+      color: var(--muted2);
+      white-space:nowrap;
+    }
+    .xLabel{
+      margin-top:10px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 750;
+      line-height:1.15;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .gridline{
+      position:absolute;
+      left:0; right:0;
+      height:1px;
+      background: var(--line2);
+      opacity:.9;
+    }
+    .gridline.l1{ bottom: 25%; }
+    .gridline.l2{ bottom: 50%; }
+    .gridline.l3{ bottom: 75%; }
+
+    /* List view */
+    .headerRow{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+    .headerRow h2{
+      margin:0;
+      font-size: clamp(26px, 5vw, 34px);
+      letter-spacing:-.03em;
+      font-weight: 1000;
+      color: var(--text);
+    }
+    .headerRow p{
+      margin: 6px 0 0 0;
+      color: #64748b;
+      font-weight: 750;
+    }
+    .badge{
+      background: var(--indigo-600);
+      color:#fff;
+      border-radius: 16px;
+      padding: 10px 14px;
+      font-weight: 1000;
+      font-size: 13px;
+      box-shadow: 0 12px 24px rgba(79,70,229,.14);
+      white-space:nowrap;
+    }
+
+    .sortBar{
+      margin-top: 14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .select{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-weight: 900;
+      color:#334155;
+      box-shadow: 0 8px 20px rgba(15,23,42,.04);
+      outline:none;
+    }
+    .toolBtn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius: 14px;
+      padding: 10px 12px;
+      cursor:pointer;
+      font-weight: 1000;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      box-shadow: 0 8px 20px rgba(15,23,42,.04);
+      user-select:none;
+      transition: background .15s ease, transform .08s ease;
+    }
+    .toolBtn:hover{ background:#f8fafc; }
+    .toolBtn:active{ transform: scale(.99); }
+    .toolBtn svg{ width:18px; height:18px; }
+
+    .tableCard{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius: 18px;
+      overflow:hidden;
+      box-shadow: 0 8px 22px rgba(15,23,42,.05);
+    }
+    table{ width:100%; border-collapse:collapse; }
+    thead tr{ background: #f8fafc; border-bottom:1px solid var(--line); }
+    th{
+      text-align:left;
+      padding: 16px 18px;
+      font-size: 11px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:#94a3b8;
+      font-weight: 1000;
+      user-select:none;
+      white-space:nowrap;
+    }
+    th.sortable{ cursor:pointer; }
+    th.sortable:hover{ color:#64748b; }
+    th .thwrap{ display:inline-flex; align-items:center; gap:8px; }
+    .sortIcon{
+      width: 10px;
+      height: 10px;
+      display:inline-block;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      opacity: .55;
+    }
+    .sortIcon.up{ border-bottom: 7px solid #94a3b8; transform: translateY(-1px); }
+    .sortIcon.down{ border-top: 7px solid #94a3b8; transform: translateY(1px); }
+    .sortIcon.active{ opacity: 1; }
+    .sortIcon.active.up{ border-bottom-color: var(--indigo-600); }
+    .sortIcon.active.down{ border-top-color: var(--indigo-600); }
+
+    td{
+      padding: 14px 18px;
+      border-top:1px solid #f1f5f9;
+      vertical-align:middle;
+      color:#334155;
+      font-weight: 750;
+      white-space:nowrap;
+    }
+    tbody tr:hover{ background:#f8fafc; }
+    .tName{ display:flex; align-items:center; gap:12px; min-width: 240px; }
+    .avatar{
+      width:40px; height:40px;
+      border-radius:999px;
+      background: rgba(79,70,229,.08);
+      display:flex; align-items:center; justify-content:center;
+      color: rgba(79,70,229,.95);
+      flex: 0 0 auto;
+    }
+    .tName .title{ font-weight: 1000; color:#1e293b; white-space:normal; }
+    .tName .date{ font-size: 11px; color:#94a3b8; font-weight: 900; margin-top:3px; }
+    .pill{
+      display:inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 1000;
+      font-size: 13px;
+      border:1px solid transparent;
+    }
+    .pill.good{ background: rgba(16,185,129,.10); color: rgba(5,150,105,.95); border-color: rgba(16,185,129,.18); }
+    .pill.bad{ background: rgba(239,68,68,.08); color: rgba(220,38,38,.95); border-color: rgba(239,68,68,.16); }
+    .trashBtn{
+      border:0;
+      background:transparent;
+      cursor:pointer;
+      padding: 8px;
+      border-radius: 10px;
+      color:#cbd5e1;
+      transition: color .15s ease, background .15s ease;
+    }
+    .trashBtn:hover{ color: var(--red-500); background: rgba(239,68,68,.06); }
+
+    .empty{
+      background:#fff;
+      border: 2px dashed var(--line);
+      border-radius: var(--r-lg);
+      padding: 64px 24px;
+      text-align:center;
+    }
+    .empty .bubble{
+      width: 80px; height:80px;
+      border-radius:999px;
+      background:#f8fafc;
+      margin: 0 auto 18px auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#cbd5e1;
+    }
+    .empty h3{ margin:0; font-size: 24px; font-weight: 1000; color:#1e293b; }
+    .empty p{ margin:10px auto 0 auto; max-width: 360px; color:#64748b; font-weight: 800; line-height:1.35; }
+    .empty .cta{
+      margin-top: 22px;
+      background: var(--indigo-600);
+      color:#fff;
+      padding: 12px 18px;
+      border-radius: 16px;
+      font-weight: 1000;
+      border:0;
+      cursor:pointer;
+      box-shadow: 0 14px 30px rgba(79,70,229,.15);
+      transition: background .15s ease;
+    }
+    .empty .cta:hover{ background: var(--indigo-700); }
+
+    /* Helpers */
+    .hidden{ display:none !important; }
+    .fadeIn{
+      animation: fadeInUp .35s ease both;
+    }
+    @keyframes fadeInUp{
+      from{ opacity:0; transform: translateY(14px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+
+    /* SVG icons */
+    svg.icon{ width:20px; height:20px; stroke: currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .icon-lg{ width:32px !important; height:32px !important; }
+    .icon-sm{ width:16px !important; height:16px !important; }
+
+    /* Table responsiveness */
+    @media (max-width: 767px){
+      th, td{ padding: 12px 14px; }
+      th{ font-size: 10px; }
+      td{ font-size: 13px; }
+      .tName{ min-width: 210px; }
+      .avatar{ width:36px; height:36px; }
+      .badge{ padding: 9px 12px; }
+    }
+    @media (max-width: 420px){
+      th, td{ padding: 10px 12px; }
+      td{ font-size: 12.5px; }
+      .tName{ min-width: 190px; gap:10px; }
+      .pill{ font-size: 12px; padding: 5px 9px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" id="overlay" aria-hidden="true"></div>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar" aria-label="Navigation">
+      <div class="sidebarHeaderMobile">
+        <div style="display:flex; align-items:center; gap:10px; color: rgba(224,231,255,.9); font-weight:950;">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+          ImmoCalc Pro
+        </div>
+        <button class="closebtn" id="closeSidebarBtn" type="button" aria-label="Menü schließen">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="brand">
+        <div aria-hidden="true" style="color:rgba(129,140,248,.95)">
+          <!-- TrendingUp -->
+          <svg class="icon icon-lg" viewBox="0 0 24 24">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1>ImmoCalc Pro</h1>
+          <div class="sub">Rendite, Kaufpreis &amp; Miete</div>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button id="navCalc" class="navbtn active" type="button">
+          <!-- Home -->
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 9l9-7 9 7"></path>
+            <path d="M9 22V12h6v10"></path>
+            <path d="M21 22H3"></path>
+          </svg>
+          <span>Rechner</span>
+        </button>
+        <button id="navList" class="navbtn" type="button">
+          <!-- List -->
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+          <span>Meine Objekte</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="helper">
+          <h3>
+            <!-- Calculator -->
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+              <line x1="8" y1="6" x2="16" y2="6"></line>
+              <line x1="8" y1="10" x2="8" y2="10"></line>
+              <line x1="12" y1="10" x2="12" y2="10"></line>
+              <line x1="16" y1="10" x2="16" y2="10"></line>
+              <line x1="8" y1="14" x2="8" y2="14"></line>
+              <line x1="12" y1="14" x2="12" y2="14"></line>
+              <line x1="16" y1="14" x2="16" y2="14"></line>
+              <line x1="8" y1="18" x2="16" y2="18"></line>
+            </svg>
+            Miet-Hilfsrechner
+          </h3>
+
+          <div class="field">
+            <label class="small" for="qmInput">Wohnfläche (m²)</label>
+            <input id="qmInput" class="input" type="number" inputmode="decimal" step="1" min="0" />
+          </div>
+
+          <div class="field">
+            <label class="small" for="ppqmMonthInput">€/m² (Monat)</label>
+            <div class="hint">Monatlich und jährlich sind gekoppelt</div>
+            <input id="ppqmMonthInput" class="input" type="text" inputmode="decimal" inputmode="decimal" step="0.1" min="0" />
+          </div>
+
+          <div class="field">
+            <label class="small" for="ppqmYearInput">€/m² (Jahr)</label>
+            <input id="ppqmYearInput" class="input" type="text" inputmode="decimal" inputmode="decimal" step="0.1" min="0" />
+          </div>
+
+          <div class="summary">
+            <div class="row-between">
+              <span class="muted">Monatsmiete:</span>
+              <span id="helperRentMonth" class="strong" style="font-size:14px">0 €</span>
+            </div>
+            <div class="row-between">
+              <span class="muted">Jahresmiete:</span>
+              <span id="helperRentYear" class="strong" style="font-size:14px">0 €</span>
+            </div>
+            <button id="transferBtn" class="btn btn-primary" type="button" style="padding:10px 12px; font-size:12px;">
+              Übertragen
+              <!-- ArrowRight -->
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="infoBox">
+          <!-- Info -->
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true" style="color:rgba(165,180,252,.85); margin-top:2px;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <p>Renditen unter 3% werden rot markiert, da sie oft unter den Finanzierungskosten liegen.</p>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <main>
+      <!-- Mobile Topbar -->
+      <div class="topbar" id="topbar">
+        <button class="iconbtn" id="openSidebarBtn" type="button" aria-label="Menü öffnen">
+          <!-- Hamburger -->
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="title" id="topbarTitle">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--indigo-600); width:18px;height:18px;">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+          <span>ImmoCalc Pro</span>
+        </div>
+        <div style="width:42px;"></div>
+      </div>
+
+      <div class="container">
+        <!-- Calc view -->
+        <div id="viewCalc" class="stack fadeIn">
+          <div class="card">
+            <div class="tabs">
+              <button id="modeYield" class="tabbtn active" type="button">Rendite berechnen</button>
+              <button id="modePrice" class="tabbtn" type="button">Kaufpreis berechnen</button>
+              <button id="modeRent" class="tabbtn" type="button">Miete berechnen</button>
+            </div>
+            <div class="card-inner">
+              <div class="stack" style="gap:20px;">
+                <div class="grid">
+                  <div class="group">
+
+                    <!-- Kaufpreis -->
+                    <div id="grpPurchase">
+                      <div class="fieldlabel">
+                        <!-- DollarSign -->
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                          <line x1="12" y1="1" x2="12" y2="23"></line>
+                          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                        Kaufpreis (€)
+                      </div>
+                      <input id="purchaseInput" class="input2" type="number" inputmode="decimal" step="1" min="0" />
+                      <input id="purchaseRange" class="slider accent-indigo" type="range" min="10000" max="2000000" step="5000" />
+                    </div>
+
+                    <!-- Miete -->
+                    <div id="grpRent">
+                      <div class="fieldlabel">
+                        <!-- TrendingUp -->
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                          <polyline points="16 7 22 7 22 13"></polyline>
+                        </svg>
+                        <span id="rentLabel">Miete (Monat) (€)</span>
+                      </div>
+
+                      <div class="toggleRow">
+                        <button id="rentMonthly" class="tbtn active" type="button">Monatlich</button>
+                        <button id="rentYearly" class="tbtn" type="button">Jährlich</button>
+                      </div>
+
+                      <input id="rentInput" class="input2" type="number" inputmode="decimal" step="1" min="0" />
+                      <input id="rentRange" class="slider accent-emerald" type="range" min="100" max="10000" step="50" />
+                    </div>
+
+                    <!-- Wunschrendite -->
+                    <div id="grpYield">
+                      <div class="fieldlabel">
+                        <!-- Percent -->
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                          <line x1="19" y1="5" x2="5" y2="19"></line>
+                          <circle cx="6.5" cy="6.5" r="2.5"></circle>
+                          <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                        </svg>
+                        Wunschrendite (%)
+                      </div>
+                      <input id="yieldInput" class="input2" type="number" inputmode="decimal" step="0.1" min="0" />
+                      <input id="yieldRange" class="slider accent-amber" type="range" min="0" max="15" step="0.1" />
+                    </div>
+
+                  </div>
+
+                  <!-- Preview -->
+                  <div class="preview">
+                    <div>
+                      <div class="kicker">Ergebnis-Vorschau</div>
+
+                      <div class="kv">
+                        <span>Objektwert:</span>
+                        <span id="pvValue" class="big">0,00 €</span>
+                      </div>
+
+                      <div class="kv" style="margin-top:10px;">
+                        <span>Bruttorendite:</span>
+                        <span id="pvYield" class="yield good">0,00%</span>
+                      </div>
+
+                      <div class="kv" style="margin-top:10px;">
+                        <span>Miete (Monat):</span>
+                        <span id="pvRent" class="big">0,00 €</span>
+                      </div>
+
+                      <div id="lowYieldWarn" class="warn hidden">
+                        <!-- AlertCircle -->
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--red-500); margin-top:1px;">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="8" x2="12" y2="12"></line>
+                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <div><b>Achtung:</b> Die Rendite liegt unter 3%. Dies gilt oft als nicht kostendeckend.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mini chart -->
+                <div class="chartWrap">
+                  <div class="chart" id="miniChart" aria-label="Mini-Diagramm">
+                    <div class="gridline l1"></div>
+                    <div class="gridline l2"></div>
+                    <div class="gridline l3"></div>
+                  </div>
+                </div>
+
+                <!-- Save -->
+                <div class="saveRow">
+                  <input id="nameInput" class="input2" type="text" placeholder="Objektname (z.B. Whg. Musterstraße)" />
+                  <button id="saveBtn" class="btn btn-save" type="button">
+                    <!-- Save -->
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                      <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                      <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    Objekt speichern
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comparison chart -->
+          <div id="compareCard" class="card hidden fadeIn">
+            <div class="card-inner">
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+                <!-- BarChart2 -->
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--indigo-500); width:24px; height:24px;">
+                  <line x1="18" y1="20" x2="18" y2="10"></line>
+                  <line x1="12" y1="20" x2="12" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                <div style="font-size:20px; font-weight:1000; color:#1e293b;">Rendite-Vergleich</div>
+              </div>
+              <div style="height:320px;">
+                <div class="chart" id="compareChart" style="height:280px;" aria-label="Vergleichsdiagramm">
+                  <div class="gridline l1"></div>
+                  <div class="gridline l2"></div>
+                  <div class="gridline l3"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- List view -->
+        <div id="viewList" class="stack hidden fadeIn">
+          <div class="headerRow">
+            <div>
+              <h2>Meine Objekte</h2>
+              <p>Gespeicherte Berechnungen verwalten und vergleichen.</p>
+            </div>
+            <div id="objCountBadge" class="badge">0 Objekte</div>
+          </div>
+
+          <!-- Sort + tools -->
+          <div class="sortBar" aria-label="Sortierung und Tools">
+            <select id="sortKey" class="select" aria-label="Sortieren nach">
+              <option value="timestamp">Datum</option>
+              <option value="name">Name</option>
+              <option value="purchasePrice">Kaufpreis</option>
+              <option value="rent">Monatsmiete</option>
+              <option value="yieldPercent">Rendite</option>
+            </select>
+
+            <button id="sortDir" class="toolBtn" type="button" aria-label="Sortierrichtung ändern">
+              <span id="sortDirLabel">Absteigend</span>
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;color:var(--indigo-600);">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+
+            <button id="backupBtn" class="toolBtn" type="button" aria-label="Backup als JSON herunterladen">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--indigo-600);">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Backup JSON
+            </button>
+
+            <button id="importBtn" class="toolBtn" type="button" aria-label="Backup JSON importieren">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--indigo-600);">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Import JSON
+            </button>
+
+            <button id="pngBtn" class="toolBtn" type="button" aria-label="Als PNG exportieren">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--indigo-600);">
+                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <path d="M21 15l-5-5L5 21"></path>
+              </svg>
+              Export PNG
+            </button>
+
+            <input id="importFile" class="hidden" type="file" accept="application/json,.json" />
+          </div>
+
+          <div id="listHasData" class="tableCard hidden">
+            <div style="overflow:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort="name"><span class="thwrap">Immobilie <span class="sortIcon up" data-icon="name-up"></span><span class="sortIcon down" data-icon="name-down"></span></span></th>
+                    <th class="sortable" data-sort="purchasePrice"><span class="thwrap">Kaufpreis <span class="sortIcon up" data-icon="purchasePrice-up"></span><span class="sortIcon down" data-icon="purchasePrice-down"></span></span></th>
+                    <th class="sortable" data-sort="rent"><span class="thwrap">Miete/Monat <span class="sortIcon up" data-icon="rent-up"></span><span class="sortIcon down" data-icon="rent-down"></span></span></th>
+                    <th class="sortable" data-sort="yieldPercent"><span class="thwrap">Rendite p.a. <span class="sortIcon up" data-icon="yieldPercent-up"></span><span class="sortIcon down" data-icon="yieldPercent-down"></span></span></th>
+                    <th style="text-align:right;">Aktion</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyProps"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="listEmpty" class="empty hidden">
+            <div class="bubble" aria-hidden="true">
+              <!-- Home -->
+              <svg class="icon" viewBox="0 0 24 24" style="width:40px;height:40px;">
+                <path d="M3 9l9-7 9 7"></path>
+                <path d="M9 22V12h6v10"></path>
+                <path d="M21 22H3"></path>
+              </svg>
+            </div>
+            <h3>Keine Daten vorhanden</h3>
+            <p>Nutzen Sie den Rechner, um Ihre erste Immobilienberechnung durchzuführen und zu speichern.</p>
+            <button id="startFirstBtn" class="cta" type="button">Jetzt erste Berechnung starten</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function(){
+      "use strict";
+
+      // --- State ---
+      const APP_VERSION = "2.0.3";
+      const CalcMode = { YIELD: "YIELD", PRICE: "PRICE", RENT: "RENT" };
+      const RentInterval = { MONTHLY: "MONTHLY", YEARLY: "YEARLY" };
+      const LS_KEY = "immo_saved_props";
+
+      const state = {
+        activeTab: "calc",
+        currentMode: CalcMode.YIELD,
+        qm: 50,
+        pricePerQmMonthly: 10,
+        pricePerQmYearly: 120,
+        sidebarOpen: false,
+        sort: { key: "timestamp", dir: "desc" }, // key: name|purchasePrice|rent|yieldPercent|timestamp
+        form: {
+          name: "",
+          purchasePrice: 350000,
+          rent: 1200,
+          yieldInput: 4.5,
+          rentInterval: RentInterval.MONTHLY
+        },
+        savedProperties: []
+      };
+
+      // --- Formatting helpers ---
+      const fmtCurrency = (n) => (Number(n)||0).toLocaleString("de-DE", { style:"currency", currency:"EUR" });
+      const fmtEuroPlain = (n) => (Number(n)||0).toLocaleString("de-DE") + " €";
+      const todayDE = (ts) => new Date(ts).toLocaleDateString("de-DE");
+
+      // erlaubt Punkt und Komma (z.B. 10,5 oder 10.5; auch 1.234,56 / 1,234.56)
+      function parseDecimal(val){
+        if(val === null || val === undefined) return 0;
+        let s = String(val).trim();
+        if(s === "") return 0;
+        s = s.replace(/\s+/g, "");
+        const hasDot = s.includes(".");
+        const hasComma = s.includes(",");
+
+        if(hasDot && hasComma){
+          const lastDot = s.lastIndexOf(".");
+          const lastComma = s.lastIndexOf(",");
+          const decSep = (lastDot > lastComma) ? "." : ",";
+          const thouSep = (decSep === ".") ? "," : ".";
+          s = s.split(thouSep).join("");
+          if(decSep === ",") s = s.replace(",", ".");
+          s = s.replace(/,/g, "");
+        }else if(hasComma && !hasDot){
+          s = s.replace(/\./g, "");
+          // letzte Komma als Dezimal
+          const idx = s.lastIndexOf(",");
+          if(idx >= 0){
+            s = s.slice(0, idx).replace(/,/g,"") + "." + s.slice(idx+1).replace(/,/g,"");
+          }
+        }else{
+          s = s.replace(/,/g, "");
+          // letzte Punkt als Dezimal, rest als Tausender
+          const parts = s.split(".");
+          if(parts.length > 2){
+            const dec = parts.pop();
+            s = parts.join("") + "." + dec;
+          }
+        }
+
+        const n = Number(s);
+        return Number.isFinite(n) ? n : 0;
+      }
+
+      const fmtDec1 = (n) => (Number(n)||0).toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+
+      // --- DOM helpers ---
+      const $ = (sel) => document.querySelector(sel);
+
+      const el = {
+        sidebar: $("#sidebar"),
+        overlay: $("#overlay"),
+        openSidebarBtn: $("#openSidebarBtn"),
+        closeSidebarBtn: $("#closeSidebarBtn"),
+        topbarTitle: $("#topbarTitle"),
+
+        navCalc: $("#navCalc"),
+        navList: $("#navList"),
+        viewCalc: $("#viewCalc"),
+        viewList: $("#viewList"),
+
+        qmInput: $("#qmInput"),
+        ppqmMonthInput: $("#ppqmMonthInput"),
+        ppqmYearInput: $("#ppqmYearInput"),
+        helperRentMonth: $("#helperRentMonth"),
+        helperRentYear: $("#helperRentYear"),
+        transferBtn: $("#transferBtn"),
+
+        modeYield: $("#modeYield"),
+        modePrice: $("#modePrice"),
+        modeRent: $("#modeRent"),
+
+        grpPurchase: $("#grpPurchase"),
+        grpRent: $("#grpRent"),
+        grpYield: $("#grpYield"),
+
+        purchaseInput: $("#purchaseInput"),
+        purchaseRange: $("#purchaseRange"),
+
+        rentLabel: $("#rentLabel"),
+        rentMonthly: $("#rentMonthly"),
+        rentYearly: $("#rentYearly"),
+        rentInput: $("#rentInput"),
+        rentRange: $("#rentRange"),
+
+        yieldInput: $("#yieldInput"),
+        yieldRange: $("#yieldRange"),
+
+        pvValue: $("#pvValue"),
+        pvYield: $("#pvYield"),
+        pvRent: $("#pvRent"),
+        lowYieldWarn: $("#lowYieldWarn"),
+
+        miniChart: $("#miniChart"),
+        compareCard: $("#compareCard"),
+        compareChart: $("#compareChart"),
+
+        nameInput: $("#nameInput"),
+        saveBtn: $("#saveBtn"),
+
+        objCountBadge: $("#objCountBadge"),
+        listHasData: $("#listHasData"),
+        listEmpty: $("#listEmpty"),
+        tbodyProps: $("#tbodyProps"),
+        startFirstBtn: $("#startFirstBtn"),
+
+        sortKey: $("#sortKey"),
+        sortDir: $("#sortDir"),
+        sortDirLabel: $("#sortDirLabel"),
+
+        backupBtn: $("#backupBtn"),
+        importBtn: $("#importBtn"),
+        importFile: $("#importFile"),
+        pngBtn: $("#pngBtn"),
+      };
+
+      // --- Storage ---
+      function loadStorage(){
+        try{
+          const raw = localStorage.getItem(LS_KEY);
+          if(!raw) return;
+          const parsed = JSON.parse(raw);
+          if(Array.isArray(parsed)) state.savedProperties = parsed;
+        }catch(e){
+          console.warn("Fehler beim Laden:", e);
+        }
+      }
+      function saveStorage(){
+        try{
+          localStorage.setItem(LS_KEY, JSON.stringify(state.savedProperties));
+        }catch(e){
+          console.warn("Fehler beim Speichern:", e);
+        }
+      }
+
+      function uuid(){
+        if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+        return "id-" + Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+      }
+
+      function escapeHtml(str){
+        return String(str ?? "")
+          .replaceAll("&","&amp;")
+          .replaceAll("<","&lt;")
+          .replaceAll(">","&gt;")
+          .replaceAll('"',"&quot;")
+          .replaceAll("'","&#039;");
+      }
+
+      // --- Sidebar drawer (mobile) ---
+      function isMobile(){
+        return window.matchMedia("(max-width: 767px)").matches;
+      }
+      function openSidebar(){
+        state.sidebarOpen = true;
+        el.sidebar.classList.add("open");
+        el.overlay.classList.add("show");
+        el.overlay.setAttribute("aria-hidden","false");
+        document.body.style.overflow = "hidden";
+      }
+      function closeSidebar(){
+        state.sidebarOpen = false;
+        el.sidebar.classList.remove("open");
+        el.overlay.classList.remove("show");
+        el.overlay.setAttribute("aria-hidden","true");
+        document.body.style.overflow = "";
+      }
+      function toggleSidebar(){
+        if(state.sidebarOpen) closeSidebar();
+        else openSidebar();
+      }
+      function handleResize(){
+        if(!isMobile()) closeSidebar();
+      }
+
+      // --- Computation ---
+      function computeResult(){
+        const p = Number(state.form.purchasePrice) || 0;
+        const r = Number(state.form.rent) || 0;
+        const y = Number(state.form.yieldInput) || 0;
+
+        if(state.currentMode === CalcMode.YIELD){
+          const yearlyRent = state.form.rentInterval === RentInterval.MONTHLY ? r * 12 : r;
+          const yieldPercent = p > 0 ? (yearlyRent / p) * 100 : 0;
+          return { purchasePrice: p, yearlyRent, monthlyRent: yearlyRent/12, yieldPercent };
+        }
+        if(state.currentMode === CalcMode.PRICE){
+          const yearlyRent = state.form.rentInterval === RentInterval.MONTHLY ? r * 12 : r;
+          const purchasePrice = y > 0 ? yearlyRent / (y / 100) : 0;
+          return { purchasePrice, yearlyRent, monthlyRent: yearlyRent/12, yieldPercent: y };
+        }
+        const yearlyRent = p * (y / 100);
+        return { purchasePrice: p, yearlyRent, monthlyRent: yearlyRent/12, yieldPercent: y };
+      }
+
+      // --- Sorting ---
+      function getSortedProperties(){
+        const arr = [...state.savedProperties];
+        const key = state.sort.key;
+        const dir = state.sort.dir === "asc" ? 1 : -1;
+
+        arr.sort((a,b) => {
+          const av = a?.[key];
+          const bv = b?.[key];
+
+          if(key === "name"){
+            const aa = String(av ?? "");
+            const bb = String(bv ?? "");
+            return aa.localeCompare(bb, "de", { sensitivity: "base" }) * dir;
+          }
+          const an = Number(av) || 0;
+          const bn = Number(bv) || 0;
+          return (an - bn) * dir;
+        });
+
+        return arr;
+      }
+
+      function updateSortUI(){
+        el.sortKey.value = state.sort.key;
+        el.sortDirLabel.textContent = (state.sort.dir === "asc") ? "Aufsteigend" : "Absteigend";
+
+        const icons = document.querySelectorAll(".sortIcon");
+        icons.forEach(ic => ic.classList.remove("active"));
+        const up = document.querySelector(`[data-icon="${state.sort.key}-up"]`);
+        const down = document.querySelector(`[data-icon="${state.sort.key}-down"]`);
+        if(state.sort.dir === "asc"){
+          if(up) up.classList.add("active","up");
+        }else{
+          if(down) down.classList.add("active","down");
+        }
+      }
+
+      // --- Charts (responsive bar width) ---
+      function computeBarWidth(container, count, minW, maxW){
+        if(!container) return maxW;
+        const w = container.clientWidth || 0;
+        if(w <= 0 || count <= 0) return maxW;
+        const gaps = (count - 1) * 14;
+        const available = Math.max(0, w - gaps - 40);
+        const bw = Math.floor(available / count);
+        return Math.max(minW, Math.min(maxW, bw));
+      }
+
+      function renderBars(container, items, barWidthPx){
+        const data = items;
+        const maxVal = Math.max(0.000001, ...data.map(d => Math.abs(Number(d.value)||0)));
+        const keep = Array.from(container.querySelectorAll(".gridline"));
+        container.innerHTML = "";
+        keep.forEach(k => container.appendChild(k));
+
+        data.forEach(d => {
+          const wrap = document.createElement("div");
+          wrap.className = "barItem";
+
+          const label = document.createElement("div");
+          label.className = "barLabel";
+          label.textContent = d.display;
+
+          const bar = document.createElement("div");
+          bar.className = "bar";
+          bar.style.background = d.color;
+          bar.style.width = barWidthPx + "px";
+
+          let h = (Math.abs(Number(d.value)||0) / maxVal) * 100;
+          if(h > 0 && h < 2) h = 2;
+          bar.style.height = h + "%";
+
+          const x = document.createElement("div");
+          x.className = "xLabel";
+          x.textContent = d.name;
+
+          wrap.appendChild(label);
+          wrap.appendChild(bar);
+          wrap.appendChild(x);
+
+          container.appendChild(wrap);
+        });
+      }
+
+      // --- Helpers: Sidebar €/m² coupling ---
+      function setPpqmMonthly(val){
+        const v = parseDecimal(val);
+        state.pricePerQmMonthly = Number.isFinite(v) ? v : 0;
+        state.pricePerQmYearly = state.pricePerQmMonthly * 12;
+      }
+      function setPpqmYearly(val){
+        const v = parseDecimal(val);
+        state.pricePerQmYearly = Number.isFinite(v) ? v : 0;
+        state.pricePerQmMonthly = state.pricePerQmYearly / 12;
+      }
+
+      // --- UI update ---
+      function setTopbarTitle(tab){
+        const label = (tab === "list") ? "Meine Objekte" : "Rechner";
+        const span = el.topbarTitle.querySelector("span");
+        if(span) span.textContent = label;
+      }
+
+      function setTab(tab){
+        state.activeTab = tab;
+        el.navCalc.classList.toggle("active", tab === "calc");
+        el.navList.classList.toggle("active", tab === "list");
+        el.viewCalc.classList.toggle("hidden", tab !== "calc");
+        el.viewList.classList.toggle("hidden", tab !== "list");
+        setTopbarTitle(tab);
+
+        if(isMobile()) closeSidebar();
+        refresh();
+      }
+
+      function setMode(mode){
+        state.currentMode = mode;
+        el.modeYield.classList.toggle("active", mode === CalcMode.YIELD);
+        el.modePrice.classList.toggle("active", mode === CalcMode.PRICE);
+        el.modeRent.classList.toggle("active", mode === CalcMode.RENT);
+
+        el.grpPurchase.classList.toggle("hidden", mode === CalcMode.PRICE);
+        el.grpRent.classList.toggle("hidden", mode === CalcMode.RENT);
+        el.grpYield.classList.toggle("hidden", mode === CalcMode.YIELD);
+
+        refresh();
+      }
+
+      // Rent interval switch converts the number so monthly/yearly stay consistent
+      function setRentInterval(interval){
+        if(state.form.rentInterval === interval) return;
+
+        const r = Number(state.form.rent) || 0;
+        if(state.form.rentInterval === RentInterval.MONTHLY && interval === RentInterval.YEARLY){
+          state.form.rent = r * 12;
+        }else if(state.form.rentInterval === RentInterval.YEARLY && interval === RentInterval.MONTHLY){
+          state.form.rent = r / 12;
+        }
+        state.form.rentInterval = interval;
+
+        el.rentMonthly.classList.toggle("active", interval === RentInterval.MONTHLY);
+        el.rentYearly.classList.toggle("active", interval === RentInterval.YEARLY);
+        refresh();
+      }
+
+      function refresh(){
+        // Sidebar helper values
+        el.qmInput.value = state.qm;
+
+        // show coupled €/m² with 1 decimal
+        if(document.activeElement !== el.ppqmMonthInput){
+          el.ppqmMonthInput.value = fmtDec1(state.pricePerQmMonthly);
+        }
+        if(document.activeElement !== el.ppqmYearInput){
+          el.ppqmYearInput.value = fmtDec1(state.pricePerQmYearly);
+        }
+
+const qm = Number(state.qm)||0;
+        const helperMonth = qm * (Number(state.pricePerQmMonthly)||0);
+        const helperYear = qm * (Number(state.pricePerQmYearly)||0);
+
+        el.helperRentMonth.textContent = helperMonth.toLocaleString("de-DE") + " €";
+        el.helperRentYear.textContent = helperYear.toLocaleString("de-DE") + " €";
+
+        // Form inputs
+        el.purchaseInput.value = state.form.purchasePrice;
+        el.purchaseRange.value = state.form.purchasePrice;
+
+        // rent range adapts to interval
+        const rentIsMonthly = state.form.rentInterval === RentInterval.MONTHLY;
+        el.rentLabel.textContent = "Miete (" + (rentIsMonthly ? "Monat" : "Jahr") + ") (€)";
+        if(rentIsMonthly){
+          el.rentRange.min = "100";
+          el.rentRange.max = "10000";
+          el.rentRange.step = "50";
+        }else{
+          el.rentRange.min = "1200";
+          el.rentRange.max = "120000";
+          el.rentRange.step = "500";
+        }
+
+        el.rentInput.value = state.form.rent;
+        el.rentRange.value = Math.min(Number(el.rentRange.max)||0, Math.max(Number(el.rentRange.min)||0, Number(state.form.rent)||0));
+
+        el.yieldInput.value = state.form.yieldInput;
+        el.yieldRange.value = state.form.yieldInput;
+
+        // Result preview
+        const result = computeResult();
+        const isLowYield = (Number(result.yieldPercent)||0) < 3;
+
+        el.pvValue.textContent = fmtCurrency(result.purchasePrice);
+        el.pvRent.textContent = fmtCurrency(result.monthlyRent);
+        el.pvYield.textContent = (Number(result.yieldPercent)||0).toFixed(2) + "%";
+        el.pvYield.classList.toggle("good", !isLowYield);
+        el.pvYield.classList.toggle("bad", isLowYield);
+        el.lowYieldWarn.classList.toggle("hidden", !isLowYield);
+
+        // Mini chart
+        const previewData = [
+          { name: "Kaufpreis (€)", value: result.purchasePrice, display: fmtEuroPlain(Math.round(result.purchasePrice||0)), color: getComputedStyle(document.documentElement).getPropertyValue("--indigo-500").trim() || "#6366f1" },
+          { name: "Miete/Jahr (€)", value: result.yearlyRent, display: fmtEuroPlain(Math.round(result.yearlyRent||0)), color: getComputedStyle(document.documentElement).getPropertyValue("--emerald-500").trim() || "#10b981" },
+          { name: "Rendite (%)", value: result.yieldPercent, display: (Number(result.yieldPercent)||0).toFixed(2) + " %", color: isLowYield ? (getComputedStyle(document.documentElement).getPropertyValue("--red-500").trim() || "#ef4444") : (getComputedStyle(document.documentElement).getPropertyValue("--emerald-500").trim() || "#10b981") }
+        ];
+        const miniBW = computeBarWidth(el.miniChart, previewData.length, 34, 72);
+        renderBars(el.miniChart, previewData, miniBW);
+
+        // Name input (don't overwrite while typing)
+        if(document.activeElement !== el.nameInput){
+          el.nameInput.value = state.form.name || "";
+        }
+
+        // Saved objects / charts / list
+        const hasSaved = state.savedProperties.length > 0;
+        el.compareCard.classList.toggle("hidden", !hasSaved);
+
+        updateSortUI();
+        const sorted = getSortedProperties();
+
+        if(hasSaved){
+          const slice = sorted.slice(0, 6);
+          const items = slice.map(p => ({
+            name: p.name,
+            value: p.yieldPercent,
+            display: (Number(p.yieldPercent)||0).toFixed(2) + "%",
+            color: (Number(p.yieldPercent)||0) < 3
+              ? (getComputedStyle(document.documentElement).getPropertyValue("--red-500").trim() || "#ef4444")
+              : (getComputedStyle(document.documentElement).getPropertyValue("--emerald-500").trim() || "#10b981")
+          }));
+          const compBW = computeBarWidth(el.compareChart, items.length, 26, 56);
+          renderBars(el.compareChart, items, compBW);
+        }
+
+        el.objCountBadge.textContent = state.savedProperties.length + " Objekte";
+        el.listHasData.classList.toggle("hidden", !hasSaved);
+        el.listEmpty.classList.toggle("hidden", hasSaved);
+
+        if(hasSaved){
+          el.tbodyProps.innerHTML = "";
+          sorted.forEach(prop => {
+            const tr = document.createElement("tr");
+
+            const tdName = document.createElement("td");
+            tdName.innerHTML = `
+              <div class="tName">
+                <div class="avatar" aria-hidden="true">
+                  <svg class="icon" viewBox="0 0 24 24" style="width:18px;height:18px;">
+                    <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+                <div>
+                  <div class="title">${escapeHtml(prop.name)}</div>
+                  <div class="date">${todayDE(prop.timestamp)}</div>
+                </div>
+              </div>
+            `;
+
+            const tdPrice = document.createElement("td");
+            tdPrice.textContent = fmtEuroPlain(Math.round(Number(prop.purchasePrice)||0));
+
+            const tdRent = document.createElement("td");
+            tdRent.textContent = fmtEuroPlain(Math.round(Number(prop.rent)||0));
+
+            const tdYield = document.createElement("td");
+            const yv = Number(prop.yieldPercent)||0;
+            const span = document.createElement("span");
+            span.className = "pill " + (yv < 3 ? "bad" : "good");
+            span.textContent = yv.toFixed(2) + "%";
+            tdYield.appendChild(span);
+
+            const tdAct = document.createElement("td");
+            tdAct.style.textAlign = "right";
+            const btn = document.createElement("button");
+            btn.className = "trashBtn";
+            btn.type = "button";
+            btn.title = "Löschen";
+            btn.innerHTML = `
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+              </svg>
+            `;
+            btn.addEventListener("click", () => {
+              if(confirm("Objekt wirklich löschen?")){
+                state.savedProperties = state.savedProperties.filter(x => x.id !== prop.id);
+                saveStorage();
+                refresh();
+              }
+            });
+            tdAct.appendChild(btn);
+
+            tr.appendChild(tdName);
+            tr.appendChild(tdPrice);
+            tr.appendChild(tdRent);
+            tr.appendChild(tdYield);
+            tr.appendChild(tdAct);
+            el.tbodyProps.appendChild(tr);
+          });
+        }
+      }
+
+      // --- Backup / Import JSON ---
+      function downloadJson(filename, obj){
+        const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+      }
+
+      function normalizeImportedEntry(item){
+        const it = (item && typeof item === "object") ? item : {};
+        let id = (typeof it.id === "string" && it.id.trim()) ? it.id.trim() : uuid();
+        let timestamp = Number(it.timestamp);
+        if(!Number.isFinite(timestamp) || timestamp <= 0) timestamp = Date.now();
+
+        let name = (typeof it.name === "string" && it.name.trim()) ? it.name.trim() : "Unbenannt";
+
+        let purchasePrice = Number(it.purchasePrice);
+        if(!Number.isFinite(purchasePrice) || purchasePrice < 0) purchasePrice = 0;
+
+        let rent = Number(it.rent);
+        if(!Number.isFinite(rent) || rent < 0) rent = 0;
+
+        // If file stored yearly rent, allow hint via rentInterval
+        const ri = (typeof it.rentInterval === "string") ? it.rentInterval.toUpperCase() : "";
+        if(ri === "YEARLY"){
+          rent = rent / 12; // internal expectation: monthly rent in savedProperties
+        }
+
+        let yieldPercent = Number(it.yieldPercent);
+        if(!Number.isFinite(yieldPercent)){
+          yieldPercent = (purchasePrice > 0) ? (rent * 12 / purchasePrice) * 100 : 0;
+        }
+
+        return {
+          id, timestamp, name,
+          purchasePrice,
+          rent,               // monthly
+          rentInterval: "MONTHLY",
+          yieldPercent
+        };
+      }
+
+      function parseImportPayload(text){
+        const parsed = JSON.parse(text);
+        if(Array.isArray(parsed)) return parsed;
+        if(parsed && typeof parsed === "object"){
+          if(Array.isArray(parsed.properties)) return parsed.properties;
+          if(Array.isArray(parsed.savedProperties)) return parsed.savedProperties;
+        }
+        throw new Error("Ungültiges JSON-Format.");
+      }
+
+      // --- PNG Export (canvas-based, offline) ---
+      function exportPng(){
+        const data = getSortedProperties();
+        const maxRows = 25;
+        const rows = data.slice(0, maxRows);
+        const extra = Math.max(0, data.length - rows.length);
+
+        const W = 1200;
+        const rowH = 46;
+        const headerH = 120;
+        const tableHeadH = 44;
+        const pad = 60;
+        const cardPad = 26;
+
+        let H = pad*2 + headerH + tableHeadH + rows.length * rowH + 40;
+        if(extra > 0) H += 28;
+
+        // Safety cap
+        H = Math.min(H, 6000);
+
+        const dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.floor(W * dpr);
+        canvas.height = Math.floor(H * dpr);
+        canvas.style.width = W + "px";
+        canvas.style.height = H + "px";
+
+        const ctx = canvas.getContext("2d");
+        ctx.scale(dpr, dpr);
+
+        // Colors
+        const bg = "#f8fafc";
+        const card = "#ffffff";
+        const line = "#e2e8f0";
+        const head = "#0f172a";
+        const muted = "#64748b";
+        const indigo = "#4f46e5";
+        const green = "#10b981";
+        const red = "#ef4444";
+        const tableHeadBg = "#f8fafc";
+
+        function roundRect(x,y,w,h,r){
+          const rr = Math.min(r, w/2, h/2);
+          ctx.beginPath();
+          ctx.moveTo(x+rr, y);
+          ctx.arcTo(x+w, y, x+w, y+h, rr);
+          ctx.arcTo(x+w, y+h, x, y+h, rr);
+          ctx.arcTo(x, y+h, x, y, rr);
+          ctx.arcTo(x, y, x+w, y, rr);
+          ctx.closePath();
+        }
+        function drawTextFit(txt, x, y, maxW){
+          const t = String(txt ?? "");
+          if(ctx.measureText(t).width <= maxW) { ctx.fillText(t, x, y); return; }
+          const ell = "…";
+          let s = t;
+          while(s.length > 0 && ctx.measureText(s + ell).width > maxW){
+            s = s.slice(0, -1);
+          }
+          ctx.fillText(s + ell, x, y);
+        }
+
+        // Background
+        ctx.fillStyle = bg;
+        ctx.fillRect(0,0,W,H);
+
+        // Card
+        const cx = pad;
+        const cy = pad;
+        const cw = W - pad*2;
+        const ch = H - pad*2;
+
+        ctx.save();
+        ctx.shadowColor = "rgba(15,23,42,.10)";
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetY = 10;
+        ctx.fillStyle = card;
+        roundRect(cx, cy, cw, ch, 24);
+        ctx.fill();
+        ctx.restore();
+
+        // Header
+        ctx.fillStyle = indigo;
+        ctx.font = "900 34px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        ctx.fillText("ImmoCalc Pro", cx + cardPad, cy + 48);
+
+        ctx.fillStyle = head;
+        ctx.font = "900 22px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        ctx.fillText("Meine Objekte – Export", cx + cardPad, cy + 82);
+
+        ctx.fillStyle = muted;
+        ctx.font = "700 14px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        const dt = new Date().toLocaleString("de-DE");
+        ctx.fillText(`${dt} · ${data.length} Objekte · Sortierung: ${labelSortKey(state.sort.key)} (${state.sort.dir === "asc" ? "auf" : "ab"})`, cx + cardPad, cy + 106);
+
+        // Table header
+        const tx = cx + cardPad;
+        let ty = cy + headerH;
+        const tw = cw - cardPad*2;
+
+        ctx.fillStyle = tableHeadBg;
+        roundRect(tx, ty, tw, tableHeadH, 14);
+        ctx.fill();
+
+        ctx.strokeStyle = line;
+        ctx.lineWidth = 1;
+        roundRect(tx, ty, tw, tableHeadH, 14);
+        ctx.stroke();
+
+        // Columns
+        const colName = Math.floor(tw * 0.46);
+        const colPrice = Math.floor(tw * 0.18);
+        const colRent = Math.floor(tw * 0.18);
+        const colYield = tw - colName - colPrice - colRent;
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "900 12px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        ctx.textBaseline = "middle";
+        const midY = ty + tableHeadH/2;
+
+        ctx.fillText("IMMOBILIE", tx + 14, midY);
+        ctx.fillText("KAUFPREIS", tx + colName + 14, midY);
+        ctx.fillText("MIETE/MONAT", tx + colName + colPrice + 14, midY);
+        ctx.fillText("RENDITE P.A.", tx + colName + colPrice + colRent + 14, midY);
+
+        // Rows
+        ty += tableHeadH;
+        ctx.textBaseline = "alphabetic";
+
+        for(let i=0;i<rows.length;i++){
+          const r = rows[i];
+          const y = ty + i*rowH;
+
+          // separator
+          ctx.strokeStyle = "#f1f5f9";
+          ctx.beginPath();
+          ctx.moveTo(tx, y);
+          ctx.lineTo(tx + tw, y);
+          ctx.stroke();
+
+          const yText = y + 30;
+
+          // name + date small
+          ctx.fillStyle = "#1e293b";
+          ctx.font = "900 16px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+          drawTextFit(r.name, tx + 14, yText, colName - 22);
+
+          ctx.fillStyle = "#94a3b8";
+          ctx.font = "800 12px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+          ctx.fillText(todayDE(r.timestamp), tx + 14, yText + 16);
+
+          // numbers
+          ctx.fillStyle = "#334155";
+          ctx.font = "900 15px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+          ctx.fillText(fmtEuroPlain(Math.round(Number(r.purchasePrice)||0)), tx + colName + 14, yText);
+
+          ctx.fillText(fmtEuroPlain(Math.round(Number(r.rent)||0)), tx + colName + colPrice + 14, yText);
+
+          const yv = Number(r.yieldPercent)||0;
+          ctx.fillStyle = (yv < 3) ? red : green;
+          ctx.fillText(yv.toFixed(2) + "%", tx + colName + colPrice + colRent + 14, yText);
+        }
+
+        // bottom separator
+        const bottomY = ty + rows.length*rowH;
+        ctx.strokeStyle = "#f1f5f9";
+        ctx.beginPath();
+        ctx.moveTo(tx, bottomY);
+        ctx.lineTo(tx + tw, bottomY);
+        ctx.stroke();
+
+        if(extra > 0){
+          ctx.fillStyle = muted;
+          ctx.font = "800 14px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+          ctx.fillText(`… und ${extra} weitere`, tx + 14, bottomY + 26);
+        }
+
+        // Download
+        const d = new Date();
+        const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        const filename = `ImmoCalc_Export_${ymd}.png`;
+
+        const triggerDownload = (blobOrUrl) => {
+          const a = document.createElement("a");
+          if(blobOrUrl instanceof Blob){
+            const url = URL.createObjectURL(blobOrUrl);
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 3000);
+          }else{
+            a.href = blobOrUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+          }
+        };
+
+        if(canvas.toBlob){
+          canvas.toBlob((blob) => {
+            if(blob) triggerDownload(blob);
+            else triggerDownload(canvas.toDataURL("image/png"));
+          }, "image/png");
+        }else{
+          triggerDownload(canvas.toDataURL("image/png"));
+        }
+      }
+
+      function labelSortKey(k){
+        if(k === "timestamp") return "Datum";
+        if(k === "name") return "Name";
+        if(k === "purchasePrice") return "Kaufpreis";
+        if(k === "rent") return "Monatsmiete";
+        if(k === "yieldPercent") return "Rendite";
+        return k;
+      }
+
+      // --- Events ---
+      // Sidebar drawer buttons
+      if(el.openSidebarBtn) el.openSidebarBtn.addEventListener("click", toggleSidebar);
+      if(el.closeSidebarBtn) el.closeSidebarBtn.addEventListener("click", closeSidebar);
+      if(el.overlay) el.overlay.addEventListener("click", closeSidebar);
+      window.addEventListener("resize", () => { handleResize(); refresh(); });
+
+      // Nav
+      el.navCalc.addEventListener("click", () => setTab("calc"));
+      el.navList.addEventListener("click", () => setTab("list"));
+
+      // Modes
+      el.modeYield.addEventListener("click", () => setMode(CalcMode.YIELD));
+      el.modePrice.addEventListener("click", () => setMode(CalcMode.PRICE));
+      el.modeRent.addEventListener("click", () => setMode(CalcMode.RENT));
+
+      // Interval
+      el.rentMonthly.addEventListener("click", () => setRentInterval(RentInterval.MONTHLY));
+      el.rentYearly.addEventListener("click", () => setRentInterval(RentInterval.YEARLY));
+
+      // Helper inputs
+      el.qmInput.addEventListener("input", (e) => { state.qm = Number(e.target.value)||0; refresh(); });
+
+      el.ppqmMonthInput.addEventListener("input", (e) => {
+        setPpqmMonthly(e.target.value);
+        refresh();
+      });
+
+      el.ppqmYearInput.addEventListener("input", (e) => {
+        setPpqmYearly(e.target.value);
+        refresh();
+      });
+
+      function selectAllOnFocus(input, getter){
+        input.addEventListener("focus", () => setTimeout(() => input.select(), 0));
+        input.addEventListener("mouseup", (e) => { e.preventDefault(); });
+        input.addEventListener("blur", () => { input.value = fmtDec1(getter()); });
+      }
+      selectAllOnFocus(el.ppqmMonthInput, () => state.pricePerQmMonthly);
+      selectAllOnFocus(el.ppqmYearInput, () => state.pricePerQmYearly);
+
+      el.transferBtn.addEventListener("click", () => {
+        const qm = Number(state.qm)||0;
+        const helperMonth = qm * (Number(state.pricePerQmMonthly)||0);
+        const helperYear = qm * (Number(state.pricePerQmYearly)||0);
+
+        if(state.form.rentInterval === RentInterval.MONTHLY){
+          state.form.rent = helperMonth;
+        }else{
+          state.form.rent = helperYear;
+        }
+        setTab("calc");
+      });
+
+      // Form number+range sync
+      function bindNumberAndRange(numberEl, rangeEl, setter, clampMin=null, clampMax=null){
+        const apply = (raw) => {
+          let v = Number(raw);
+          if(!Number.isFinite(v)) v = 0;
+          if(clampMin !== null) v = Math.max(clampMin, v);
+          if(clampMax !== null) v = Math.min(clampMax, v);
+          setter(v);
+          refresh();
+        };
+        numberEl.addEventListener("input", (e) => apply(e.target.value));
+        rangeEl.addEventListener("input", (e) => apply(e.target.value));
+      }
+
+      bindNumberAndRange(el.purchaseInput, el.purchaseRange, (v) => state.form.purchasePrice = v, 0, 2000000);
+      bindNumberAndRange(el.rentInput, el.rentRange, (v) => state.form.rent = v, 0, 100000000);
+      bindNumberAndRange(el.yieldInput, el.yieldRange, (v) => state.form.yieldInput = v, 0, 100);
+
+      el.nameInput.addEventListener("input", (e) => { state.form.name = e.target.value; });
+
+      el.saveBtn.addEventListener("click", () => {
+        const name = (state.form.name || "").trim();
+        if(!name){
+          alert("Bitte geben Sie einen Namen ein.");
+          el.nameInput.focus();
+          return;
+        }
+        const result = computeResult();
+        const entry = {
+          id: uuid(),
+          timestamp: Date.now(),
+          name,
+          purchasePrice: Number(result.purchasePrice) || 0,
+          rent: Number(result.monthlyRent) || 0, // store monthly
+          rentInterval: "MONTHLY",
+          yieldPercent: Number(result.yieldPercent) || 0
+        };
+        state.savedProperties = [entry, ...state.savedProperties];
+        state.form.name = "";
+        saveStorage();
+        refresh();
+      });
+
+      el.startFirstBtn.addEventListener("click", () => setTab("calc"));
+
+      // Sort controls
+      el.sortKey.addEventListener("change", (e) => {
+        state.sort.key = e.target.value;
+        refresh();
+      });
+      el.sortDir.addEventListener("click", () => {
+        state.sort.dir = (state.sort.dir === "asc") ? "desc" : "asc";
+        refresh();
+      });
+
+      // Clickable table headers for sorting
+      document.querySelectorAll("th.sortable").forEach(th => {
+        th.addEventListener("click", () => {
+          const key = th.getAttribute("data-sort");
+          if(!key) return;
+          if(state.sort.key === key){
+            state.sort.dir = (state.sort.dir === "asc") ? "desc" : "asc";
+          }else{
+            state.sort.key = key;
+            state.sort.dir = (key === "name") ? "asc" : "desc";
+          }
+          refresh();
+        });
+      });
+
+      // Backup/Import/PNG
+      el.backupBtn.addEventListener("click", () => {
+        const payload = {
+          app: "ImmoCalc Pro",
+          version: APP_VERSION,
+          exportedAt: new Date().toISOString(),
+          properties: state.savedProperties
+        };
+        const d = new Date();
+        const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        downloadJson(`ImmoCalc_Backup_${ymd}.json`, payload);
+      });
+
+      el.importBtn.addEventListener("click", () => {
+        el.importFile.value = "";
+        el.importFile.click();
+      });
+
+      el.importFile.addEventListener("change", () => {
+        const file = el.importFile.files && el.importFile.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          try{
+            const arr = parseImportPayload(String(reader.result || ""));
+            const normalized = arr.map(normalizeImportedEntry);
+
+            const replace = confirm("Bestehende Daten ersetzen?\nOK = Ersetzen\nAbbrechen = Zusammenführen");
+            if(replace){
+              state.savedProperties = normalized;
+            }else{
+              const map = new Map();
+              state.savedProperties.forEach(p => map.set(p.id, p));
+              normalized.forEach(p => {
+                const existing = map.get(p.id);
+                if(!existing) map.set(p.id, p);
+                else{
+                  map.set(p.id, (Number(p.timestamp)||0) >= (Number(existing.timestamp)||0) ? p : existing);
+                }
+              });
+              state.savedProperties = Array.from(map.values());
+            }
+
+            saveStorage();
+            setTab("list");
+            refresh();
+            alert("Import abgeschlossen.");
+          }catch(err){
+            alert("Import fehlgeschlagen: " + (err && err.message ? err.message : String(err)));
+          }
+        };
+        reader.onerror = () => alert("Import fehlgeschlagen: Datei konnte nicht gelesen werden.");
+        reader.readAsText(file);
+      });
+
+      el.pngBtn.addEventListener("click", () => {
+        if(state.savedProperties.length === 0){
+          alert("Keine Objekte vorhanden.");
+          return;
+        }
+        exportPng();
+      });
+
+      // Keyboard: close sidebar on ESC (mobile)
+      window.addEventListener("keydown", (e) => {
+        if(e.key === "Escape" && state.sidebarOpen){
+          closeSidebar();
+        }
+      });
+
+      // --- Init ---
+      loadStorage();
+
+      // Ensure €/m² coupling on load
+      setPpqmMonthly(state.pricePerQmMonthly);
+
+      // Initial UI state
+      setMode(state.currentMode);
+      setTab(state.activeTab);
+      el.rentMonthly.classList.toggle("active", state.form.rentInterval === RentInterval.MONTHLY);
+      el.rentYearly.classList.toggle("active", state.form.rentInterval === RentInterval.YEARLY);
+
+      el.sortKey.value = state.sort.key;
+      refresh();
+
+    })();
+  </script>
+</body>
+</html>
