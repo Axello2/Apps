@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ImmoCalc Pro v2.0.7 (Standalone)</title>
+  <title>ImmoCalc Pro v2.0.8 (Standalone)</title>
   <meta name="description" content="ImmoCalc Pro v2.0.5 – Standalone Immobilien-Rendite-Rechner (offline-fähig, responsive, Sortierung, Backup/Restore, PNG-Export)." />
   <style>
     :root{
@@ -40,6 +40,32 @@
       color: var(--text);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Mobile Overflow/Scroll Fixes (v2.0.8) */
+    html{ overflow-x: auto; }
+    body{ overflow-x: auto; }
+    .layout{ min-width: 0; }
+    main{ min-width: 0; overflow-x: auto; }
+
+    /* Sidebar muss auf kleinen Screens scrollbar sein (iPhone) */
+    .sidebar{
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    @media (max-width: 420px){
+      /* insgesamt etwas kompakter */
+      main{ padding: 10px; }
+      .topbar{ padding: 0 10px; }
+      .card-inner{ padding: 16px; }
+      .btn{ padding: 10px 12px; }
+      .btn-primary{ padding: 10px 12px; }
+      .navbtn{ padding: 10px 12px; }
+      .helper{ padding: 14px; }
+      .sidebar{ max-width: 92vw; }
     }
 
     /* Layout */
@@ -158,6 +184,7 @@
         z-index: 50;
         width: 288px;
         max-width: 86vw;
+        padding-bottom: 24px;
       }
       .sidebar.open{ transform: translateX(0); }
       .sidebarHeaderMobile{ display:flex; }
@@ -1442,7 +1469,7 @@
       "use strict";
 
       // --- State ---
-      const APP_VERSION = "2.0.7";
+      const APP_VERSION = "2.0.8";
       const CalcMode = { YIELD: "YIELD", PRICE: "PRICE", RENT: "RENT", LAND: "LAND", BASIC: "BASIC" };
       const RentInterval = { MONTHLY: "MONTHLY", YEARLY: "YEARLY" };
       const LS_KEY = "immo_saved_props";
