@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ImmoCalc Pro v2.0.9 (Standalone)</title>
+  <title>ImmoCalc Pro v2.0.10 (Standalone)</title>
   <meta name="description" content="ImmoCalc Pro v2.0.5 – Standalone Immobilien-Rendite-Rechner (offline-fähig, responsive, Sortierung, Backup/Restore, PNG-Export)." />
   <style>
     :root{
@@ -916,6 +916,30 @@
       .kv .big, .kv .yield{ align-self: flex-end; text-align: right; }
     }
 
+
+    /* Scrollbare Rechner-Überschriften (v2.0.10) */
+    @media (max-width: 520px){
+      .tabs{
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(100,116,139,.35) transparent;
+      }
+      .tabs::-webkit-scrollbar{ height: 6px; }
+      .tabs::-webkit-scrollbar-track{ background: transparent; }
+      .tabs::-webkit-scrollbar-thumb{
+        background: rgba(100,116,139,.28);
+        border-radius: 999px;
+      }
+      .tabbtn{
+        flex: 0 0 auto;
+        min-width: 150px;
+        scroll-snap-align: start;
+      }
+    }
+
 </style>
 </head>
 <body>
@@ -1486,7 +1510,7 @@
       "use strict";
 
       // --- State ---
-      const APP_VERSION = "2.0.9";
+      const APP_VERSION = "2.0.10";
       const CalcMode = { YIELD: "YIELD", PRICE: "PRICE", RENT: "RENT", LAND: "LAND", BASIC: "BASIC" };
       const RentInterval = { MONTHLY: "MONTHLY", YEARLY: "YEARLY" };
       const LS_KEY = "immo_saved_props";
@@ -1971,7 +1995,22 @@
       }
 
       // --- UI update ---
-      function setTopbarTitle(tab){
+      
+      function ensureActiveCalcTabVisible(){
+        const tabs = document.querySelector(".tabs");
+        if(!tabs) return;
+        if(tabs.scrollWidth <= tabs.clientWidth + 2) return;
+        const active = tabs.querySelector(".tabbtn.active");
+        if(!active) return;
+        try{
+          active.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        }catch(_e){
+          const left = active.offsetLeft - Math.max(0, (tabs.clientWidth - active.clientWidth) / 2);
+          tabs.scrollLeft = Math.max(0, left);
+        }
+      }
+
+function setTopbarTitle(tab){
         const label = (tab === "list") ? "Meine Objekte" : "Rechner";
         const span = el.topbarTitle.querySelector("span");
         if(span) span.textContent = label;
@@ -2008,6 +2047,7 @@
           el.grpPurchase.classList.toggle("hidden", mode === CalcMode.PRICE);
           el.grpRent.classList.toggle("hidden", mode === CalcMode.RENT);
           el.grpYield.classList.toggle("hidden", mode === CalcMode.YIELD);
+        ensureActiveCalcTabVisible();
         }
 
         refresh();
@@ -2739,6 +2779,7 @@ const qm = Number(state.qm)||0;
 
       // Initial UI state
       setMode(state.currentMode);
+      ensureActiveCalcTabVisible();
       setTab(state.activeTab);
       el.rentMonthly.classList.toggle("active", state.form.rentInterval === RentInterval.MONTHLY);
       el.rentYearly.classList.toggle("active", state.form.rentInterval === RentInterval.YEARLY);
