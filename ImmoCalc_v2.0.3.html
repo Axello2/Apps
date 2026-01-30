@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ImmoCalc Pro v2.0.3 (Standalone)</title>
-  <meta name="description" content="ImmoCalc Pro v2.0.2 – Standalone Immobilien-Rendite-Rechner (offline-fähig, responsive, Sortierung, Backup/Restore, PNG-Export)." />
+  <title>ImmoCalc Pro v2.0.7 (Standalone)</title>
+  <meta name="description" content="ImmoCalc Pro v2.0.5 – Standalone Immobilien-Rendite-Rechner (offline-fähig, responsive, Sortierung, Backup/Restore, PNG-Export)." />
   <style>
     :root{
       --bg: #f8fafc;             /* slate-50 */
@@ -760,6 +760,118 @@
       .tName{ min-width: 190px; gap:10px; }
       .pill{ font-size: 12px; padding: 5px 9px; }
     }
+  
+    
+    /* Grundrechenarten-Rechner */
+    .basicCard{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 8px 22px rgba(15,23,42,.05);
+    }
+    .basicGrid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width:768px){
+      .basicGrid{ grid-template-columns: 1fr 1fr; gap: 18px; }
+    }
+    .basicResults{
+      margin-top: 10px;
+      border:1px solid var(--line2);
+      border-radius: 16px;
+      overflow:hidden;
+      background:#f8fafc;
+    }
+    .basicResults .rrow{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 12px 14px;
+      align-items:center;
+      border-top:1px solid var(--line2);
+    }
+    .basicResults .rrow:first-child{ border-top:0; }
+    .basicResults .label{
+      font-weight: 950;
+      color:#334155;
+      font-size: 13px;
+    }
+    .basicResults .val{
+      font-weight: 1000;
+      color:#0f172a;
+      font-variant-numeric: tabular-nums;
+      white-space:nowrap;
+    }
+    .copySmall{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor:pointer;
+      font-weight: 1000;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      box-shadow: 0 8px 20px rgba(15,23,42,.04);
+      transition: background .15s ease, transform .08s ease;
+      user-select:none;
+    }
+    
+    /* Grundrechenarten Layout-Feinschliff (v2.0.7) */
+    #basicBlock{
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    @media (min-width:768px){
+      .basicGrid{
+        grid-template-columns: minmax(0, 280px) minmax(0, 280px);
+        gap: 12px;
+        justify-content: center;
+      }
+      .basicResults{
+        max-width: 760px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+    .basicGrid .input{
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 1px 2px rgba(15,23,42,.04);
+    }
+    .basicGrid .input:focus{
+      border-color: rgba(79,70,229,.6);
+      box-shadow: 0 0 0 3px rgba(79,70,229,.18);
+      outline: none;
+    }
+.copySmall:hover{ background:#f8fafc; }
+    .copySmall:active{ transform: scale(.99); }
+    .copySmall svg{ width:16px; height:16px; }
+
+/* Grundstück-Rechner */
+    .landHint{ color: var(--muted); font-size: 13px; margin-top: 6px; }
+    .landTable{ width:100%; border-collapse: separate; border-spacing: 0; }
+    .landTable th{ text-transform:none; letter-spacing:0; font-weight:800; font-size:12px; color:#334155; background:#f8fafc; }
+    .landTable td{ font-size:13px; }
+    .landTable th, .landTable td{ padding: 10px 12px; border-bottom: 1px solid #e2e8f0; }
+    .landTable thead th:first-child{ border-top-left-radius: 12px; }
+    .landTable thead th:last-child{ border-top-right-radius: 12px; }
+    .landTable tbody tr:last-child td:first-child{ border-bottom-left-radius: 12px; }
+    .landTable tbody tr:last-child td:last-child{ border-bottom-right-radius: 12px; }
+    .landName{ white-space: normal; }
+    .landRight{ text-align:right; white-space: nowrap; }
+    .tableInput{ width:100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 8px 10px; font-size: 13px; background:#fff; }
+    .tableInput:focus{ outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,.15); border-color: rgba(99,102,241,.6); }
+    .landSum td{ background:#f8fafc; }
+    .landSumLabel{ font-weight:800; color:#0f172a; }
+    .landNet td{ background:#ffffff; }
+    .landStrong{ font-weight:900; }
+    .landCost{ text-align:right; }
   </style>
 </head>
 <body>
@@ -920,9 +1032,11 @@
               <button id="modeYield" class="tabbtn active" type="button">Rendite berechnen</button>
               <button id="modePrice" class="tabbtn" type="button">Kaufpreis berechnen</button>
               <button id="modeRent" class="tabbtn" type="button">Miete berechnen</button>
+              <button id="modeLand" class="tabbtn" type="button">Grundstück berechnen</button>
+              <button id="modeBasic" class="tabbtn" type="button">Grundrechenarten</button>
             </div>
             <div class="card-inner">
-              <div class="stack" style="gap:20px;">
+              <div id="calcBlock" class="stack" style="gap:20px;">
                 <div class="grid">
                   <div class="group">
 
@@ -971,7 +1085,7 @@
                         </svg>
                         Wunschrendite (%)
                       </div>
-                      <input id="yieldInput" class="input2" type="number" inputmode="decimal" step="0.1" min="0" />
+                      <input id="yieldInput" class="input2" type="text" inputmode="decimal" inputmode="decimal" />
                       <input id="yieldRange" class="slider accent-amber" type="range" min="0" max="15" step="0.1" />
                     </div>
 
@@ -1033,6 +1147,178 @@
                   </button>
                 </div>
               </div>
+          <div id="landBlock" class="stack hidden" style="gap:16px;">
+            <div class="group">
+              <div class="fieldlabel">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 21h18"></path>
+                  <path d="M5 21V7l7-4 7 4v14"></path>
+                  <path d="M9 21v-8h6v8"></path>
+                </svg>
+                Grundstück / Immobilie
+              </div>
+              <div class="landHint">qm und Preis/qm eingeben – Werte werden automatisch berechnet.</div>
+
+              <div class="tableCard" style="margin-top:10px;">
+                <div style="overflow:auto;">
+                  <table class="landTable">
+                    <thead>
+                      <tr>
+                        <th>Grundstück</th>
+                        <th style="width:120px;">qm</th>
+                        <th style="width:130px;">Preis/qm</th>
+                        <th style="text-align:right; width:170px;">Wert</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="landName">Baugrund 1</td>
+                        <td><input class="tableInput land-qm" data-row="bg1" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td><input class="tableInput land-ppqm" data-row="bg1" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td class="landRight"><span id="land_val_bg1">0,00&nbsp;€</span></td>
+                      </tr>
+                      <tr>
+                        <td class="landName">Baugrund 2</td>
+                        <td><input class="tableInput land-qm" data-row="bg2" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td><input class="tableInput land-ppqm" data-row="bg2" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td class="landRight"><span id="land_val_bg2">0,00&nbsp;€</span></td>
+                      </tr>
+                      <tr>
+                        <td class="landName">Garten</td>
+                        <td><input class="tableInput land-qm" data-row="garden" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td><input class="tableInput land-ppqm" data-row="garden" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td class="landRight"><span id="land_val_garden">0,00&nbsp;€</span></td>
+                      </tr>
+                      <tr>
+                        <td class="landName">Landwirtschaftliche Nutzfläche (Wiese)</td>
+                        <td><input class="tableInput land-qm" data-row="wiese" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td><input class="tableInput land-ppqm" data-row="wiese" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td class="landRight"><span id="land_val_wiese">0,00&nbsp;€</span></td>
+                      </tr>
+                      <tr>
+                        <td class="landName">Landwirtschaftliche Nutzfläche (Wald)</td>
+                        <td><input class="tableInput land-qm" data-row="wald" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td><input class="tableInput land-ppqm" data-row="wald" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td class="landRight"><span id="land_val_wald">0,00&nbsp;€</span></td>
+                      </tr>
+                      <tr>
+                        <td class="landName">Sonstige Flächen</td>
+                        <td><input class="tableInput land-qm" data-row="sonst" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td><input class="tableInput land-ppqm" data-row="sonst" type="text" inputmode="decimal" placeholder="0"></td>
+                        <td class="landRight"><span id="land_val_sonst">0,00&nbsp;€</span></td>
+                      </tr>
+
+                      <tr class="landSum">
+                        <td colspan="3" class="landSumLabel">Gesamtwert Grundstück</td>
+                        <td class="landRight"><span id="land_total">0,00&nbsp;€</span></td>
+                      </tr>
+
+                      <tr class="landSum">
+                        <td colspan="3" class="landSumLabel">Abriss-/Entsorgungs-/Sanierungs-/Renovierungskosten</td>
+                        <td class="landRight">
+                          <input id="land_costs" class="tableInput landCost" type="text" inputmode="decimal" placeholder="0">
+                        </td>
+                      </tr>
+
+                      <tr class="landNet">
+                        <td colspan="3" class="landSumLabel landStrong">Wert der Immobilie</td>
+                        <td class="landRight"><span id="land_net">0,00&nbsp;€</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="basicBlock" class="stack hidden" style="gap:16px;">
+            <div class="group">
+              <div class="fieldlabel">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+                  <line x1="8" y1="6" x2="16" y2="6"></line>
+                  <line x1="8" y1="10" x2="10" y2="10"></line>
+                  <line x1="12" y1="10" x2="14" y2="10"></line>
+                  <line x1="16" y1="10" x2="18" y2="10"></line>
+                  <line x1="8" y1="14" x2="10" y2="14"></line>
+                  <line x1="12" y1="14" x2="14" y2="14"></line>
+                  <line x1="16" y1="14" x2="18" y2="14"></line>
+                  <line x1="8" y1="18" x2="10" y2="18"></line>
+                  <line x1="12" y1="18" x2="14" y2="18"></line>
+                  <line x1="16" y1="18" x2="18" y2="18"></line>
+                </svg>
+                Grundrechenarten
+              </div>
+
+              <div class="basicGrid">
+                <div>
+                  <div class="mini">Zahl A</div>
+                  <input id="basicA" class="input" type="text" inputmode="decimal" placeholder="z.B. 123,45" />
+                </div>
+                <div>
+                  <div class="mini">Zahl B</div>
+                  <input id="basicB" class="input" type="text" inputmode="decimal" placeholder="z.B. 10" />
+                </div>
+              </div>
+
+              <div class="landHint">Die Ergebnisse aktualisieren sofort. „Kopieren“ legt den Wert (ohne Tausender-Trennzeichen) in die Zwischenablage.</div>
+
+              <div class="basicResults">
+                <div class="rrow">
+                  <div>
+                    <div class="label">A + B</div>
+                    <div id="basicSum" class="val">0</div>
+                  </div>
+                  <button id="copySum" class="copySmall" type="button" title="In Zwischenablage kopieren">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                      <rect x="2" y="2" width="13" height="13" rx="2"></rect>
+                    </svg>
+                    Kopieren
+                  </button>
+                </div>
+                <div class="rrow">
+                  <div>
+                    <div class="label">A − B</div>
+                    <div id="basicDiff" class="val">0</div>
+                  </div>
+                  <button id="copyDiff" class="copySmall" type="button" title="In Zwischenablage kopieren">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                      <rect x="2" y="2" width="13" height="13" rx="2"></rect>
+                    </svg>
+                    Kopieren
+                  </button>
+                </div>
+                <div class="rrow">
+                  <div>
+                    <div class="label">A × B</div>
+                    <div id="basicProd" class="val">0</div>
+                  </div>
+                  <button id="copyProd" class="copySmall" type="button" title="In Zwischenablage kopieren">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                      <rect x="2" y="2" width="13" height="13" rx="2"></rect>
+                    </svg>
+                    Kopieren
+                  </button>
+                </div>
+                <div class="rrow">
+                  <div>
+                    <div class="label">A ÷ B</div>
+                    <div id="basicQuot" class="val">—</div>
+                  </div>
+                  <button id="copyQuot" class="copySmall" type="button" title="In Zwischenablage kopieren">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                      <rect x="2" y="2" width="13" height="13" rx="2"></rect>
+                    </svg>
+                    Kopieren
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
             </div>
           </div>
 
@@ -1156,8 +1442,8 @@
       "use strict";
 
       // --- State ---
-      const APP_VERSION = "2.0.3";
-      const CalcMode = { YIELD: "YIELD", PRICE: "PRICE", RENT: "RENT" };
+      const APP_VERSION = "2.0.7";
+      const CalcMode = { YIELD: "YIELD", PRICE: "PRICE", RENT: "RENT", LAND: "LAND", BASIC: "BASIC" };
       const RentInterval = { MONTHLY: "MONTHLY", YEARLY: "YEARLY" };
       const LS_KEY = "immo_saved_props";
 
@@ -1176,7 +1462,20 @@
           yieldInput: 4.5,
           rentInterval: RentInterval.MONTHLY
         },
-        savedProperties: []
+        savedProperties: [],
+        land: {
+          rows: {
+            bg1: { qm: 0, ppqm: 0 },
+            bg2: { qm: 0, ppqm: 0 },
+            garden: { qm: 0, ppqm: 0 },
+            wiese: { qm: 0, ppqm: 0 },
+            wald: { qm: 0, ppqm: 0 },
+            sonst: { qm: 0, ppqm: 0 }
+          },
+          costs: 0
+        }
+      ,
+        basic: { a: 0, b: 0 }
       };
 
       // --- Formatting helpers ---
@@ -1250,6 +1549,26 @@
         modeYield: $("#modeYield"),
         modePrice: $("#modePrice"),
         modeRent: $("#modeRent"),
+        modeLand: $("#modeLand"),
+        modeBasic: $("#modeBasic"),
+
+        calcBlock: $("#calcBlock"),
+        landBlock: $("#landBlock"),
+        basicBlock: $("#basicBlock"),
+        landCosts: $("#land_costs"),
+        landTotal: $("#land_total"),
+        landNet: $("#land_net"),
+
+        basicA: $("#basicA"),
+        basicB: $("#basicB"),
+        basicSum: $("#basicSum"),
+        basicDiff: $("#basicDiff"),
+        basicProd: $("#basicProd"),
+        basicQuot: $("#basicQuot"),
+        copySum: $("#copySum"),
+        copyDiff: $("#copyDiff"),
+        copyProd: $("#copyProd"),
+        copyQuot: $("#copyQuot"),
 
         grpPurchase: $("#grpPurchase"),
         grpRent: $("#grpRent"),
@@ -1295,7 +1614,43 @@
         pngBtn: $("#pngBtn"),
       };
 
-      // --- Storage ---
+      
+      // --- Clipboard helper (copy computed values) ---
+      async function copyToClipboard(text){
+        const t = String(text ?? "");
+        try{
+          if(navigator.clipboard && navigator.clipboard.writeText){
+            await navigator.clipboard.writeText(t);
+            return true;
+          }
+        }catch(_){}
+        try{
+          const ta = document.createElement("textarea");
+          ta.value = t;
+          ta.setAttribute("readonly", "");
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          ta.style.top = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand("copy");
+          ta.remove();
+          return ok;
+        }catch(_){
+          return false;
+        }
+      }
+
+      function flashCopied(btn){
+        if(!btn) return;
+        const old = btn.dataset._oldLabel || btn.textContent;
+        btn.dataset._oldLabel = old;
+        btn.textContent = "Kopiert";
+        btn.disabled = true;
+        setTimeout(() => { btn.textContent = old; btn.disabled = false; }, 900);
+      }
+
+// --- Storage ---
       function loadStorage(){
         try{
           const raw = localStorage.getItem(LS_KEY);
@@ -1459,6 +1814,106 @@
         });
       }
 
+      
+      // --- Grundstück-Rechner ---
+      const LAND_ROWS = [
+        { id:"bg1", valId:"land_val_bg1" },
+        { id:"bg2", valId:"land_val_bg2" },
+        { id:"garden", valId:"land_val_garden" },
+        { id:"wiese", valId:"land_val_wiese" },
+        { id:"wald", valId:"land_val_wald" },
+        { id:"sonst", valId:"land_val_sonst" }
+      ];
+
+      function fmtNumUpTo2(n){
+        const v = Number(n) || 0;
+        if(v === 0) return "";
+        return v.toLocaleString("de-DE", { maximumFractionDigits: 2 });
+      }
+
+      function selectAllOnFocusNum(input, getter){
+        if(!input) return;
+        input.addEventListener("focus", () => setTimeout(() => input.select(), 0));
+        input.addEventListener("mouseup", (e) => { e.preventDefault(); });
+        input.addEventListener("blur", () => {
+          const v = Number(getter()) || 0;
+          input.value = fmtNumUpTo2(v);
+        });
+      }
+
+      const landEls = { qm: {}, ppqm: {} };
+
+      function initLandCalc(){
+        document.querySelectorAll(".land-qm").forEach(inp => {
+          const id = inp.getAttribute("data-row") || "";
+          if(!id) return;
+          landEls.qm[id] = inp;
+          inp.addEventListener("input", (e) => {
+            const v = parseDecimal(e.target.value);
+            if(!state.land.rows[id]) state.land.rows[id] = { qm:0, ppqm:0 };
+            state.land.rows[id].qm = Number.isFinite(v) ? v : 0;
+            refreshLand();
+          });
+          selectAllOnFocusNum(inp, () => (state.land.rows[id] ? state.land.rows[id].qm : 0));
+        });
+
+        document.querySelectorAll(".land-ppqm").forEach(inp => {
+          const id = inp.getAttribute("data-row") || "";
+          if(!id) return;
+          landEls.ppqm[id] = inp;
+          inp.addEventListener("input", (e) => {
+            const v = parseDecimal(e.target.value);
+            if(!state.land.rows[id]) state.land.rows[id] = { qm:0, ppqm:0 };
+            state.land.rows[id].ppqm = Number.isFinite(v) ? v : 0;
+            refreshLand();
+          });
+          selectAllOnFocusNum(inp, () => (state.land.rows[id] ? state.land.rows[id].ppqm : 0));
+        });
+
+        if(el.landCosts){
+          el.landCosts.addEventListener("input", (e) => {
+            const v = parseDecimal(e.target.value);
+            state.land.costs = Number.isFinite(v) ? v : 0;
+            refreshLand();
+          });
+          selectAllOnFocusNum(el.landCosts, () => state.land.costs);
+        }
+      }
+
+      function refreshLand(){
+        let total = 0;
+
+        LAND_ROWS.forEach(r => {
+          const row = state.land.rows[r.id] || { qm:0, ppqm:0 };
+          const qm = Number(row.qm) || 0;
+          const ppqm = Number(row.ppqm) || 0;
+          const value = qm * ppqm;
+          total += value;
+
+          const span = document.getElementById(r.valId);
+          if(span) span.textContent = fmtCurrency(value);
+
+          const qmEl = landEls.qm[r.id];
+          if(qmEl && document.activeElement !== qmEl){
+            qmEl.value = fmtNumUpTo2(qm);
+          }
+          const ppqmEl = landEls.ppqm[r.id];
+          if(ppqmEl && document.activeElement !== ppqmEl){
+            ppqmEl.value = fmtNumUpTo2(ppqm);
+          }
+        });
+
+        if(el.landTotal) el.landTotal.textContent = fmtCurrency(total);
+
+        if(el.landCosts && document.activeElement !== el.landCosts){
+          el.landCosts.value = fmtNumUpTo2(Number(state.land.costs)||0);
+        }
+
+        const net = total - (Number(state.land.costs)||0);
+        if(el.landNet) el.landNet.textContent = fmtCurrency(net);
+      }
+
+
       // --- Helpers: Sidebar €/m² coupling ---
       function setPpqmMonthly(val){
         const v = parseDecimal(val);
@@ -1495,13 +1950,25 @@
         el.modeYield.classList.toggle("active", mode === CalcMode.YIELD);
         el.modePrice.classList.toggle("active", mode === CalcMode.PRICE);
         el.modeRent.classList.toggle("active", mode === CalcMode.RENT);
+        if(el.modeLand) el.modeLand.classList.toggle("active", mode === CalcMode.LAND);
+        if(el.modeBasic) el.modeBasic.classList.toggle("active", mode === CalcMode.BASIC);
 
-        el.grpPurchase.classList.toggle("hidden", mode === CalcMode.PRICE);
-        el.grpRent.classList.toggle("hidden", mode === CalcMode.RENT);
-        el.grpYield.classList.toggle("hidden", mode === CalcMode.YIELD);
+        const isLand = (mode === CalcMode.LAND);
+        const isBasic = (mode === CalcMode.BASIC);
+
+        if(el.calcBlock) el.calcBlock.classList.toggle("hidden", isLand || isBasic);
+        if(el.landBlock) el.landBlock.classList.toggle("hidden", !isLand);
+        if(el.basicBlock) el.basicBlock.classList.toggle("hidden", !isBasic);
+
+        if(!(isLand || isBasic)){
+          el.grpPurchase.classList.toggle("hidden", mode === CalcMode.PRICE);
+          el.grpRent.classList.toggle("hidden", mode === CalcMode.RENT);
+          el.grpYield.classList.toggle("hidden", mode === CalcMode.YIELD);
+        }
 
         refresh();
       }
+
 
       // Rent interval switch converts the number so monthly/yearly stay consistent
       function setRentInterval(interval){
@@ -1539,6 +2006,13 @@ const qm = Number(state.qm)||0;
         el.helperRentMonth.textContent = helperMonth.toLocaleString("de-DE") + " €";
         el.helperRentYear.textContent = helperYear.toLocaleString("de-DE") + " €";
 
+        // Grundstück-Rechner
+        if(state.currentMode === CalcMode.LAND){
+          refreshLand();
+          if(el.compareCard) el.compareCard.classList.add("hidden");
+          return;
+        }
+
         // Form inputs
         el.purchaseInput.value = state.form.purchasePrice;
         el.purchaseRange.value = state.form.purchasePrice;
@@ -1559,7 +2033,9 @@ const qm = Number(state.qm)||0;
         el.rentInput.value = state.form.rent;
         el.rentRange.value = Math.min(Number(el.rentRange.max)||0, Math.max(Number(el.rentRange.min)||0, Number(state.form.rent)||0));
 
-        el.yieldInput.value = state.form.yieldInput;
+        if(document.activeElement !== el.yieldInput){
+          el.yieldInput.value = (Number(state.form.yieldInput)||0).toLocaleString("de-DE", { maximumFractionDigits: 2 });
+        }
         el.yieldRange.value = state.form.yieldInput;
 
         // Result preview
@@ -1680,6 +2156,23 @@ const qm = Number(state.qm)||0;
             el.tbodyProps.appendChild(tr);
           });
         }
+
+        // Basic calculator
+        if(el.basicSum){
+          const a = Number(state.basic?.a) || 0;
+          const b = Number(state.basic?.b) || 0;
+          const sum = a + b;
+          const diff = a - b;
+          const prod = a * b;
+          const quot = (b === 0) ? null : (a / b);
+
+          const fmt = (n) => (Number.isFinite(n) ? n.toLocaleString("de-DE", { maximumFractionDigits: 8 }) : "—");
+          el.basicSum.textContent = fmt(sum);
+          el.basicDiff.textContent = fmt(diff);
+          el.basicProd.textContent = fmt(prod);
+          el.basicQuot.textContent = (quot === null ? "—" : fmt(quot));
+        }
+
       }
 
       // --- Backup / Import JSON ---
@@ -1974,6 +2467,37 @@ const qm = Number(state.qm)||0;
       el.modeYield.addEventListener("click", () => setMode(CalcMode.YIELD));
       el.modePrice.addEventListener("click", () => setMode(CalcMode.PRICE));
       el.modeRent.addEventListener("click", () => setMode(CalcMode.RENT));
+      if(el.modeLand) el.modeLand.addEventListener("click", () => setMode(CalcMode.LAND));
+      if(el.modeBasic) el.modeBasic.addEventListener("click", () => setMode(CalcMode.BASIC));
+
+
+      // Basic calc inputs
+      if(el.basicA){
+        el.basicA.addEventListener("input", (e) => { state.basic.a = parseDecimal(e.target.value); refresh(); });
+        el.basicA.addEventListener("focus", () => setTimeout(() => el.basicA.select(), 0));
+        el.basicA.addEventListener("mouseup", (e) => { e.preventDefault(); });
+      }
+      if(el.basicB){
+        el.basicB.addEventListener("input", (e) => { state.basic.b = parseDecimal(e.target.value); refresh(); });
+        el.basicB.addEventListener("focus", () => setTimeout(() => el.basicB.select(), 0));
+        el.basicB.addEventListener("mouseup", (e) => { e.preventDefault(); });
+      }
+
+      const copyBasic = async (btn, value) => {
+        const ok = await copyToClipboard(value);
+        if(ok) flashCopied(btn);
+        else alert("Kopieren fehlgeschlagen.");
+      };
+
+      if(el.copySum) el.copySum.addEventListener("click", () => copyBasic(el.copySum, String((Number(state.basic.a)||0) + (Number(state.basic.b)||0))));
+      if(el.copyDiff) el.copyDiff.addEventListener("click", () => copyBasic(el.copyDiff, String((Number(state.basic.a)||0) - (Number(state.basic.b)||0))));
+      if(el.copyProd) el.copyProd.addEventListener("click", () => copyBasic(el.copyProd, String((Number(state.basic.a)||0) * (Number(state.basic.b)||0))));
+      if(el.copyQuot) el.copyQuot.addEventListener("click", () => {
+        const a = Number(state.basic.a)||0;
+        const b = Number(state.basic.b)||0;
+        const v = (b === 0) ? "" : String(a / b);
+        copyBasic(el.copyQuot, v);
+      });
 
       // Interval
       el.rentMonthly.addEventListener("click", () => setRentInterval(RentInterval.MONTHLY));
@@ -2014,9 +2538,9 @@ const qm = Number(state.qm)||0;
       });
 
       // Form number+range sync
-      function bindNumberAndRange(numberEl, rangeEl, setter, clampMin=null, clampMax=null){
+      function bindNumberAndRange(numberEl, rangeEl, setter, clampMin=null, clampMax=null, parser=null){
         const apply = (raw) => {
-          let v = Number(raw);
+          let v = (parser ? parser(raw) : Number(raw));
           if(!Number.isFinite(v)) v = 0;
           if(clampMin !== null) v = Math.max(clampMin, v);
           if(clampMax !== null) v = Math.min(clampMax, v);
@@ -2029,7 +2553,12 @@ const qm = Number(state.qm)||0;
 
       bindNumberAndRange(el.purchaseInput, el.purchaseRange, (v) => state.form.purchasePrice = v, 0, 2000000);
       bindNumberAndRange(el.rentInput, el.rentRange, (v) => state.form.rent = v, 0, 100000000);
-      bindNumberAndRange(el.yieldInput, el.yieldRange, (v) => state.form.yieldInput = v, 0, 100);
+      bindNumberAndRange(el.yieldInput, el.yieldRange, (v) => state.form.yieldInput = v, 0, 100, parseDecimal);
+      if(el.yieldInput){
+        el.yieldInput.addEventListener("focus", () => setTimeout(() => el.yieldInput.select(), 0));
+        el.yieldInput.addEventListener("mouseup", (e) => { e.preventDefault(); });
+        el.yieldInput.addEventListener("blur", () => refresh());
+      }
 
       el.nameInput.addEventListener("input", (e) => { state.form.name = e.target.value; });
 
@@ -2159,6 +2688,10 @@ const qm = Number(state.qm)||0;
 
       // Ensure €/m² coupling on load
       setPpqmMonthly(state.pricePerQmMonthly);
+
+      // Init Grundstück-Rechner
+      initLandCalc();
+      refreshLand();
 
       // Initial UI state
       setMode(state.currentMode);
