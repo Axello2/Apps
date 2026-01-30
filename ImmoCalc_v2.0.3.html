@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ImmoCalc Pro v2.0.8 (Standalone)</title>
+  <title>ImmoCalc Pro v2.0.9 (Standalone)</title>
   <meta name="description" content="ImmoCalc Pro v2.0.5 – Standalone Immobilien-Rendite-Rechner (offline-fähig, responsive, Sortierung, Backup/Restore, PNG-Export)." />
   <style>
     :root{
@@ -899,7 +899,24 @@
     .landNet td{ background:#ffffff; }
     .landStrong{ font-weight:900; }
     .landCost{ text-align:right; }
-  </style>
+  
+    /* iPhone Portrait Fit (v2.0.9) */
+    .kv{ min-width: 0; }
+    .kv .big, .kv .yield{ max-width: 100%; overflow-wrap: anywhere; word-break: break-word; }
+
+    @media (max-width: 420px){
+      .tabbtn{ font-size: 11px; padding: 12px 6px; line-height: 1.15; }
+      .tbtn{ font-size: 11px; padding: 6px 8px; line-height: 1.15; }
+      .fieldlabel{ font-size: 13px; }
+      .preview{ padding: 14px; }
+      .yield{ font-size: 24px; }
+
+      /* Label/Wert stapeln, damit rechts nichts abgeschnitten wird */
+      .kv{ flex-direction: column; align-items: flex-start; gap: 4px; }
+      .kv .big, .kv .yield{ align-self: flex-end; text-align: right; }
+    }
+
+</style>
 </head>
 <body>
   <div class="overlay" id="overlay" aria-hidden="true"></div>
@@ -1469,7 +1486,7 @@
       "use strict";
 
       // --- State ---
-      const APP_VERSION = "2.0.8";
+      const APP_VERSION = "2.0.9";
       const CalcMode = { YIELD: "YIELD", PRICE: "PRICE", RENT: "RENT", LAND: "LAND", BASIC: "BASIC" };
       const RentInterval = { MONTHLY: "MONTHLY", YEARLY: "YEARLY" };
       const LS_KEY = "immo_saved_props";
@@ -2003,9 +2020,9 @@
 
         const r = Number(state.form.rent) || 0;
         if(state.form.rentInterval === RentInterval.MONTHLY && interval === RentInterval.YEARLY){
-          state.form.rent = r * 12;
+          state.form.rent = Math.round((r * 12) * 100) / 100;
         }else if(state.form.rentInterval === RentInterval.YEARLY && interval === RentInterval.MONTHLY){
-          state.form.rent = r / 12;
+          state.form.rent = Math.round((r / 12) * 100) / 100;
         }
         state.form.rentInterval = interval;
 
@@ -2557,9 +2574,9 @@ const qm = Number(state.qm)||0;
         const helperYear = qm * (Number(state.pricePerQmYearly)||0);
 
         if(state.form.rentInterval === RentInterval.MONTHLY){
-          state.form.rent = helperMonth;
+          state.form.rent = Math.round(helperMonth * 100) / 100;
         }else{
-          state.form.rent = helperYear;
+          state.form.rent = Math.round(helperYear * 100) / 100;
         }
         setTab("calc");
       });
