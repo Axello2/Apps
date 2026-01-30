@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ImmoCalc Pro v2.0.12 (Standalone)</title>
+  <title>ImmoCalc Pro v2.0.13 (Standalone)</title>
   <meta name="description" content="ImmoCalc Pro v2.0.5 – Standalone Immobilien-Rendite-Rechner (offline-fähig, responsive, Sortierung, Backup/Restore, PNG-Export)." />
   <style>
     :root{
@@ -1017,6 +1017,13 @@
       .verBadge{ font-size: 11px; padding: 4px 7px; }
     }
 
+
+    /* Version-Badge auch in der Sidebar (v2.0.13) */
+    .sidebar .verBadge{
+      margin-top: 6px;
+      align-self: flex-start;
+    }
+
 </style>
 </head>
 <body>
@@ -1052,6 +1059,7 @@
         <div>
           <h1>ImmoCalc Pro</h1>
           <div class="sub">Rendite, Kaufpreis &amp; Miete</div>
+          <div class="sub"><span class="verBadge" id="verBadgeSidebar"></span></div>
         </div>
       </div>
 
@@ -1591,7 +1599,7 @@
       "use strict";
 
       // --- State ---
-      const APP_VERSION = "2.0.12";
+      const APP_VERSION = "2.0.13";
       const CalcMode = { YIELD: "YIELD", PRICE: "PRICE", RENT: "RENT", LAND: "LAND", BASIC: "BASIC" };
       const RentInterval = { MONTHLY: "MONTHLY", YEARLY: "YEARLY" };
       const LS_KEY = "immo_saved_props";
@@ -1763,12 +1771,9 @@
         pngBtn: $("#pngBtn"),
       };
 
-      // Version sichtbar im Topbar
-      if($("#verBadge")) $("#verBadge").textContent = "v" + APP_VERSION;
-
-
-      
-      // --- Clipboard helper (copy computed values) ---
+      // Version sichtbar (Topbar + Sidebar)
+      ["verBadge","verBadgeSidebar"].forEach((id)=>{ const n = document.getElementById(id); if(n) n.textContent = "v" + APP_VERSION; });
+// --- Clipboard helper (copy computed values) ---
       async function copyToClipboard(text){
         const t = String(text ?? "");
         try{
