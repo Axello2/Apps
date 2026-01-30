@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ImmoCalc Pro v2.0.11 (Standalone)</title>
+  <title>ImmoCalc Pro v2.0.12 (Standalone)</title>
   <meta name="description" content="ImmoCalc Pro v2.0.5 – Standalone Immobilien-Rendite-Rechner (offline-fähig, responsive, Sortierung, Backup/Restore, PNG-Export)." />
   <style>
     :root{
@@ -995,6 +995,28 @@
       .mDelBtn svg{ width:18px; height:18px; }
     }
 
+
+    /* Version-Badge in der mobilen Titelleiste (v2.0.12) */
+    .topbarRight{ min-width: 84px; display:flex; justify-content:flex-end; }
+    .verBadge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 800;
+      white-space: nowrap;
+      color: rgba(67,56,202,1);
+      background: rgba(99,102,241,.12);
+      border: 1px solid rgba(99,102,241,.25);
+    }
+    @media (max-width: 380px){
+      .topbarRight{ min-width: 72px; }
+      .verBadge{ font-size: 11px; padding: 4px 7px; }
+    }
+
 </style>
 </head>
 <body>
@@ -1144,7 +1166,7 @@
           </svg>
           <span>ImmoCalc Pro</span>
         </div>
-        <div style="width:42px;"></div>
+        <div class="topbarRight"><span class="verBadge" id="verBadge"></span></div>
       </div>
 
       <div class="container">
@@ -1569,7 +1591,7 @@
       "use strict";
 
       // --- State ---
-      const APP_VERSION = "2.0.11";
+      const APP_VERSION = "2.0.12";
       const CalcMode = { YIELD: "YIELD", PRICE: "PRICE", RENT: "RENT", LAND: "LAND", BASIC: "BASIC" };
       const RentInterval = { MONTHLY: "MONTHLY", YEARLY: "YEARLY" };
       const LS_KEY = "immo_saved_props";
@@ -1740,6 +1762,10 @@
         importFile: $("#importFile"),
         pngBtn: $("#pngBtn"),
       };
+
+      // Version sichtbar im Topbar
+      if($("#verBadge")) $("#verBadge").textContent = "v" + APP_VERSION;
+
 
       
       // --- Clipboard helper (copy computed values) ---
